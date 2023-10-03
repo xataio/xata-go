@@ -1,0 +1,201 @@
+package xata_test
+
+import (
+	"context"
+	"net/http"
+	"testing"
+
+	"github.com/omerdemirok/xata-go/xata"
+	xatagencore "github.com/omerdemirok/xata-go/xata/internal/fern-workspace/generated/go/core"
+	"github.com/stretchr/testify/assert"
+)
+
+func TestNewRecordsClient(t *testing.T) {
+	err := prepareConfigFile()
+	if err != nil {
+		t.Fatalf("unable to prepare the config file: %v", err)
+	}
+
+	t.Cleanup(func() {
+		err := cleanConfigFile()
+		if err != nil {
+			t.Fatalf("unable to reset the config file: %v", err)
+		}
+	})
+
+	t.Run("should construct a new workspace client", func(t *testing.T) {
+		got, err := xata.NewRecordsClient(xata.WithAPIKey("my-api-token"))
+		assert.NoError(t, err)
+		assert.NotNil(t, got)
+	})
+}
+
+var errTestCasesWorkspace = []struct {
+	name       string
+	statusCode int
+	apiErr     *xatagencore.APIError
+}{
+	{
+		name:       "should return bad request error",
+		statusCode: http.StatusBadRequest,
+		apiErr:     xatagencore.NewAPIError(http.StatusBadRequest, testErrBody),
+	},
+	{
+		name:       "should return authentication error",
+		statusCode: http.StatusUnauthorized,
+		apiErr:     xatagencore.NewAPIError(http.StatusUnauthorized, testErrBody),
+	},
+	{
+		name:       "should return not-found error",
+		statusCode: http.StatusNotFound,
+		apiErr:     xatagencore.NewAPIError(http.StatusNotFound, testErrBody),
+	},
+	{
+		name:       "should return server error",
+		statusCode: http.StatusServiceUnavailable,
+		apiErr:     xatagencore.NewAPIError(http.StatusServiceUnavailable, testErrBody),
+	},
+	{
+		name:       "should handle undocumented (not in the api specs) error",
+		statusCode: http.StatusConflict,
+		apiErr:     xatagencore.NewAPIError(http.StatusConflict, testErrBody),
+	},
+}
+
+func Test_recordsClient_Get(t *testing.T) {
+	err := prepareConfigFile()
+	if err != nil {
+		t.Fatalf("unable to prepare the config file: %v", err)
+	}
+
+	t.Cleanup(func() {
+		err := cleanConfigFile()
+		if err != nil {
+			t.Fatalf("unable to reset the config file: %v", err)
+		}
+	})
+
+	assert := assert.New(t)
+
+	type tc struct {
+		name       string
+		want       *xata.Record
+		statusCode int
+		apiErr     *xatagencore.APIError
+	}
+
+	tests := []tc{
+		{
+			name: "should get a record successfully",
+			want: &xata.Record{
+				RecordMeta: xata.RecordMeta{Id: "some-id"},
+			},
+			statusCode: http.StatusOK,
+		},
+	}
+
+	for _, eTC := range errTestCasesWorkspace {
+		tests = append(tests, tc{
+			name:       eTC.name,
+			statusCode: eTC.statusCode,
+			apiErr:     eTC.apiErr,
+		})
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testSrv := testService(t, http.MethodGet, "/db", tt.statusCode, tt.apiErr != nil, tt.want)
+
+			cli, err := xata.NewRecordsClient(xata.WithBaseURL(testSrv.URL), xata.WithAPIKey("test-key"))
+			assert.NoError(err)
+			assert.NotNil(cli)
+
+			got, err := cli.Get(context.TODO(), xata.GetRecordRequest{
+				RecordRequest: xata.RecordRequest{TableName: "test-table"},
+				RecordID:      "test-id",
+				Columns:       []string{"test-column"},
+			})
+
+			if tt.apiErr != nil {
+				errAPI := tt.apiErr.Unwrap()
+				if errAPI == nil {
+					t.Fatal("expected error but got nil")
+				}
+				assert.ErrorAs(err, &errAPI)
+				assert.Equal(err.Error(), tt.apiErr.Error())
+				assert.Nil(got)
+			} else {
+				assert.Equal(tt.want.Id, got.Id)
+				assert.NoError(err)
+			}
+		})
+	}
+}
+
+func Test_recordsClient_Insert(t *testing.T) {
+	err := prepareConfigFile()
+	if err != nil {
+		t.Fatalf("unable to prepare the config file: %v", err)
+	}
+
+	t.Cleanup(func() {
+		err := cleanConfigFile()
+		if err != nil {
+			t.Fatalf("unable to reset the config file: %v", err)
+		}
+	})
+
+	assert := assert.New(t)
+
+	type tc struct {
+		name       string
+		want       *xata.Record
+		statusCode int
+		apiErr     *xatagencore.APIError
+	}
+
+	tests := []tc{
+		{
+			name: "should insert a record successfully",
+			want: &xata.Record{
+				RecordMeta: xata.RecordMeta{Id: "some-id"},
+			},
+			statusCode: http.StatusOK,
+		},
+	}
+
+	for _, eTC := range errTestCasesWorkspace {
+		tests = append(tests, tc{
+			name:       eTC.name,
+			statusCode: eTC.statusCode,
+			apiErr:     eTC.apiErr,
+		})
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testSrv := testService(t, http.MethodPost, "/db", tt.statusCode, tt.apiErr != nil, tt.want)
+
+			cli, err := xata.NewRecordsClient(xata.WithBaseURL(testSrv.URL), xata.WithAPIKey("test-key"))
+			assert.NoError(err)
+			assert.NotNil(cli)
+
+			got, err := cli.Insert(context.TODO(), xata.InsertRecordRequest{
+				RecordRequest: xata.RecordRequest{TableName: "test-table"},
+			})
+
+			if tt.apiErr != nil {
+				errAPI := tt.apiErr.Unwrap()
+				if errAPI == nil {
+					t.Fatal("expected error but got nil")
+				}
+				assert.ErrorAs(err, &errAPI)
+				assert.Equal(err.Error(), tt.apiErr.Error())
+				assert.Nil(got)
+			} else {
+				assert.Equal(tt.want.Id, got.Id)
+				assert.NoError(err)
+			}
+		})
+	}
+}
