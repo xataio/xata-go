@@ -5,7 +5,7 @@ package api
 import (
 	json "encoding/json"
 
-	core "github.com/omerdemirok/xata-go/xata/internal/fern-core/generated/go/core"
+	core "github.com/xataio/xata-go/xata/internal/fern-core/generated/go/core"
 )
 
 type NotFoundError struct {

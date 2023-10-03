@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/omerdemirok/xata-go/xata"
-	xatagencore "github.com/omerdemirok/xata-go/xata/internal/fern-workspace/generated/go/core"
 	"github.com/stretchr/testify/assert"
+	"github.com/xataio/xata-go/xata"
+	xatagencore "github.com/xataio/xata-go/xata/internal/fern-workspace/generated/go/core"
 )
 
 func TestNewRecordsClient(t *testing.T) {

@@ -6,8 +6,8 @@ import (
 	"log"
 	"net/http"
 
-	xatagencore "github.com/omerdemirok/xata-go/xata/internal/fern-core/generated/go"
-	xatagenclient "github.com/omerdemirok/xata-go/xata/internal/fern-core/generated/go/core"
+	xatagencore "github.com/xataio/xata-go/xata/internal/fern-core/generated/go"
+	xatagenclient "github.com/xataio/xata-go/xata/internal/fern-core/generated/go/core"
 )
 
 type WorkspaceMeta xatagencore.WorkspaceMeta

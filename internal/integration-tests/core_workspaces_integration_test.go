@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/omerdemirok/xata-go/xata"
+	"github.com/xataio/xata-go/xata"
 )
 
 func Test_workspacesClient_List(t *testing.T) {

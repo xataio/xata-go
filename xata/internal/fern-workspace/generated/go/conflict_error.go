@@ -4,7 +4,7 @@ package api
 
 import (
 	json "encoding/json"
-	core "github.com/omerdemirok/xata-go/xata/internal/fern-workspace/generated/go/core"
+	core "github.com/xataio/xata-go/xata/internal/fern-workspace/generated/go/core"
 )
 
 type ConflictError struct {

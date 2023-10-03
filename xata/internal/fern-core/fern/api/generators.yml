@@ -8,4 +8,4 @@ groups:
           location: local-file-system
           path: ../../generated/go
         config:
-          importPath: github.com/omerdemirok/xata-go/xata/internal/fern-core/generated/go
+          importPath: github.com/xataio/xata-go/xata/internal/fern-core/generated/go

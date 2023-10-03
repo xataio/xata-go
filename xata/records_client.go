@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	xatagenclient "github.com/omerdemirok/xata-go/xata/internal/fern-workspace/generated/go/core"
+	xatagenclient "github.com/xataio/xata-go/xata/internal/fern-workspace/generated/go/core"
 
-	xatagenworkspace "github.com/omerdemirok/xata-go/xata/internal/fern-workspace/generated/go"
+	xatagenworkspace "github.com/xataio/xata-go/xata/internal/fern-workspace/generated/go"
 )
 
 type RecordRequest struct {
