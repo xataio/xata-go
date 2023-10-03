@@ -1,0 +1,40 @@
+run:
+  issue-exit-code: 1
+  tests: true
+  skip-dirs:
+    - xata/internal/generated
+    - xata/internal/fern-core
+    - xata/internal/fern-workspace
+    - xata/internal/fern-sql
+
+linters:
+  disable-all: true
+  enable:
+    - errcheck
+    - gofmt
+    - goimports
+    - gosimple
+    - govet
+    - gofumpt
+    - ineffassign
+    - misspell
+    - revive
+    - staticcheck
+    - typecheck
+    - unused
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      text: "context.Context should be the first parameter of a function"
+      linters:
+        - revive
+    - path: _test\.go
+      text: "exported func.*returns unexported type.*which can be annoying to use"
+      linters:
+        - revive
+
+  gofumt:
+    lang-version: "1.21"
+    module-path: github.com/omerdemirok/xata-go
+    exclude-rules: true

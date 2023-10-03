@@ -1,0 +1,27 @@
+version: "3"
+services:
+  base-lint:
+    build:
+      context: ../..
+      dockerfile: internal/build/Dockerfile
+    volumes:
+      - "../..:/app"
+    working_dir: /app
+    command:
+      - "golangci-lint"
+      - "run"
+
+  gofmt:
+    extends:
+      service: base-lint
+    command: ["gofmt", "-w", "."]
+
+  gofumpt:
+    extends:
+      service: base-lint
+    command: ["gofumpt", "-w", "-l","."]
+
+  lint:
+    extends:
+      service: base-lint
+    command: ["golangci-lint", "run"]

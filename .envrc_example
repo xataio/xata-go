@@ -1,0 +1,3 @@
+# API key used by the CLI and the SDK
+# Make sure your framework/tooling loads this file on startup to have it available for the SDK
+export XATA_API_KEY=xau_some_key

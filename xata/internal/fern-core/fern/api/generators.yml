@@ -1,0 +1,11 @@
+default-group: local
+groups:
+  local:
+    generators:
+      - name: fernapi/fern-go-sdk
+        version: 0.0.14
+        output:
+          location: local-file-system
+          path: ../../generated/go
+        config:
+          importPath: github.com/omerdemirok/xata-go/xata/internal/fern-core/generated/go
