@@ -3,7 +3,7 @@
 package api
 
 import (
-	core "github.com/omerdemirok/xata-go/xata/internal/fern-workspace/generated/go/core"
+	core "github.com/xataio/xata-go/xata/internal/fern-workspace/generated/go/core"
 	http "net/http"
 )
 

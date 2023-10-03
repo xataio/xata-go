@@ -11,7 +11,7 @@ import (
 	io "io"
 	http "net/http"
 
-	core "github.com/omerdemirok/xata-go/xata/internal/fern-core/generated/go/core"
+	core "github.com/xataio/xata-go/xata/internal/fern-core/generated/go/core"
 )
 
 type AuthenticationClient interface {

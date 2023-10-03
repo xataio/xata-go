@@ -8,9 +8,9 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/omerdemirok/xata-go/xata"
-	xatagen "github.com/omerdemirok/xata-go/xata/internal/fern-core/generated/go"
-	xatagencore "github.com/omerdemirok/xata-go/xata/internal/fern-core/generated/go/core"
+	"github.com/xataio/xata-go/xata"
+	xatagen "github.com/xataio/xata-go/xata/internal/fern-core/generated/go"
+	xatagencore "github.com/xataio/xata-go/xata/internal/fern-core/generated/go/core"
 
 	"github.com/stretchr/testify/assert"
 )

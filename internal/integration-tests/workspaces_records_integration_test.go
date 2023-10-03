@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/omerdemirok/xata-go/xata"
 	"github.com/stretchr/testify/assert"
+	"github.com/xataio/xata-go/xata"
 )
 
 const (

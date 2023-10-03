@@ -1,4 +1,4 @@
-module github.com/omerdemirok/xata-go
+module github.com/xataio/xata-go
 
 go 1.21.0
 

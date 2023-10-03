@@ -5,7 +5,7 @@ package api
 import (
 	http "net/http"
 
-	core "github.com/omerdemirok/xata-go/xata/internal/fern-core/generated/go/core"
+	core "github.com/xataio/xata-go/xata/internal/fern-core/generated/go/core"
 )
 
 // ClientWithBaseURL sets the client's base URL, overriding the

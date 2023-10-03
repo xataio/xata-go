@@ -8,7 +8,7 @@ import (
 	json "encoding/json"
 	errors "errors"
 	fmt "fmt"
-	core "github.com/omerdemirok/xata-go/xata/internal/fern-workspace/generated/go/core"
+	core "github.com/xataio/xata-go/xata/internal/fern-workspace/generated/go/core"
 	io "io"
 	http "net/http"
 	url "net/url"

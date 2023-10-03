@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"testing"
 
-	generatedwrapper "github.com/omerdemirok/xata-go/xata"
 	"github.com/stretchr/testify/assert"
+	generatedwrapper "github.com/xataio/xata-go/xata"
 )
 
 func TestWithAPIToken(t *testing.T) {
