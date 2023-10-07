@@ -9,7 +9,7 @@ import (
 	"github.com/xataio/xata-go/xata"
 )
 
-func Test_databasesClient_Create_Delete_getRegions(t *testing.T) {
+func Test_databasesClient(t *testing.T) {
 	apiKey, found := os.LookupEnv("XATA_API_KEY")
 	if !found {
 		t.Skipf("%s not found in env vars", "XATA_API_KEY")
