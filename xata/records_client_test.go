@@ -11,20 +11,11 @@ import (
 )
 
 func TestNewRecordsClient(t *testing.T) {
-	err := prepareConfigFile()
-	if err != nil {
-		t.Fatalf("unable to prepare the config file: %v", err)
-	}
-
-	t.Cleanup(func() {
-		err := cleanConfigFile()
-		if err != nil {
-			t.Fatalf("unable to reset the config file: %v", err)
-		}
-	})
-
 	t.Run("should construct a new workspace client", func(t *testing.T) {
-		got, err := xata.NewRecordsClient(xata.WithAPIKey("my-api-token"))
+		got, err := xata.NewRecordsClient(
+			xata.WithBaseURL("https://www.example.com"),
+			xata.WithAPIKey("my-api-token"),
+		)
 		assert.NoError(t, err)
 		assert.NotNil(t, got)
 	})
@@ -63,18 +54,6 @@ var errTestCasesWorkspace = []struct {
 }
 
 func Test_recordsClient_Get(t *testing.T) {
-	err := prepareConfigFile()
-	if err != nil {
-		t.Fatalf("unable to prepare the config file: %v", err)
-	}
-
-	t.Cleanup(func() {
-		err := cleanConfigFile()
-		if err != nil {
-			t.Fatalf("unable to reset the config file: %v", err)
-		}
-	})
-
 	assert := assert.New(t)
 
 	type tc struct {
@@ -111,9 +90,13 @@ func Test_recordsClient_Get(t *testing.T) {
 			assert.NotNil(cli)
 
 			got, err := cli.Get(context.TODO(), xata.GetRecordRequest{
-				RecordRequest: xata.RecordRequest{TableName: "test-table"},
-				RecordID:      "test-id",
-				Columns:       []string{"test-column"},
+				RecordRequest: xata.RecordRequest{
+					DatabaseName: xata.String("test-db"),
+					BranchName:   xata.String("main"),
+					TableName:    "test-table",
+				},
+				RecordID: "test-id",
+				Columns:  []string{"test-column"},
 			})
 
 			if tt.apiErr != nil {
@@ -133,18 +116,6 @@ func Test_recordsClient_Get(t *testing.T) {
 }
 
 func Test_recordsClient_Insert(t *testing.T) {
-	err := prepareConfigFile()
-	if err != nil {
-		t.Fatalf("unable to prepare the config file: %v", err)
-	}
-
-	t.Cleanup(func() {
-		err := cleanConfigFile()
-		if err != nil {
-			t.Fatalf("unable to reset the config file: %v", err)
-		}
-	})
-
 	assert := assert.New(t)
 
 	type tc struct {
@@ -181,7 +152,11 @@ func Test_recordsClient_Insert(t *testing.T) {
 			assert.NotNil(cli)
 
 			got, err := cli.Insert(context.TODO(), xata.InsertRecordRequest{
-				RecordRequest: xata.RecordRequest{TableName: "test-table"},
+				RecordRequest: xata.RecordRequest{
+					DatabaseName: xata.String("test-db"),
+					BranchName:   xata.String("main"),
+					TableName:    "test-table",
+				},
 			})
 
 			if tt.apiErr != nil {
@@ -193,8 +168,8 @@ func Test_recordsClient_Insert(t *testing.T) {
 				assert.Equal(err.Error(), tt.apiErr.Error())
 				assert.Nil(got)
 			} else {
-				assert.Equal(tt.want.Id, got.Id)
 				assert.NoError(err)
+				assert.Equal(tt.want.Id, got.Id)
 			}
 		})
 	}

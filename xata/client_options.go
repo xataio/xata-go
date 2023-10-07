@@ -1,6 +1,7 @@
 package xata
 
 import (
+	"fmt"
 	"net/http"
 )
 
@@ -14,6 +15,68 @@ type ClientOptions struct {
 	HTTPClient httpClient
 	HTTPHeader http.Header
 	Bearer     string
+}
+
+func consolidateClientOptionsForCore(opts ...ClientOption) (*ClientOptions, error) {
+	cliOpts := &ClientOptions{}
+
+	for _, opt := range opts {
+		opt(cliOpts)
+	}
+
+	if cliOpts.HTTPClient == nil {
+		cliOpts.HTTPClient = http.DefaultClient
+	}
+
+	if cliOpts.BaseURL == "" {
+		cliOpts.BaseURL = fmt.Sprintf("https://%s", defaultControlPlaneDomain)
+	}
+
+	if cliOpts.Bearer == "" {
+		apiKey, err := getAPIKey()
+		if err != nil {
+			return nil, err
+		}
+		cliOpts.Bearer = apiKey
+	}
+
+	return cliOpts, nil
+}
+
+func consolidateClientOptionsForWorkspace(opts ...ClientOption) (*ClientOptions, *databaseConfig, error) {
+	cliOpts := &ClientOptions{}
+
+	for _, opt := range opts {
+		opt(cliOpts)
+	}
+
+	if cliOpts.HTTPClient == nil {
+		cliOpts.HTTPClient = http.DefaultClient
+	}
+
+	dbCfg, err := loadDatabaseConfig()
+	if err != nil && cliOpts.BaseURL == "" {
+		return nil, nil, err
+	}
+
+	if cliOpts.BaseURL == "" {
+		cliOpts.BaseURL = fmt.Sprintf(
+			"https://%s.%s.%s",
+			dbCfg.workspaceID,
+			dbCfg.region,
+			dbCfg.domainWorkspace,
+		)
+	}
+
+	if cliOpts.Bearer == "" {
+		apiKey, err := getAPIKey()
+		if err != nil {
+			return nil, nil, err
+		}
+		cliOpts.Bearer = apiKey
+	}
+
+	return cliOpts, &dbCfg, nil
 }
 
 type ClientOption func(*ClientOptions)

@@ -4,8 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
-	"net/http"
 	"strings"
 	"time"
 
@@ -89,6 +87,11 @@ func ValueFromInputFileArray(value InputFileArray) *DataInputRecordValue {
 	return (*DataInputRecordValue)(xatagenworkspace.NewDataInputRecordValueFromInputFileArray(xValue))
 }
 
+func ValueFromInputFile(value InputFile) *DataInputRecordValue {
+	v := value
+	return (*DataInputRecordValue)(xatagenworkspace.NewDataInputRecordValueFromInputFile((*xatagenworkspace.InputFile)(&v)))
+}
+
 type InputFile xatagenworkspace.InputFile
 
 type recordsClient struct {
@@ -107,7 +110,12 @@ func (r recordsClient) Insert(ctx context.Context, request InsertRecordRequest) 
 		insRecReq.Body[k] = (*xatagenworkspace.DataInputRecordValue)(v)
 	}
 
-	record, err := r.generated.InsertRecord(ctx, r.dbBranchName(request.RecordRequest), request.TableName, insRecReq)
+	dbBranchName, err := r.dbBranchName(request.RecordRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	record, err := r.generated.InsertRecord(ctx, dbBranchName, request.TableName, insRecReq)
 	if err != nil {
 		return nil, err
 	}
@@ -125,9 +133,14 @@ func (r recordsClient) Get(ctx context.Context, request GetRecordRequest) (*Reco
 		Columns: constructColumns(request.Columns),
 	}
 
+	dbBranchName, err := r.dbBranchName(request.RecordRequest)
+	if err != nil {
+		return nil, err
+	}
+
 	record, err := r.generated.GetRecord(
 		ctx,
-		r.dbBranchName(request.RecordRequest),
+		dbBranchName,
 		request.TableName,
 		request.RecordID,
 		getRecReq,
@@ -144,16 +157,22 @@ func (r recordsClient) Get(ctx context.Context, request GetRecordRequest) (*Reco
 	return respRec, nil
 }
 
-func (r recordsClient) dbBranchName(request RecordRequest) string {
+func (r recordsClient) dbBranchName(request RecordRequest) (string, error) {
 	if request.DatabaseName == nil {
+		if r.dbName == "" {
+			return "", fmt.Errorf("database name cannot be empty")
+		}
 		request.DatabaseName = String(r.dbName)
 	}
 
 	if request.BranchName == nil {
+		if r.branchName == "" {
+			return "", fmt.Errorf("branch name cannot be empty")
+		}
 		request.BranchName = String(r.branchName)
 	}
 
-	return fmt.Sprintf("%s:%s", *request.DatabaseName, *request.BranchName)
+	return fmt.Sprintf("%s:%s", *request.DatabaseName, *request.BranchName), nil
 }
 
 func constructColumns(columns []string) []*string {
@@ -197,44 +216,17 @@ func constructRecord(response map[string]interface{}) (*Record, error) {
 }
 
 func NewRecordsClient(opts ...ClientOption) (RecordsClient, error) {
-	cfg, err := loadConfig(configFileName)
+	cliOpts, dbCfg, err := consolidateClientOptionsForWorkspace(opts...)
 	if err != nil {
-		return nil, fmt.Errorf("unable to load config: %w", err)
-	}
-
-	dbCfg, err := parseDatabaseURL(cfg.DatabaseURL)
-	if err != nil {
-		return nil, fmt.Errorf("unable to parse database URL: %w", err)
-	}
-
-	defaultOpts := &ClientOptions{
-		BaseURL: fmt.Sprintf(
-			"https://%s.%s.%s",
-			dbCfg.workspaceID,
-			dbCfg.region,
-			dbCfg.domainWorkspace,
-		),
-		HTTPClient: http.DefaultClient,
-	}
-
-	for _, opt := range opts {
-		opt(defaultOpts)
-	}
-
-	if defaultOpts.Bearer == "" {
-		apiKey, err := getAPIKey()
-		if err != nil {
-			log.Fatal(err)
-		}
-		defaultOpts.Bearer = apiKey
+		return nil, err
 	}
 
 	return recordsClient{
 			generated: xatagenworkspace.NewRecordsClient(
 				func(options *xatagenclient.ClientOptions) {
-					options.HTTPClient = defaultOpts.HTTPClient
-					options.BaseURL = defaultOpts.BaseURL
-					options.Bearer = defaultOpts.Bearer
+					options.HTTPClient = cliOpts.HTTPClient
+					options.BaseURL = cliOpts.BaseURL
+					options.Bearer = cliOpts.Bearer
 				}),
 			dbName:     dbCfg.dbName,
 			branchName: dbCfg.branchName,

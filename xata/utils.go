@@ -20,6 +20,8 @@ const (
 	defaultBranchName         = "main"
 	configFileName            = ".xatarc"
 	branchNameEnvVar          = "XATA_BRANCH"
+	defaultDataPlaneDomain    = "xata.sh"
+	defaultRegion             = "us-east-1"
 )
 
 var errAPIKey = fmt.Errorf("no API key found. Searched in `%s` env, %s, and .env", xataAPIKeyEnvVar, personalAPIKeyLocation)
@@ -63,6 +65,10 @@ func String(in string) *string {
 	if in == "" {
 		return nil
 	}
+	return &in
+}
+
+func Bool(in bool) *bool {
 	return &in
 }
 
@@ -161,4 +167,24 @@ func getBranchName() string {
 	}
 
 	return defaultBranchName
+}
+
+// loadDatabaseConfig will return config with defaults if the error is not nil.
+func loadDatabaseConfig() (databaseConfig, error) {
+	defaultDBConfig := databaseConfig{
+		region:          defaultRegion,
+		branchName:      defaultBranchName,
+		domainWorkspace: defaultDataPlaneDomain,
+	}
+	cfg, err := loadConfig(configFileName)
+	if err != nil {
+		return defaultDBConfig, err
+	}
+
+	dbCfg, err := parseDatabaseURL(cfg.DatabaseURL)
+	if err != nil {
+		return defaultDBConfig, err
+	}
+
+	return dbCfg, nil
 }

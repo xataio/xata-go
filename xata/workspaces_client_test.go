@@ -36,7 +36,8 @@ var testErrBody = errBody{
 
 func TestNewWorkspacesClient(t *testing.T) {
 	t.Run("should construct a new workspace client", func(t *testing.T) {
-		got := xata.NewWorkspacesClient(xata.WithAPIKey("my-api-token"))
+		got, err := xata.NewWorkspacesClient(xata.WithAPIKey("my-api-token"))
+		assert.NoError(t, err)
 		assert.NotNil(t, got)
 	})
 }
@@ -126,7 +127,10 @@ func Test_workspacesClient_List(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			testSrv := testService(t, http.MethodGet, "/workspaces", tt.statusCode, tt.apiErr != nil, tt.want)
 
-			wsCli := xata.NewWorkspacesClient(xata.WithBaseURL(testSrv.URL), xata.WithAPIKey("test-key"))
+			wsCli, err := xata.NewWorkspacesClient(xata.WithBaseURL(testSrv.URL), xata.WithAPIKey("test-key"))
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			got, err := wsCli.List(context.TODO())
 
@@ -187,7 +191,10 @@ func Test_workspacesClient_Create(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			testSrv := testService(t, http.MethodPost, "", tt.statusCode, tt.apiErr != nil, tt.want)
 
-			wsCli := xata.NewWorkspacesClient(xata.WithBaseURL(testSrv.URL), xata.WithAPIKey("test-key"))
+			wsCli, err := xata.NewWorkspacesClient(xata.WithBaseURL(testSrv.URL), xata.WithAPIKey("test-key"))
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			got, err := wsCli.Create(context.TODO(), &xata.WorkspaceMeta{})
 
@@ -235,9 +242,12 @@ func Test_workspacesClient_Delete(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			testSrv := testService(t, http.MethodDelete, "", tt.statusCode, tt.apiErr != nil, nil)
 
-			wsCli := xata.NewWorkspacesClient(xata.WithBaseURL(testSrv.URL), xata.WithAPIKey("test-key"))
+			wsCli, err := xata.NewWorkspacesClient(xata.WithBaseURL(testSrv.URL), xata.WithAPIKey("test-key"))
+			if err != nil {
+				t.Fatal(err)
+			}
 
-			err := wsCli.Delete(context.TODO(), uuid.NewString())
+			err = wsCli.Delete(context.TODO(), uuid.NewString())
 
 			if tt.apiErr != nil {
 				errAPI := tt.apiErr.Unwrap()
