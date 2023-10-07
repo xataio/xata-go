@@ -284,23 +284,7 @@ func setup() (*config, error) {
 		return nil, err
 	}
 
-	_, err = tableCli.AddColumn(ctx, xata.AddColumnRequest{
-		TableRequest: xata.TableRequest{
-			TableName:    cfg.tableName,
-			DatabaseName: xata.String(cfg.databaseName),
-		},
-		Column: &xata.Column{
-			Name: fileColumn,
-			Type: xata.ColumnTypeFile,
-			File: &xata.ColumnFile{
-				DefaultPublicAccess: xata.Bool(false),
-			},
-			NotNull: xata.Bool(false),
-			Unique:  xata.Bool(false),
-		},
-	})
-
-	return cfg, err
+	return cfg, nil
 }
 
 func cleanup(cfg *config) error {
