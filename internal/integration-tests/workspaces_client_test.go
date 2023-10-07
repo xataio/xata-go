@@ -49,7 +49,6 @@ func Test_workspacesClient_Create_Delete(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		assert.NoError(t, err)
 		assert.NotNil(t, ws)
 
 		err = workspaceCli.Delete(context.Background(), ws.Id)
