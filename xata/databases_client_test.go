@@ -141,3 +141,123 @@ func Test_databaseCli_Delete(t *testing.T) {
 		})
 	}
 }
+
+func Test_databaseCli_GetRegions(t *testing.T) {
+	assert := assert.New(t)
+
+	type tc struct {
+		name       string
+		want       *xatagen.ListRegionsResponse
+		statusCode int
+		apiErr     *xatagencore.APIError
+	}
+
+	tests := []tc{
+		{
+			name: "should get workspaces",
+			want: &xatagen.ListRegionsResponse{
+				Regions: []*xatagen.Region{
+					{
+						Id:   "region-id",
+						Name: "region-name",
+					},
+				},
+			},
+			statusCode: http.StatusOK,
+		},
+	}
+
+	for _, eTC := range errTestCasesCore {
+		tests = append(tests, tc{
+			name:       eTC.name,
+			statusCode: eTC.statusCode,
+			apiErr:     eTC.apiErr,
+		})
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testSrv := testService(t, http.MethodGet, "/workspaces", tt.statusCode, tt.apiErr != nil, tt.want)
+
+			cli, err := xata.NewDatabasesClient(xata.WithBaseURL(testSrv.URL), xata.WithAPIKey("test-key"))
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			got, err := cli.GetRegions(context.TODO())
+
+			if tt.apiErr != nil {
+				errAPI := tt.apiErr.Unwrap()
+				if errAPI == nil {
+					t.Fatal("expected error but got nil")
+				}
+				assert.ErrorAs(err, &errAPI)
+				assert.Equal(err.Error(), tt.apiErr.Error())
+				assert.Nil(got)
+			} else {
+				assert.Equal(tt.want, got)
+				assert.NoError(err)
+			}
+		})
+	}
+}
+
+func Test_databaseCli_GetRegionsWithWorkspaceID(t *testing.T) {
+	assert := assert.New(t)
+
+	type tc struct {
+		name       string
+		want       *xatagen.ListRegionsResponse
+		statusCode int
+		apiErr     *xatagencore.APIError
+	}
+
+	tests := []tc{
+		{
+			name: "should get workspaces",
+			want: &xatagen.ListRegionsResponse{
+				Regions: []*xatagen.Region{
+					{
+						Id:   "region-id",
+						Name: "region-name",
+					},
+				},
+			},
+			statusCode: http.StatusOK,
+		},
+	}
+
+	for _, eTC := range errTestCasesCore {
+		tests = append(tests, tc{
+			name:       eTC.name,
+			statusCode: eTC.statusCode,
+			apiErr:     eTC.apiErr,
+		})
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testSrv := testService(t, http.MethodGet, "/workspaces", tt.statusCode, tt.apiErr != nil, tt.want)
+
+			cli, err := xata.NewDatabasesClient(xata.WithBaseURL(testSrv.URL), xata.WithAPIKey("test-key"))
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			got, err := cli.GetRegionsWithWorkspaceID(context.TODO(), "workspace-id")
+
+			if tt.apiErr != nil {
+				errAPI := tt.apiErr.Unwrap()
+				if errAPI == nil {
+					t.Fatal("expected error but got nil")
+				}
+				assert.ErrorAs(err, &errAPI)
+				assert.Equal(err.Error(), tt.apiErr.Error())
+				assert.Nil(got)
+			} else {
+				assert.Equal(tt.want, got)
+				assert.NoError(err)
+			}
+		})
+	}
+}
