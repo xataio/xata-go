@@ -11,7 +11,7 @@ import (
 )
 
 func TestNewRecordsClient(t *testing.T) {
-	t.Run("should construct a new workspace client", func(t *testing.T) {
+	t.Run("should construct a new client", func(t *testing.T) {
 		got, err := xata.NewRecordsClient(
 			xata.WithBaseURL("https://www.example.com"),
 			xata.WithAPIKey("my-api-token"),
