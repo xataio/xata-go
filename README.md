@@ -42,7 +42,7 @@ func main() {
 
 The API key can also be provided as a parameter to the client constructor:
 ```Go
-	workspaceCli, err := xata.NewWorkspacesClient(xata.WithAPIKey("my-api-key"))
+workspaceCli, err := xata.NewWorkspacesClient(xata.WithAPIKey("my-api-key"))
 ```
 
 To learn more about Xata, visit [xata.io](https://xata.io).
