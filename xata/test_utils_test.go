@@ -2,10 +2,8 @@ package xata_test
 
 import (
 	"encoding/json"
-	"io"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"strings"
 	"testing"
 )
@@ -41,45 +39,4 @@ func testService(t *testing.T, method string, basePath string, statusCode int, s
 			t.Fatal(err)
 		}
 	}))
-}
-
-func prepareConfigFile() error {
-	sourcePath := "xatarc_test"
-	destPath := ".xatarc"
-	// Open the source file.
-	sourceFile, err := os.Open(sourcePath)
-	if err != nil {
-		return err
-	}
-	defer sourceFile.Close()
-
-	// Create the destination file.
-	destFile, err := os.Create(destPath)
-	if err != nil {
-		return err
-	}
-	defer destFile.Close()
-
-	// Copy the contents of the source file to the destination file.
-	_, err = io.Copy(destFile, sourceFile)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func cleanConfigFile() error {
-	// Check if the old file exists.
-	if _, err := os.Stat(".xatarc"); err != nil {
-		return err
-	}
-
-	// Rename the file.
-	err := os.Remove(".xatarc")
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
