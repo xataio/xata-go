@@ -19,7 +19,7 @@ func Test_databasesClient(t *testing.T) {
 
 	ctx := context.Background()
 
-	t.Run("should create and delete database and list regions", func(t *testing.T) {
+	t.Run("should create, list, rename and delete database and list regions", func(t *testing.T) {
 		httpCli := retryablehttp.NewClient().StandardClient()
 
 		workspaceCli, err := xata.NewWorkspacesClient(
@@ -76,13 +76,22 @@ func Test_databasesClient(t *testing.T) {
 			t.Fatal(err)
 		}
 
+		newDBName := "test-db-name-updated"
+		dbMeta, err := databaseCli.Rename(ctx, xata.RenameDatabaseRequest{
+			DatabaseName: db.DatabaseName,
+			NewName:      newDBName,
+			WorkspaceID:  xata.String(ws.Id),
+		})
+		assert.NoError(t, err)
+		assert.Equal(t, newDBName, dbMeta.Name)
+
 		listResponse, err := databaseCli.ListWithWorkspaceID(ctx, ws.Id)
 		assert.NoError(t, err)
 		assert.Equal(t, len(listResponse.Databases), 1)
 
 		_, err = databaseCli.Delete(ctx, xata.DeleteDatabaseRequest{
 			WorkspaceID:  xata.String(ws.Id),
-			DatabaseName: db.DatabaseName,
+			DatabaseName: newDBName,
 		})
 		assert.NoError(t, err)
 	})
