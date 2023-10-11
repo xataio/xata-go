@@ -2,7 +2,7 @@ name: Pull Request
 
 on: [push, pull_request]
 jobs:
-  test:
+  lint_and_test:
     name: Tests
     steps:
     - uses: actions/checkout@v3
@@ -10,6 +10,8 @@ jobs:
       uses: actions/setup-go@v4
       with:
         go-version: '1.21'
+    - name: Lint
+      run: make lint
     - name: Unit tests
       run: make test
       env:
