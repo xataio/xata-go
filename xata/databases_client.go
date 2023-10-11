@@ -31,6 +31,8 @@ type DatabasesClient interface {
 	Delete(ctx context.Context, request DeleteDatabaseRequest) (*xatagencore.DeleteDatabaseResponse, error)
 	GetRegions(ctx context.Context) (*xatagencore.ListRegionsResponse, error)
 	GetRegionsWithWorkspaceID(ctx context.Context, workspaceID string) (*xatagencore.ListRegionsResponse, error)
+	List(ctx context.Context) (*xatagencore.ListDatabasesResponse, error)
+	ListWithWorkspaceID(ctx context.Context, workspaceID string) (*xatagencore.ListDatabasesResponse, error)
 }
 
 type databaseCli struct {
@@ -87,6 +89,14 @@ func (d databaseCli) GetRegions(ctx context.Context) (*xatagencore.ListRegionsRe
 
 func (d databaseCli) GetRegionsWithWorkspaceID(ctx context.Context, workspaceID string) (*xatagencore.ListRegionsResponse, error) {
 	return d.generated.ListRegions(ctx, workspaceID)
+}
+
+func (d databaseCli) List(ctx context.Context) (*xatagencore.ListDatabasesResponse, error) {
+	return d.generated.GetDatabaseList(ctx, d.WorkspaceID)
+}
+
+func (d databaseCli) ListWithWorkspaceID(ctx context.Context, workspaceID string) (*xatagencore.ListDatabasesResponse, error) {
+	return d.generated.GetDatabaseList(ctx, workspaceID)
 }
 
 func NewDatabasesClient(opts ...ClientOption) (DatabasesClient, error) {

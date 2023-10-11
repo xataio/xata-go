@@ -5,6 +5,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/xataio/xata-go/xata"
 )
@@ -74,12 +76,14 @@ func Test_databasesClient(t *testing.T) {
 			t.Fatal(err)
 		}
 
+		listResponse, err := databaseCli.ListWithWorkspaceID(ctx, ws.Id)
+		assert.NoError(t, err)
+		assert.Equal(t, len(listResponse.Databases), 1)
+
 		_, err = databaseCli.Delete(ctx, xata.DeleteDatabaseRequest{
 			WorkspaceID:  xata.String(ws.Id),
 			DatabaseName: db.DatabaseName,
 		})
-		if err != nil {
-			t.Fatal(err)
-		}
+		assert.NoError(t, err)
 	})
 }
