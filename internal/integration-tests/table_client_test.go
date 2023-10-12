@@ -6,6 +6,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/xataio/xata-go/xata"
 )
@@ -17,7 +19,7 @@ func Test_tableClient(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	t.Run("should create/delete table and add/delete column", func(t *testing.T) {
+	t.Run("should create/delete, get schema and columns of a table and add/delete column", func(t *testing.T) {
 		httpCli := retryablehttp.NewClient().StandardClient()
 
 		workspaceCli, err := xata.NewWorkspacesClient(
@@ -123,6 +125,20 @@ func Test_tableClient(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+
+		schema, err := tableCli.GetSchema(ctx, xata.TableRequest{
+			TableName:    createTableResponse.TableName,
+			DatabaseName: xata.String(db.DatabaseName),
+		})
+		assert.NoError(t, err)
+		assert.Equal(t, stringColumn, schema.Columns[0].Name)
+
+		columns, err := tableCli.GetColumns(ctx, xata.TableRequest{
+			TableName:    createTableResponse.TableName,
+			DatabaseName: xata.String(db.DatabaseName),
+		})
+		assert.NoError(t, err)
+		assert.Equal(t, stringColumn, columns.Columns[0].Name)
 
 		_, err = tableCli.DeleteColumn(ctx, xata.DeleteColumnRequest{
 			TableRequest: xata.TableRequest{
