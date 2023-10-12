@@ -10,13 +10,13 @@ import (
 	"github.com/xataio/xata-go/xata"
 )
 
-func Test_workspacesClient_Create_Delete(t *testing.T) {
+func Test_workspacesClient(t *testing.T) {
 	apiKey, found := os.LookupEnv("XATA_API_KEY")
 	if !found {
 		t.Skipf("%s not found in env vars", "XATA_API_KEY")
 	}
 
-	t.Run("should create, get, list and delete workspace", func(t *testing.T) {
+	t.Run("should create, get, list, update and delete workspace", func(t *testing.T) {
 		workspaceCli, err := xata.NewWorkspacesClient(xata.WithAPIKey(apiKey))
 		if err != nil {
 			t.Fatal(err)
@@ -41,6 +41,14 @@ func Test_workspacesClient_Create_Delete(t *testing.T) {
 			wsIDs = append(wsIDs, ws.Id)
 		}
 		assert.Contains(t, wsIDs, workspace.Id)
+
+		updatedWSName := "updated-name"
+		updated, err := workspaceCli.UpdateWorkspace(ctx, xata.UpdateWorkspaceRequest{
+			Payload:     &xata.WorkspaceMeta{Name: updatedWSName},
+			WorkspaceID: xata.String(workspace.Id),
+		})
+		assert.Nil(t, err)
+		assert.Equal(t, updatedWSName, updated.Name)
 
 		err = workspaceCli.Delete(context.Background(), ws.Id)
 		assert.NoError(t, err)

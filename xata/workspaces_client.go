@@ -10,12 +10,18 @@ import (
 
 type WorkspaceMeta xatagencore.WorkspaceMeta
 
+type UpdateWorkspaceRequest struct {
+	Payload     *WorkspaceMeta
+	WorkspaceID *string
+}
+
 type WorkspacesClient interface {
 	List(ctx context.Context) (*xatagencore.GetWorkspacesListResponse, error)
 	Create(ctx context.Context, request *WorkspaceMeta) (*xatagencore.Workspace, error)
 	Delete(ctx context.Context, workspaceID string) error
 	Get(ctx context.Context) (*xatagencore.Workspace, error)
 	GetWithWorkspaceID(ctx context.Context, workspaceID string) (*xatagencore.Workspace, error)
+	UpdateWorkspace(ctx context.Context, request UpdateWorkspaceRequest) (*xatagencore.Workspace, error)
 }
 
 type workspaceCli struct {
@@ -28,10 +34,7 @@ func (w workspaceCli) List(ctx context.Context) (*xatagencore.GetWorkspacesListR
 }
 
 func (w workspaceCli) Create(ctx context.Context, request *WorkspaceMeta) (*xatagencore.Workspace, error) {
-	return w.generated.CreateWorkspace(ctx, &xatagencore.WorkspaceMeta{
-		Name: request.Name,
-		Slug: request.Slug,
-	})
+	return w.generated.CreateWorkspace(ctx, (*xatagencore.WorkspaceMeta)(request))
 }
 
 func (w workspaceCli) Delete(ctx context.Context, workspaceID string) error {
@@ -44,6 +47,15 @@ func (w workspaceCli) Get(ctx context.Context) (*xatagencore.Workspace, error) {
 
 func (w workspaceCli) GetWithWorkspaceID(ctx context.Context, workspaceID string) (*xatagencore.Workspace, error) {
 	return w.generated.GetWorkspace(ctx, workspaceID)
+}
+
+func (w workspaceCli) UpdateWorkspace(ctx context.Context, request UpdateWorkspaceRequest) (*xatagencore.Workspace, error) {
+	workspaceID := w.workspaceID
+	if request.WorkspaceID != nil && *request.WorkspaceID != "" {
+		workspaceID = *request.WorkspaceID
+	}
+
+	return w.generated.UpdateWorkspace(ctx, workspaceID, (*xatagencore.WorkspaceMeta)(request.Payload))
 }
 
 func NewWorkspacesClient(opts ...ClientOption) (WorkspacesClient, error) {
