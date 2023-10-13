@@ -5,8 +5,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/hashicorp/go-retryablehttp"
 	"github.com/stretchr/testify/assert"
-
 	"github.com/xataio/xata-go/xata"
 )
 
@@ -17,7 +17,10 @@ func Test_workspacesClient(t *testing.T) {
 	}
 
 	t.Run("should create, get, list, update and delete workspace", func(t *testing.T) {
-		workspaceCli, err := xata.NewWorkspacesClient(xata.WithAPIKey(apiKey))
+		workspaceCli, err := xata.NewWorkspacesClient(
+			xata.WithAPIKey(apiKey),
+			xata.WithHTTPClient(retryablehttp.NewClient().StandardClient()),
+		)
 		if err != nil {
 			t.Fatal(err)
 		}

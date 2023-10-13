@@ -240,7 +240,7 @@ func Test_workspacesClient_Delete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			testSrv := testService(t, http.MethodDelete, "", tt.statusCode, tt.apiErr != nil, nil)
+			testSrv := testService(t, http.MethodDelete, "/workspaces", tt.statusCode, tt.apiErr != nil, nil)
 
 			wsCli, err := xata.NewWorkspacesClient(xata.WithBaseURL(testSrv.URL), xata.WithAPIKey("test-key"))
 			if err != nil {
