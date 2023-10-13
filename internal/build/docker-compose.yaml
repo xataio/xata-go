@@ -19,9 +19,12 @@ services:
   gofumpt:
     extends:
       service: base-lint
-    command: ["gofumpt", "-w", "-l","."]
+    command: ["gofumpt", "-w", "-l","internal/", "xata/*.go"] # TODO: Fix xata/*.go: no such file or directory
 
   lint:
     extends:
       service: base-lint
+    depends_on:
+      gofumpt:
+        condition: service_completed_successfully
     command: ["golangci-lint", "run"]

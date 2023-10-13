@@ -151,4 +151,16 @@ func main() {
 	}
 
 	fmt.Println("table status", delTableResponse.Status.String())
+
+	usersCli, err := xata.NewUsersClient(xata.WithHTTPClient(retryablehttp.NewClient().StandardClient()))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	user, err := usersCli.Get(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(user)
 }
