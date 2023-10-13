@@ -189,7 +189,7 @@ func Test_workspacesClient_Create(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			testSrv := testService(t, http.MethodPost, "", tt.statusCode, tt.apiErr != nil, tt.want)
+			testSrv := testService(t, http.MethodPost, "/workspaces", tt.statusCode, tt.apiErr != nil, tt.want)
 
 			wsCli, err := xata.NewWorkspacesClient(xata.WithBaseURL(testSrv.URL), xata.WithAPIKey("test-key"))
 			if err != nil {
@@ -257,6 +257,144 @@ func Test_workspacesClient_Delete(t *testing.T) {
 				assert.ErrorAs(err, &errAPI)
 				assert.Equal(err.Error(), tt.apiErr.Error())
 			} else {
+				assert.NoError(err)
+			}
+		})
+	}
+}
+
+func Test_workspacesClient_Get(t *testing.T) {
+	assert := assert.New(t)
+
+	type tc struct {
+		name       string
+		want       *xatagen.Workspace
+		statusCode int
+		apiErr     *xatagencore.APIError
+	}
+
+	tests := []tc{
+		{
+			name: "should get workspace",
+			want: &xatagen.Workspace{
+				Name:        "ws-name",
+				Slug:        xata.String("slug"),
+				Id:          "some-id",
+				MemberCount: 2,
+				Plan:        xatagen.WorkspacePlanFree,
+			},
+			statusCode: http.StatusOK,
+		},
+	}
+
+	for _, eTC := range errTestCasesCore {
+		tests = append(tests, tc{
+			name:       eTC.name,
+			statusCode: eTC.statusCode,
+			apiErr:     eTC.apiErr,
+		})
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testSrv := testService(t, http.MethodGet, "/workspaces", tt.statusCode, tt.apiErr != nil, tt.want)
+
+			wsCli, err := xata.NewWorkspacesClient(xata.WithBaseURL(testSrv.URL), xata.WithAPIKey("test-key"))
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			got, err := wsCli.GetWithWorkspaceID(context.TODO(), "some-id")
+
+			if tt.apiErr != nil {
+				errAPI := tt.apiErr.Unwrap()
+				if errAPI == nil {
+					t.Fatal("expected error but got nil")
+				}
+				assert.ErrorAs(err, &errAPI)
+				assert.Equal(err.Error(), tt.apiErr.Error())
+				assert.Nil(got)
+			} else {
+				assert.Equal(tt.want, got)
+				assert.NoError(err)
+			}
+
+			got, err = wsCli.Get(context.TODO())
+
+			if tt.apiErr != nil {
+				errAPI := tt.apiErr.Unwrap()
+				if errAPI == nil {
+					t.Fatal("expected error but got nil")
+				}
+				assert.ErrorAs(err, &errAPI)
+				assert.Equal(err.Error(), tt.apiErr.Error())
+				assert.Nil(got)
+			} else {
+				assert.Equal(tt.want, got)
+				assert.NoError(err)
+			}
+		})
+	}
+}
+
+func Test_workspacesClient_Update(t *testing.T) {
+	assert := assert.New(t)
+
+	type tc struct {
+		name       string
+		request    xata.UpdateWorkspaceRequest
+		want       *xatagen.Workspace
+		statusCode int
+		apiErr     *xatagencore.APIError
+	}
+
+	tests := []tc{
+		{
+			name: "should update ws",
+			request: xata.UpdateWorkspaceRequest{
+				Payload:     nil,
+				WorkspaceID: nil,
+			},
+			want: &xatagen.Workspace{
+				Name:        "my-workspace",
+				Slug:        xata.String("my_workspace"),
+				Id:          uuid.NewString(),
+				MemberCount: 0,
+				Plan:        xatagen.WorkspacePlanFree,
+			},
+			statusCode: http.StatusOK,
+		},
+	}
+
+	for _, eTC := range errTestCasesCore {
+		tests = append(tests, tc{
+			name:       eTC.name,
+			statusCode: eTC.statusCode,
+			apiErr:     eTC.apiErr,
+		})
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testSrv := testService(t, http.MethodPut, "/workspaces", tt.statusCode, tt.apiErr != nil, tt.want)
+
+			wsCli, err := xata.NewWorkspacesClient(xata.WithBaseURL(testSrv.URL), xata.WithAPIKey("test-key"))
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			got, err := wsCli.Update(context.TODO(), tt.request)
+
+			if tt.apiErr != nil {
+				errAPI := tt.apiErr.Unwrap()
+				if errAPI == nil {
+					t.Fatal("expected error but got nil")
+				}
+				assert.ErrorAs(err, &errAPI)
+				assert.Equal(err.Error(), tt.apiErr.Error())
+				assert.Nil(got)
+			} else {
+				assert.Equal(tt.want, got)
 				assert.NoError(err)
 			}
 		})

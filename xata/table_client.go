@@ -13,6 +13,8 @@ type TableClient interface {
 	Delete(ctx context.Context, request TableRequest) (*xatagenworkspace.DeleteTableResponse, error)
 	AddColumn(ctx context.Context, request AddColumnRequest) (*xatagenworkspace.AddTableColumnResponse, error)
 	DeleteColumn(ctx context.Context, request DeleteColumnRequest) (*xatagenworkspace.DeleteColumnResponse, error)
+	GetSchema(ctx context.Context, request TableRequest) (*xatagenworkspace.GetTableSchemaResponse, error)
+	GetColumns(ctx context.Context, request TableRequest) (*xatagenworkspace.GetTableColumnsResponse, error)
 }
 
 type tableClient struct {
@@ -116,6 +118,14 @@ type DeleteColumnRequest struct {
 
 func (t tableClient) DeleteColumn(ctx context.Context, request DeleteColumnRequest) (*xatagenworkspace.DeleteColumnResponse, error) {
 	return t.generated.DeleteColumn(ctx, t.dbBranchName(request.TableRequest), request.TableName, request.ColumnName)
+}
+
+func (t tableClient) GetSchema(ctx context.Context, request TableRequest) (*xatagenworkspace.GetTableSchemaResponse, error) {
+	return t.generated.GetTableSchema(ctx, t.dbBranchName(request), request.TableName)
+}
+
+func (t tableClient) GetColumns(ctx context.Context, request TableRequest) (*xatagenworkspace.GetTableColumnsResponse, error) {
+	return t.generated.GetTableColumns(ctx, t.dbBranchName(request), request.TableName)
 }
 
 func NewTableClient(opts ...ClientOption) (TableClient, error) {
