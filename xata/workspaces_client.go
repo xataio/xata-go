@@ -21,7 +21,7 @@ type WorkspacesClient interface {
 	Delete(ctx context.Context, workspaceID string) error
 	Get(ctx context.Context) (*xatagencore.Workspace, error)
 	GetWithWorkspaceID(ctx context.Context, workspaceID string) (*xatagencore.Workspace, error)
-	UpdateWorkspace(ctx context.Context, request UpdateWorkspaceRequest) (*xatagencore.Workspace, error)
+	Update(ctx context.Context, request UpdateWorkspaceRequest) (*xatagencore.Workspace, error)
 }
 
 type workspaceCli struct {
@@ -49,7 +49,7 @@ func (w workspaceCli) GetWithWorkspaceID(ctx context.Context, workspaceID string
 	return w.generated.GetWorkspace(ctx, workspaceID)
 }
 
-func (w workspaceCli) UpdateWorkspace(ctx context.Context, request UpdateWorkspaceRequest) (*xatagencore.Workspace, error) {
+func (w workspaceCli) Update(ctx context.Context, request UpdateWorkspaceRequest) (*xatagencore.Workspace, error) {
 	workspaceID := w.workspaceID
 	if request.WorkspaceID != nil && *request.WorkspaceID != "" {
 		workspaceID = *request.WorkspaceID

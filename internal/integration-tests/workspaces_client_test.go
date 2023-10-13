@@ -43,7 +43,7 @@ func Test_workspacesClient(t *testing.T) {
 		assert.Contains(t, wsIDs, workspace.Id)
 
 		updatedWSName := "updated-name"
-		updated, err := workspaceCli.UpdateWorkspace(ctx, xata.UpdateWorkspaceRequest{
+		updated, err := workspaceCli.Update(ctx, xata.UpdateWorkspaceRequest{
 			Payload:     &xata.WorkspaceMeta{Name: updatedWSName},
 			WorkspaceID: xata.String(workspace.Id),
 		})

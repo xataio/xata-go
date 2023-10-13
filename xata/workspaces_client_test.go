@@ -383,7 +383,7 @@ func Test_workspacesClient_Update(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			got, err := wsCli.UpdateWorkspace(context.TODO(), tt.request)
+			got, err := wsCli.Update(context.TODO(), tt.request)
 
 			if tt.apiErr != nil {
 				errAPI := tt.apiErr.Unwrap()
