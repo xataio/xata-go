@@ -3,22 +3,26 @@ package xata
 import (
 	"context"
 	"fmt"
+
 	xatagenworkspace "github.com/xataio/xata-go/xata/internal/fern-workspace/generated/go"
 	xatagenclient "github.com/xataio/xata-go/xata/internal/fern-workspace/generated/go/core"
 )
 
 type BranchRequest struct {
 	DatabaseName *string
-	BranchName   *string
+	BranchName   string
 }
 
-type CreateBranchRequestPayload xatagenworkspace.CreateBranchRequest
+type CreateBranchRequestPayload struct {
+	CreateBranchRequestFrom *string
+	Metadata                *BranchMetadata
+}
 
 type CreateBranchRequest struct {
-	BranchName     string
-	DatabaseName   *string
-	From           *string
-	BranchMetadata BranchMetadata
+	BranchName   string
+	DatabaseName *string
+	From         *string
+	Payload      *CreateBranchRequestPayload
 }
 
 type BranchClient interface {
@@ -34,19 +38,19 @@ type branchCli struct {
 	branchName string
 }
 
-func (b branchCli) dbBranchName(request CreateBranchRequest) (string, error) {
-	if request.DatabaseName == nil {
+func (b branchCli) dbBranchName(dbName *string, branchName string) (string, error) {
+	if dbName == nil {
 		if b.dbName == "" {
 			return "", fmt.Errorf("database name cannot be empty")
 		}
-		request.DatabaseName = String(b.dbName)
+		dbName = String(b.dbName)
 	}
 
-	if request.BranchName == "" {
+	if branchName == "" {
 		return "", fmt.Errorf("branch name cannot be empty")
 	}
 
-	return fmt.Sprintf("%s:%s", *request.DatabaseName, request.BranchName), nil
+	return fmt.Sprintf("%s:%s", *dbName, branchName), nil
 }
 
 func (b branchCli) List(ctx context.Context, dbName string) (*xatagenworkspace.ListBranchesResponse, error) {
@@ -54,27 +58,45 @@ func (b branchCli) List(ctx context.Context, dbName string) (*xatagenworkspace.L
 }
 
 func (b branchCli) GetDetails(ctx context.Context, request BranchRequest) (*xatagenworkspace.DbBranch, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (b branchCli) Create(ctx context.Context, request CreateBranchRequest) (*xatagenworkspace.CreateBranchResponse, error) {
-	dbBranchName, err := b.dbBranchName(request)
+	dbBranchName, err := b.dbBranchName(request.DatabaseName, request.BranchName)
 	if err != nil {
 		return nil, err
 	}
 
+	return b.generated.GetBranchDetails(ctx, dbBranchName)
+}
+
+func (b branchCli) Create(ctx context.Context, request CreateBranchRequest) (*xatagenworkspace.CreateBranchResponse, error) {
+	dbBranchName, err := b.dbBranchName(request.DatabaseName, request.BranchName)
+	if err != nil {
+		return nil, err
+	}
+
+	var payloadFrom *string
+	if request.Payload != nil && request.Payload.CreateBranchRequestFrom != nil {
+		payloadFrom = request.Payload.CreateBranchRequestFrom
+	}
+
+	var payloadMetadata *xatagenworkspace.BranchMetadata
+	if request.Payload != nil && request.Payload.Metadata != nil {
+		payloadMetadata = (*xatagenworkspace.BranchMetadata)(request.Payload.Metadata)
+	}
+
 	req := &xatagenworkspace.CreateBranchRequest{
 		From:                    request.From,
-		CreateBranchRequestFrom: request.From,
-		Metadata:                (*xatagenworkspace.BranchMetadata)(&request.BranchMetadata),
+		CreateBranchRequestFrom: payloadFrom,
+		Metadata:                payloadMetadata,
 	}
 	return b.generated.CreateBranch(ctx, dbBranchName, req)
 }
 
 func (b branchCli) Delete(ctx context.Context, request BranchRequest) (*xatagenworkspace.DeleteBranchResponse, error) {
-	//TODO implement me
-	panic("implement me")
+	dbBranchName, err := b.dbBranchName(request.DatabaseName, request.BranchName)
+	if err != nil {
+		return nil, err
+	}
+
+	return b.generated.DeleteBranch(ctx, dbBranchName)
 }
 
 func NewBranchClient(opts ...ClientOption) (BranchClient, error) {
