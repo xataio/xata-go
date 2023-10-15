@@ -13,9 +13,11 @@ import (
 func main() {
 	ctx := context.Background()
 
+	httpCli := xata.WithHTTPClient(retryablehttp.NewClient().StandardClient())
+
 	workspacesClient, err := xata.NewWorkspacesClient(
 		// xata.WithAPIKey("wrong token"),
-		xata.WithHTTPClient(retryablehttp.NewClient().StandardClient()),
+		httpCli,
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -62,7 +64,7 @@ func main() {
 	}
 
 	recordsCli, err := xata.NewRecordsClient(
-		xata.WithHTTPClient(retryablehttp.NewClient().StandardClient()),
+		httpCli,
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -98,7 +100,7 @@ func main() {
 	}
 
 	tableCli, err := xata.NewTableClient(
-		xata.WithHTTPClient(retryablehttp.NewClient().StandardClient()),
+		httpCli,
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -152,7 +154,7 @@ func main() {
 
 	fmt.Println("table status", delTableResponse.Status.String())
 
-	usersCli, err := xata.NewUsersClient(xata.WithHTTPClient(retryablehttp.NewClient().StandardClient()))
+	usersCli, err := xata.NewUsersClient(httpCli)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -163,4 +165,102 @@ func main() {
 	}
 
 	fmt.Println(user)
+
+	dbCli, err := xata.NewDatabasesClient(httpCli)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	databases, err := dbCli.List(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(databases.Databases[0].Name)
+
+	branchCli, err := xata.NewBranchClient(httpCli)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	branches, err := branchCli.List(ctx, databases.Databases[0].Name)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("%#v\n", branches.Branches[0].Name)
+
+	newBranchName := "new-branch-from-smoke-test-3"
+
+	createBranchRes, err := branchCli.Create(ctx, xata.CreateBranchRequest{
+		BranchName: newBranchName,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(createBranchRes.BranchName)
+	fmt.Println(createBranchRes.DatabaseName)
+	fmt.Println(createBranchRes.Status)
+
+	newBranchName2 := "new-branch-from-smoke-test-4"
+	_, err = branchCli.Create(ctx, xata.CreateBranchRequest{
+		BranchName: newBranchName2,
+		From:       xata.String(newBranchName),
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	newBranchName3 := "new-branch-from-smoke-test-5"
+	_, err = branchCli.Create(ctx, xata.CreateBranchRequest{
+		BranchName: newBranchName3,
+		Payload: &xata.CreateBranchRequestPayload{
+			CreateBranchRequestFrom: xata.String(newBranchName2),
+		},
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	delBranchRes, err := branchCli.Delete(ctx, xata.BranchRequest{
+		BranchName: newBranchName,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(delBranchRes.Status)
+
+	delBranchRes, err = branchCli.Delete(ctx, xata.BranchRequest{
+		BranchName: newBranchName2,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(delBranchRes.Status)
+
+	branchDetails, err := branchCli.GetDetails(ctx, xata.BranchRequest{
+		BranchName: newBranchName3,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(branchDetails.BranchName)
+	fmt.Println(branchDetails.Metadata)
+	fmt.Println(branchDetails.DatabaseName)
+	fmt.Println(branchDetails.Id)
+	fmt.Println(branchDetails.StartedFrom)
+	fmt.Println(branchDetails.Schema)
+
+	delBranchRes, err = branchCli.Delete(ctx, xata.BranchRequest{
+		BranchName: newBranchName3,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(delBranchRes.Status)
 }

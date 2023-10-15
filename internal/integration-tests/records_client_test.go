@@ -34,19 +34,24 @@ func Test_recordsClient_Insert_Get(t *testing.T) {
 		t.Skipf("%s not found in env vars", "XATA_API_KEY")
 	}
 
-	cfg, err := setup()
+	cfg, err := setupDatabase()
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("unable to setup database: %v", err)
+	}
+
+	ctx := context.TODO()
+	err = setupTableWithColumns(ctx, cfg)
+	if err != nil {
+		t.Fatalf("unable to setup table: %v", err)
 	}
 
 	t.Cleanup(func() {
 		err = cleanup(cfg)
 		if err != nil {
-			t.Fatal(err)
+			t.Fatalf("unable to cleanup test setup: %v", err)
 		}
 	})
 
-	ctx := context.TODO()
 	recordsCli, err := xata.NewRecordsClient(
 		xata.WithAPIKey(apiKey),
 		xata.WithBaseURL(fmt.Sprintf(

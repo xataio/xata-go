@@ -3,6 +3,7 @@ package integrationtests
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -12,13 +13,17 @@ import (
 )
 
 type config struct {
-	wsID         string
-	tableName    string
-	databaseName string
-	region       string
+	apiKey              string
+	wsID                string
+	tableName           string
+	databaseName        string
+	region              string
+	testID              string
+	httpCli             *http.Client
+	workspaceCliBaseURL string
 }
 
-func setup() (*config, error) {
+func setupDatabase() (*config, error) {
 	ctx := context.Background()
 	apiKey, found := os.LookupEnv("XATA_API_KEY")
 	if !found {
@@ -27,11 +32,15 @@ func setup() (*config, error) {
 
 	testID := testIdentifier()
 
-	cfg := &config{}
+	cfg := &config{
+		apiKey:  apiKey,
+		testID:  testID,
+		httpCli: retryablehttp.NewClient().StandardClient(),
+	}
 
 	workspaceCli, err := xata.NewWorkspacesClient(
-		xata.WithAPIKey(apiKey),
-		xata.WithHTTPClient(retryablehttp.NewClient().StandardClient()),
+		xata.WithAPIKey(cfg.apiKey),
+		xata.WithHTTPClient(cfg.httpCli),
 	)
 	if err != nil {
 		return nil, err
@@ -45,8 +54,8 @@ func setup() (*config, error) {
 	cfg.wsID = ws.Id
 
 	databaseCli, err := xata.NewDatabasesClient(
-		xata.WithAPIKey(apiKey),
-		xata.WithHTTPClient(retryablehttp.NewClient().StandardClient()),
+		xata.WithAPIKey(cfg.apiKey),
+		xata.WithHTTPClient(cfg.httpCli),
 	)
 	if err != nil {
 		return nil, err
@@ -58,6 +67,13 @@ func setup() (*config, error) {
 	}
 
 	cfg.region = listRegionsResponse.Regions[0].Id
+
+	cfg.workspaceCliBaseURL = fmt.Sprintf(
+		"https://%s.%s.xata.sh",
+		cfg.wsID,
+		cfg.region,
+	)
+
 	db, err := databaseCli.Create(ctx, xata.CreateDatabaseRequest{
 		DatabaseName: "db" + testID,
 		WorkspaceID:  xata.String(ws.Id),
@@ -76,25 +92,25 @@ func setup() (*config, error) {
 
 	cfg.databaseName = db.DatabaseName
 
+	return cfg, nil
+}
+
+func setupTableWithColumns(ctx context.Context, cfg *config) error {
 	tableCli, err := xata.NewTableClient(
-		xata.WithAPIKey(apiKey),
-		xata.WithBaseURL(fmt.Sprintf(
-			"https://%s.%s.xata.sh",
-			ws.Id,
-			cfg.region,
-		)),
-		xata.WithHTTPClient(retryablehttp.NewClient().StandardClient()),
+		xata.WithAPIKey(cfg.apiKey),
+		xata.WithBaseURL(cfg.workspaceCliBaseURL),
+		xata.WithHTTPClient(cfg.httpCli),
 	)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	createTableResponse, err := tableCli.Create(ctx, xata.TableRequest{
-		DatabaseName: xata.String(db.DatabaseName),
-		TableName:    "table-integration-test_" + testID,
+		DatabaseName: xata.String(cfg.databaseName),
+		TableName:    "table-integration-test_" + cfg.testID,
 	})
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	cfg.tableName = createTableResponse.TableName
@@ -113,7 +129,7 @@ func setup() (*config, error) {
 		},
 	})
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	_, err = tableCli.AddColumn(ctx, xata.AddColumnRequest{
@@ -130,7 +146,7 @@ func setup() (*config, error) {
 		},
 	})
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	_, err = tableCli.AddColumn(ctx, xata.AddColumnRequest{
@@ -147,7 +163,7 @@ func setup() (*config, error) {
 		},
 	})
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	_, err = tableCli.AddColumn(ctx, xata.AddColumnRequest{
@@ -163,7 +179,7 @@ func setup() (*config, error) {
 		},
 	})
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	_, err = tableCli.AddColumn(ctx, xata.AddColumnRequest{
@@ -179,7 +195,7 @@ func setup() (*config, error) {
 		},
 	})
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	_, err = tableCli.AddColumn(ctx, xata.AddColumnRequest{
@@ -195,7 +211,7 @@ func setup() (*config, error) {
 		},
 	})
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	_, err = tableCli.AddColumn(ctx, xata.AddColumnRequest{
@@ -211,7 +227,7 @@ func setup() (*config, error) {
 		},
 	})
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	_, err = tableCli.AddColumn(ctx, xata.AddColumnRequest{
@@ -230,7 +246,7 @@ func setup() (*config, error) {
 		},
 	})
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	_, err = tableCli.AddColumn(ctx, xata.AddColumnRequest{
@@ -246,7 +262,7 @@ func setup() (*config, error) {
 		},
 	})
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	_, err = tableCli.AddColumn(ctx, xata.AddColumnRequest{
@@ -265,7 +281,7 @@ func setup() (*config, error) {
 		},
 	})
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	_, err = tableCli.AddColumn(ctx, xata.AddColumnRequest{
@@ -281,61 +297,64 @@ func setup() (*config, error) {
 		},
 	})
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return cfg, nil
+	return nil
 }
 
 func cleanup(cfg *config) error {
 	ctx := context.Background()
-	apiKey, found := os.LookupEnv("XATA_API_KEY")
-	if !found {
-		return fmt.Errorf("%s not found in env vars", "XATA_API_KEY")
+
+	if cfg.tableName != "" {
+		tableCli, err := xata.NewTableClient(
+			xata.WithAPIKey(cfg.apiKey),
+			xata.WithBaseURL(cfg.workspaceCliBaseURL),
+			xata.WithHTTPClient(cfg.httpCli),
+		)
+		if err != nil {
+			return err
+		}
+
+		_, err = tableCli.Delete(ctx, xata.TableRequest{
+			DatabaseName: xata.String(cfg.databaseName),
+			TableName:    cfg.tableName,
+		})
+		if err != nil {
+			return err
+		}
 	}
 
-	tableCli, err := xata.NewTableClient(
-		xata.WithAPIKey(apiKey),
-		xata.WithBaseURL(fmt.Sprintf(
-			"https://%s.%s.xata.sh",
-			cfg.wsID,
-			cfg.region,
-		)),
-		xata.WithHTTPClient(retryablehttp.NewClient().StandardClient()),
-	)
-	if err != nil {
-		return err
-	}
+	if cfg.databaseName != "" {
+		databaseCli, err := xata.NewDatabasesClient(
+			xata.WithAPIKey(cfg.apiKey),
+			xata.WithHTTPClient(cfg.httpCli),
+		)
+		if err != nil {
+			return err
+		}
 
-	_, err = tableCli.Delete(ctx, xata.TableRequest{
-		DatabaseName: xata.String(cfg.databaseName),
-		TableName:    cfg.tableName,
-	})
-	if err != nil {
-		return err
+		_, err = databaseCli.Delete(ctx, xata.DeleteDatabaseRequest{
+			WorkspaceID:  xata.String(cfg.wsID),
+			DatabaseName: cfg.databaseName,
+		})
+		if err != nil {
+			return err
+		}
 	}
+	if cfg.wsID != "" {
+		workspaceCli, err := xata.NewWorkspacesClient(
+			xata.WithAPIKey(cfg.apiKey),
+			xata.WithHTTPClient(cfg.httpCli),
+		)
+		if err != nil {
+			return err
+		}
 
-	databaseCli, err := xata.NewDatabasesClient(xata.WithAPIKey(apiKey), xata.WithHTTPClient(retryablehttp.NewClient().StandardClient()))
-	if err != nil {
-		return err
-	}
-
-	_, err = databaseCli.Delete(ctx, xata.DeleteDatabaseRequest{
-		WorkspaceID:  xata.String(cfg.wsID),
-		DatabaseName: cfg.databaseName,
-	})
-	if err != nil {
-		return err
-	}
-
-	workspaceCli, err := xata.NewWorkspacesClient(xata.WithAPIKey(apiKey), xata.WithHTTPClient(retryablehttp.NewClient().StandardClient()))
-	if err != nil {
-		return err
-	}
-
-	err = workspaceCli.Delete(ctx, cfg.wsID)
-	if err != nil {
-		return err
+		err = workspaceCli.Delete(ctx, cfg.wsID)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -346,7 +365,7 @@ func testIdentifier() string {
 
 	// Print the time
 	return fmt.Sprintf(
-		"-integration-test-%d-%d-%d_%d_%d_%d",
+		"integration-test_%d-%d-%d_%d_%d_%d",
 		currentTime.Year(),
 		currentTime.Month(),
 		currentTime.Day(),

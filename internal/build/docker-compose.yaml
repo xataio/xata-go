@@ -24,7 +24,4 @@ services:
   lint:
     extends:
       service: base-lint
-    depends_on:
-      gofumpt:
-        condition: service_completed_successfully
     command: ["golangci-lint", "run"]
