@@ -3,7 +3,6 @@ package integrationtests
 import (
 	"context"
 	"fmt"
-	"os"
 	"testing"
 	"time"
 
@@ -29,11 +28,6 @@ const (
 )
 
 func Test_recordsClient_Insert_Get(t *testing.T) {
-	apiKey, found := os.LookupEnv("XATA_API_KEY")
-	if !found {
-		t.Skipf("%s not found in env vars", "XATA_API_KEY")
-	}
-
 	cfg, err := setupDatabase()
 	if err != nil {
 		t.Fatalf("unable to setup database: %v", err)
@@ -53,7 +47,7 @@ func Test_recordsClient_Insert_Get(t *testing.T) {
 	})
 
 	recordsCli, err := xata.NewRecordsClient(
-		xata.WithAPIKey(apiKey),
+		xata.WithAPIKey(cfg.apiKey),
 		xata.WithBaseURL(fmt.Sprintf(
 			"https://%s.%s.xata.sh",
 			cfg.wsID,
