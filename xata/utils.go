@@ -72,6 +72,10 @@ func Bool(in bool) *bool {
 	return &in
 }
 
+func Int(in int) *int {
+	return &in
+}
+
 type databaseConfig struct {
 	workspaceID     string
 	region          string
