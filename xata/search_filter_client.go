@@ -36,8 +36,9 @@ type QueryTableRequestPayload struct {
 }
 
 type QueryTableRequest struct {
-	TableRequest
-	Payload QueryTableRequestPayload
+	BranchRequestOptional
+	TableName string
+	Payload   QueryTableRequestPayload
 }
 
 type PrefixExpression uint8
@@ -62,15 +63,39 @@ type SearchBranchRequestPayload struct {
 	Page      *SearchPageConfig
 }
 
+type BoosterExpression xatagenworkspace.BoosterExpression
+
+type BranchRequestOptional struct {
+	DatabaseName *string
+	BranchName   *string
+}
+
 type SearchBranchRequest struct {
-	TableRequest
+	BranchRequestOptional
 	Payload SearchBranchRequestPayload
+}
+
+type SearchTableRequestPayload struct {
+	Query     string
+	Fuzziness *int
+	Target    TargetExpression
+	Prefix    *PrefixExpression
+	Filter    *FilterExpression
+	Highlight *HighlightExpression
+	Boosters  []*BoosterExpression
+	Page      *SearchPageConfig
+}
+
+type SearchTableRequest struct {
+	BranchRequestOptional
+	TableName string
+	Payload   SearchTableRequestPayload
 }
 
 type SearchAndFilterClient interface {
 	Query(ctx context.Context, request QueryTableRequest) (*xatagenworkspace.QueryTableResponse, error)
 	SearchBranch(ctx context.Context, request SearchBranchRequest) (*xatagenworkspace.SearchBranchResponse, error)
-	// SearchTable(ctx context.Context, dbBranchName DbBranchName, tableName TableName, request *SearchTableRequest) (*SearchTableResponse, error)
+	SearchTable(ctx context.Context, request SearchTableRequest) (*xatagenworkspace.SearchTableResponse, error)
 	// VectorSearchTable(ctx context.Context, dbBranchName DbBranchName, tableName TableName, request *VectorSearchTableRequest) (*VectorSearchTableResponse, error)
 	// AskTable(ctx context.Context, dbBranchName DbBranchName, tableName TableName, request *AskTableRequest) (*AskTableResponse, error)
 	// AskTableSession(ctx context.Context, dbBranchName DbBranchName, tableName TableName, sessionId string, request *AskTableSessionRequest) (*AskTableSessionResponse, error)
@@ -84,7 +109,7 @@ type searchAndFilterCli struct {
 	branchName string
 }
 
-func (s searchAndFilterCli) dbBranchName(request TableRequest) (string, error) {
+func (s searchAndFilterCli) dbBranchName(request BranchRequestOptional) (string, error) {
 	if request.DatabaseName == nil {
 		if s.dbName == "" {
 			return "", fmt.Errorf("database name cannot be empty")
@@ -140,7 +165,7 @@ func NewFilterListFromFilterExpressionList(value []*FilterExpression) *xatagenwo
 }
 
 func (s searchAndFilterCli) Query(ctx context.Context, request QueryTableRequest) (*xatagenworkspace.QueryTableResponse, error) {
-	dbBranchName, err := s.dbBranchName(request.TableRequest)
+	dbBranchName, err := s.dbBranchName(request.BranchRequestOptional)
 	if err != nil {
 		return nil, err
 	}
@@ -159,7 +184,7 @@ func NewSearchBranchRequestTablesItemFromString(value string) *SearchBranchReque
 }
 
 func (s searchAndFilterCli) SearchBranch(ctx context.Context, request SearchBranchRequest) (*xatagenworkspace.SearchBranchResponse, error) {
-	dbBranchName, err := s.dbBranchName(request.TableRequest)
+	dbBranchName, err := s.dbBranchName(request.BranchRequestOptional)
 	if err != nil {
 		return nil, err
 	}
@@ -177,6 +202,154 @@ func (s searchAndFilterCli) SearchBranch(ctx context.Context, request SearchBran
 		Fuzziness: request.Payload.Fuzziness,
 		Prefix:    (*xatagenworkspace.PrefixExpression)(request.Payload.Prefix),
 		Highlight: (*xatagenworkspace.HighlightExpression)(request.Payload.Highlight),
+		Page:      (*xatagenworkspace.SearchPageConfig)(request.Payload.Page),
+	})
+}
+
+type TargetExpressionItem xatagenworkspace.TargetExpressionItem
+
+type TargetExpression []*TargetExpressionItem
+
+func NewTargetExpression(columnName string) *TargetExpressionItem {
+	return (*TargetExpressionItem)(xatagenworkspace.NewTargetExpressionItemFromString(columnName))
+}
+
+type TargetExpressionItemColumn xatagenworkspace.TargetExpressionItemColumn
+
+func NewTargetExpressionWithColumnObject(colObj TargetExpressionItemColumn) *TargetExpressionItem {
+	colObjGen := &xatagenworkspace.TargetExpressionItemColumn{
+		Column: colObj.Column,
+		Weight: colObj.Weight,
+	}
+	return (*TargetExpressionItem)(xatagenworkspace.NewTargetExpressionItemFromTargetExpressionItemColumn(colObjGen))
+}
+
+type ValueBooster struct {
+	Column          string
+	Value           *xatagenworkspace.ValueBoosterValue
+	Factor          float64
+	IfMatchesFilter *FilterExpression
+}
+
+func NewValueBoosterValueFromString(value string) *xatagenworkspace.ValueBoosterValue {
+	return xatagenworkspace.NewValueBoosterValueFromString(value)
+}
+
+type BoosterExpressionValueBooster struct {
+	ValueBooster *ValueBooster
+}
+
+func NewBoosterExpressionFromBoosterExpressionValueBooster(value *BoosterExpressionValueBooster) *BoosterExpression {
+	genBoosterExpVal := &xatagenworkspace.BoosterExpressionValueBooster{ValueBooster: &xatagenworkspace.ValueBooster{
+		Column:          value.ValueBooster.Column,
+		Value:           value.ValueBooster.Value,
+		Factor:          value.ValueBooster.Factor,
+		IfMatchesFilter: (*xatagenworkspace.FilterExpression)(value.ValueBooster.IfMatchesFilter),
+	}}
+	return (*BoosterExpression)(xatagenworkspace.NewBoosterExpressionFromBoosterExpressionValueBooster(genBoosterExpVal))
+}
+
+type NumericBooster struct {
+	// The column in which to look for the value.
+	Column string
+	// The factor with which to multiply the value of the column before adding it to the item score.
+	Factor float64
+	// Modifier to be applied to the column value, before being multiplied with the factor. The possible values are:
+	//   - none (default).
+	//   - log: common logarithm (base 10)
+	//   - log1p: add 1 then take the common logarithm. This ensures that the value is positive if the
+	//     value is between 0 and 1.
+	//   - ln: natural logarithm (base e)
+	//   - ln1p: add 1 then take the natural logarithm. This ensures that the value is positive if the
+	//     value is between 0 and 1.
+	//   - square: raise the value to the power of two.
+	//   - sqrt: take the square root of the value.
+	//   - reciprocal: reciprocate the value (if the value is `x`, the reciprocal is `1/x`).
+	Modifier        *uint8
+	IfMatchesFilter *FilterExpression
+}
+
+type BoosterExpressionNumericBooster struct {
+	NumericBooster *NumericBooster
+}
+
+func NewBoosterExpressionFromBoosterExpressionNumericBooster(value *BoosterExpressionNumericBooster) *BoosterExpression {
+	genValue := &xatagenworkspace.BoosterExpressionNumericBooster{
+		NumericBooster: &xatagenworkspace.NumericBooster{
+			Column:          value.NumericBooster.Column,
+			Factor:          value.NumericBooster.Factor,
+			Modifier:        (*xatagenworkspace.NumericBoosterModifier)(value.NumericBooster.Modifier),
+			IfMatchesFilter: (*xatagenworkspace.FilterExpression)(value.NumericBooster.IfMatchesFilter),
+		},
+	}
+	return (*BoosterExpression)(xatagenworkspace.NewBoosterExpressionFromBoosterExpressionNumericBooster(genValue))
+}
+
+// DateBooster records based on the value of a datetime column. It is configured via "origin", "scale", and "decay". The further away from the "origin",
+// the more the score is decayed. The decay function uses an exponential function. For example if origin is "now", and scale is 10 days and decay is 0.5, it
+// should be interpreted as: a record with a date 10 days before/after origin will be boosted 2 times less than a record with the date at origin.
+// The result of the exponential function is a boost between 0 and 1. The "factor" allows you to control how impactful this boost is, by multiplying it with a given value.
+type DateBooster struct {
+	// The column in which to look for the value.
+	Column string
+	// The datetime (formatted as RFC3339) from where to apply the score decay function. The maximum boost will be applied for records with values at this time.
+	// If it is not specified, the current date and time is used.
+	Origin *string
+	// The duration at which distance from origin the score is decayed with factor, using an exponential function. It is formatted as number + units, for example: `5d`, `20m`, `10s`.
+	Scale string
+	// The decay factor to expect at "scale" distance from the "origin".
+	Decay float64
+	// The factor with which to multiply the added boost.
+	Factor          *float64
+	IfMatchesFilter *FilterExpression
+}
+
+type BoosterExpressionDateBooster struct {
+	DateBooster *DateBooster `json:"dateBooster,omitempty"`
+}
+
+func NewBoosterExpressionFromBoosterExpressionDateBooster(value *BoosterExpressionDateBooster) *BoosterExpression {
+	genVal := &xatagenworkspace.BoosterExpressionDateBooster{
+		DateBooster: &xatagenworkspace.DateBooster{
+			Column:          value.DateBooster.Column,
+			Origin:          value.DateBooster.Origin,
+			Scale:           value.DateBooster.Scale,
+			Decay:           value.DateBooster.Decay,
+			Factor:          value.DateBooster.Factor,
+			IfMatchesFilter: (*xatagenworkspace.FilterExpression)(value.DateBooster.IfMatchesFilter),
+		},
+	}
+	return (*BoosterExpression)(xatagenworkspace.NewBoosterExpressionFromBoosterExpressionDateBooster(genVal))
+}
+
+func (s searchAndFilterCli) SearchTable(ctx context.Context, request SearchTableRequest) (*xatagenworkspace.SearchTableResponse, error) {
+	dbBranchName, err := s.dbBranchName(request.BranchRequestOptional)
+	if err != nil {
+		return nil, err
+	}
+
+	var boostersGen []*xatagenworkspace.BoosterExpression
+	if len(request.Payload.Boosters) > 0 {
+		for _, b := range request.Payload.Boosters {
+			boostersGen = append(boostersGen, (*xatagenworkspace.BoosterExpression)(b))
+		}
+	}
+
+	var targetExpGen []*xatagenworkspace.TargetExpressionItem
+	if len(request.Payload.Target) > 0 {
+		for _, e := range request.Payload.Target {
+			targetExpGen = append(targetExpGen, (*xatagenworkspace.TargetExpressionItem)(e))
+		}
+	}
+
+	return s.generated.SearchTable(ctx, dbBranchName, request.TableName, &xatagenworkspace.SearchTableRequest{
+		Query:     request.Payload.Query,
+		Fuzziness: request.Payload.Fuzziness,
+		Target:    &targetExpGen,
+		Prefix:    (*xatagenworkspace.PrefixExpression)(request.Payload.Prefix),
+		Filter:    (*xatagenworkspace.FilterExpression)(request.Payload.Filter),
+		Highlight: (*xatagenworkspace.HighlightExpression)(request.Payload.Highlight),
+		Boosters:  &boostersGen,
 		Page:      (*xatagenworkspace.SearchPageConfig)(request.Payload.Page),
 	})
 }

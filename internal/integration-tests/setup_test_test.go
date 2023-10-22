@@ -29,9 +29,9 @@ func Test_setup_cleanup(t *testing.T) {
 	})
 }
 
-//func Test_cleanupIntegrationWorkspaces(t *testing.T) {
-//	err := cleanAllWorkspaces()
-//	if err != nil {
-//		t.Fatal(err)
-//	}
-//}
+func Test_cleanupIntegrationWorkspaces(t *testing.T) {
+	err := cleanAllWorkspaces()
+	if err != nil {
+		t.Fatal(err)
+	}
+}

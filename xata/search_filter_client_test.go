@@ -28,7 +28,6 @@ func Test_searchAndFilterCli_Query(t *testing.T) {
 
 	type tc struct {
 		name       string
-		request    xata.QueryTableRequest
 		want       *xatagenworkspace.QueryTableResponse
 		statusCode int
 		apiErr     *xatagencore.APIError
@@ -75,10 +74,10 @@ func Test_searchAndFilterCli_Query(t *testing.T) {
 			assert.NotNil(cli)
 
 			got, err := cli.Query(context.TODO(), xata.QueryTableRequest{
-				TableRequest: xata.TableRequest{
+				BranchRequestOptional: xata.BranchRequestOptional{
 					DatabaseName: xata.String("some-db"),
-					TableName:    "table-name",
 				},
+				TableName: "some-table",
 				Payload: xata.QueryTableRequestPayload{
 					Columns:     []string{"column-name"},
 					Consistency: xata.QueryTableRequestConsistencyEventual,
@@ -112,7 +111,6 @@ func Test_searchAndFilterCli_SearchBranch(t *testing.T) {
 
 	type tc struct {
 		name       string
-		request    xata.SearchBranchRequest
 		want       *xatagenworkspace.SearchBranchResponse
 		statusCode int
 		apiErr     *xatagencore.APIError
@@ -154,7 +152,7 @@ func Test_searchAndFilterCli_SearchBranch(t *testing.T) {
 			assert.NotNil(cli)
 
 			got, err := cli.SearchBranch(context.TODO(), xata.SearchBranchRequest{
-				TableRequest: xata.TableRequest{
+				BranchRequestOptional: xata.BranchRequestOptional{
 					DatabaseName: xata.String("db-name"),
 				},
 				Payload: xata.SearchBranchRequestPayload{

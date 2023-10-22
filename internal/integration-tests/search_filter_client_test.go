@@ -63,10 +63,10 @@ func Test_searchAndFilterClient(t *testing.T) {
 
 	t.Run("filter and sort via string list", func(t *testing.T) {
 		queryTableResponse, err := searchFilterCli.Query(ctx, xata.QueryTableRequest{
-			TableRequest: xata.TableRequest{
+			BranchRequestOptional: xata.BranchRequestOptional{
 				DatabaseName: xata.String(cfg.databaseName),
-				TableName:    cfg.tableName,
 			},
+			TableName: cfg.tableName,
 			Payload: xata.QueryTableRequestPayload{
 				Columns:     []string{stringColumn},
 				Consistency: xata.QueryTableRequestConsistencyStrong,
@@ -84,10 +84,10 @@ func Test_searchAndFilterClient(t *testing.T) {
 
 	t.Run("filter and sort via string sort order map", func(t *testing.T) {
 		queryTableResponse, err := searchFilterCli.Query(ctx, xata.QueryTableRequest{
-			TableRequest: xata.TableRequest{
+			BranchRequestOptional: xata.BranchRequestOptional{
 				DatabaseName: xata.String(cfg.databaseName),
-				TableName:    cfg.tableName,
 			},
+			TableName: cfg.tableName,
 			Payload: xata.QueryTableRequestPayload{
 				Columns:     []string{stringColumn},
 				Consistency: xata.QueryTableRequestConsistencyStrong,
@@ -114,10 +114,10 @@ func Test_searchAndFilterClient(t *testing.T) {
 
 	t.Run("sort via string sort order map list", func(t *testing.T) {
 		queryTableResponse, err := searchFilterCli.Query(ctx, xata.QueryTableRequest{
-			TableRequest: xata.TableRequest{
+			BranchRequestOptional: xata.BranchRequestOptional{
 				DatabaseName: xata.String(cfg.databaseName),
-				TableName:    cfg.tableName,
 			},
+			TableName: cfg.tableName,
 			Payload: xata.QueryTableRequestPayload{
 				Columns:     []string{stringColumn},
 				Consistency: xata.QueryTableRequestConsistencyEventual,
@@ -140,7 +140,7 @@ func Test_searchAndFilterClient(t *testing.T) {
 		assert.Eventually(t, func() bool {
 			pref := xata.PrefixExpressionDisabled
 			searchBranchResponse, err := searchFilterCli.SearchBranch(ctx, xata.SearchBranchRequest{
-				TableRequest: xata.TableRequest{
+				BranchRequestOptional: xata.BranchRequestOptional{
 					DatabaseName: xata.String(cfg.databaseName),
 				},
 				Payload: xata.SearchBranchRequestPayload{
@@ -162,6 +162,151 @@ func Test_searchAndFilterClient(t *testing.T) {
 			})
 			assert.NoError(t, err)
 			return searchBranchResponse.TotalCount == 1
+		}, time.Second*10, time.Second)
+	})
+
+	t.Run("free text search in branch with default values", func(t *testing.T) {
+		// Query can return 0 records if this case runs too fast, hence the Eventually usage
+		assert.Eventually(t, func() bool {
+			searchBranchResponse, err := searchFilterCli.SearchBranch(ctx, xata.SearchBranchRequest{
+				BranchRequestOptional: xata.BranchRequestOptional{
+					DatabaseName: xata.String(cfg.databaseName),
+				},
+				Payload: xata.SearchBranchRequestPayload{
+					Query: "test",
+				},
+			})
+			assert.NoError(t, err)
+			return searchBranchResponse.TotalCount == 1
+		}, time.Second*10, time.Second)
+	})
+
+	t.Run("free text search in table with default values", func(t *testing.T) {
+		assert.Eventually(t, func() bool {
+			searchTableResponse, err := searchFilterCli.SearchTable(ctx, xata.SearchTableRequest{
+				BranchRequestOptional: xata.BranchRequestOptional{
+					DatabaseName: xata.String(cfg.databaseName),
+				},
+				TableName: cfg.tableName,
+				Payload: xata.SearchTableRequestPayload{
+					Query: "test",
+				},
+			})
+			assert.NoError(t, err)
+			return searchTableResponse.TotalCount == 1
+		}, time.Second*10, time.Second)
+	})
+
+	// TODO: This test takes too long - returns 503 sometimes, investigate
+	//t.Run("free text search in table with all params - returns no match", func(t *testing.T) {
+	//	prefix := xata.PrefixExpressionDisabled
+	//	_, err = searchFilterCli.SearchTable(ctx, xata.SearchTableRequest{
+	//		BranchRequestOptional: xata.BranchRequestOptional{
+	//			DatabaseName: xata.String(cfg.databaseName),
+	//		},
+	//		TableName: cfg.tableName,
+	//		Payload: xata.SearchTableRequestPayload{
+	//			Query:     "test",
+	//			Fuzziness: xata.Int(0),
+	//			Target: []*xata.TargetExpressionItem{
+	//				xata.NewTargetExpression(stringColumn),
+	//				xata.NewTargetExpressionWithColumnObject(xata.TargetExpressionItemColumn{
+	//					Column: stringColumn,
+	//					Weight: xata.Float64(2),
+	//				}),
+	//			},
+	//			Prefix: &prefix,
+	//			Filter: &xata.FilterExpression{
+	//				All: xata.NewFilterListFromFilterExpression(&xata.FilterExpression{
+	//					Exists: xata.String(stringColumn),
+	//				}),
+	//				Any: xata.NewFilterListFromFilterExpressionList([]*xata.FilterExpression{
+	//					{
+	//						Exists: xata.String(boolColumn),
+	//					},
+	//				}),
+	//			},
+	//			Highlight: &xata.HighlightExpression{
+	//				Enabled:    xata.Bool(true),
+	//				EncodeHtml: xata.Bool(true),
+	//			},
+	//			Boosters: []*xata.BoosterExpression{
+	//				xata.NewBoosterExpressionFromBoosterExpressionValueBooster(&xata.BoosterExpressionValueBooster{
+	//					ValueBooster: &xata.ValueBooster{
+	//						Column: stringColumn,
+	//						Value:  xata.NewValueBoosterValueFromString("test"),
+	//						Factor: 1,
+	//						IfMatchesFilter: &xata.FilterExpression{
+	//							All: xata.NewFilterListFromFilterExpression(&xata.FilterExpression{
+	//								Exists: xata.String(stringColumn),
+	//							}),
+	//							Any: xata.NewFilterListFromFilterExpressionList([]*xata.FilterExpression{
+	//								{
+	//									Exists: xata.String(boolColumn),
+	//								},
+	//							}),
+	//						},
+	//					},
+	//				}),
+	//				xata.NewBoosterExpressionFromBoosterExpressionNumericBooster(&xata.BoosterExpressionNumericBooster{
+	//					NumericBooster: &xata.NumericBooster{
+	//						Column:   stringColumn,
+	//						Factor:   2,
+	//						Modifier: xata.Uint8(2),
+	//						IfMatchesFilter: &xata.FilterExpression{
+	//							All: xata.NewFilterListFromFilterExpression(&xata.FilterExpression{
+	//								Exists: xata.String(stringColumn),
+	//							}),
+	//							Any: xata.NewFilterListFromFilterExpressionList([]*xata.FilterExpression{
+	//								{
+	//									Exists: xata.String(boolColumn),
+	//								},
+	//							}),
+	//						},
+	//					},
+	//				}),
+	//				xata.NewBoosterExpressionFromBoosterExpressionDateBooster(&xata.BoosterExpressionDateBooster{
+	//					DateBooster: &xata.DateBooster{
+	//						Column: stringColumn,
+	//						Origin: xata.String("2023-01-02T15:04:05Z"),
+	//						Scale:  "1d",
+	//						Decay:  1,
+	//						Factor: xata.Float64(2),
+	//						IfMatchesFilter: &xata.FilterExpression{
+	//							All: xata.NewFilterListFromFilterExpression(&xata.FilterExpression{
+	//								Exists: xata.String(stringColumn),
+	//							}),
+	//							Any: xata.NewFilterListFromFilterExpressionList([]*xata.FilterExpression{
+	//								{
+	//									Exists: xata.String(boolColumn),
+	//								},
+	//							}),
+	//						},
+	//					},
+	//				}),
+	//			},
+	//			//Page: &xata.SearchPageConfig{
+	//			//	Size:   xata.Int(2),
+	//			//	Offset: xata.Int(0),
+	//			//},
+	//		},
+	//	})
+	//	assert.NoError(t, err)
+	//})
+
+	t.Run("free text search in table with default values", func(t *testing.T) {
+		assert.Eventually(t, func() bool {
+			searchTableResponse, err := searchFilterCli.SearchTable(ctx, xata.SearchTableRequest{
+				BranchRequestOptional: xata.BranchRequestOptional{
+					DatabaseName: xata.String(cfg.databaseName),
+				},
+				TableName: cfg.tableName,
+				Payload: xata.SearchTableRequestPayload{
+					Query: "test",
+				},
+			})
+			assert.NoError(t, err)
+			return searchTableResponse.TotalCount == 1
 		}, time.Second*10, time.Second)
 	})
 }
