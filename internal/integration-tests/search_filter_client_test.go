@@ -331,4 +331,20 @@ func Test_searchAndFilterClient(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, 1, searchVectorResp.TotalCount)
 	})
+
+	t.Run("ask table", func(t *testing.T) {
+		searchVectorResp, err := searchFilterCli.Ask(ctx, xata.AskTableRequest{
+			BranchRequestOptional: xata.BranchRequestOptional{
+				DatabaseName: xata.String(cfg.databaseName),
+			},
+			TableName: cfg.tableName,
+			Payload: xata.AskTableRequestPayload{
+				Question: "does this table have any records",
+			},
+		})
+		assert.NoError(t, err)
+		fmt.Println(searchVectorResp.Answer)
+		fmt.Println(searchVectorResp.SessionId)
+
+	})
 }

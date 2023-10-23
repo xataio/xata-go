@@ -97,7 +97,7 @@ type SearchAndFilterClient interface {
 	SearchBranch(ctx context.Context, request SearchBranchRequest) (*xatagenworkspace.SearchBranchResponse, error)
 	SearchTable(ctx context.Context, request SearchTableRequest) (*xatagenworkspace.SearchTableResponse, error)
 	VectorSearch(ctx context.Context, request VectorSearchTableRequest) (*xatagenworkspace.VectorSearchTableResponse, error)
-	// AskTable(ctx context.Context, dbBranchName DbBranchName, tableName TableName, request *AskTableRequest) (*AskTableResponse, error)
+	Ask(ctx context.Context, request AskTableRequest) (*xatagenworkspace.AskTableResponse, error)
 	// AskTableSession(ctx context.Context, dbBranchName DbBranchName, tableName TableName, sessionId string, request *AskTableSessionRequest) (*AskTableSessionResponse, error)
 	// SummarizeTable(ctx context.Context, dbBranchName DbBranchName, tableName TableName, request *SummarizeTableRequest) (*SummarizeTableResponse, error)
 	// AggregateTable(ctx context.Context, dbBranchName DbBranchName, tableName TableName, request *AggregateTableRequest) (*AggregateTableResponse, error)
@@ -380,6 +380,97 @@ func (s searchAndFilterCli) VectorSearch(ctx context.Context, request VectorSear
 		SimilarityFunction: request.Payload.SimilarityFunction,
 		Size:               request.Payload.Size,
 		Filter:             (*xatagenworkspace.FilterExpression)(request.Payload.Filter),
+	})
+}
+
+type AskTableRequestSearch struct {
+	Fuzziness *int
+	Target    *TargetExpression
+	Prefix    *PrefixExpression
+	Filter    *FilterExpression
+	Boosters  *[]*BoosterExpression
+}
+
+type AskTableRequestSearchType uint8
+
+const (
+	AskTableRequestSearchTypeKeyword AskTableRequestSearchType = iota + 1
+	AskTableRequestSearchTypeVector
+)
+
+type AskTableRequestVectorSearch struct {
+	// The column to use for vector search. It must be of type `vector`.
+	Column string
+	// The column containing the text for vector search. Must be of type `text`.
+	ContentColumn string
+	Filter        *FilterExpression
+}
+
+type AskTableRequestPayload struct {
+	// The question you'd like to ask.
+	Question string
+	// The type of search to use. If set to `keyword` (the default), the search can be configured by passing
+	// a `search` object with the following fields. For more details about each, see the Search endpoint documentation.
+	// All fields are optional.
+	//   - fuzziness  - typo tolerance
+	//   - target - columns to search into, and weights.
+	//   - prefix - prefix search type.
+	//   - filter - pre-filter before searching.
+	//   - boosters - control relevancy.
+	//
+	// If set to `vector`, a `vectorSearch` object must be passed, with the following parameters. For more details, see the Vector
+	// Search endpoint documentation. The `column` and `contentColumn` parameters are required.
+	//   - column - the vector column containing the embeddings.
+	//   - contentColumn - the column that contains the text from which the embeddings where computed.
+	//   - filter - pre-filter before searching.
+	SearchType   *AskTableRequestSearchType
+	Search       *AskTableRequestSearch
+	VectorSearch *AskTableRequestVectorSearch
+	Rules        *[]string
+}
+
+type AskTableRequest struct {
+	BranchRequestOptional
+	TableName string
+	Payload   AskTableRequestPayload
+}
+
+func (s searchAndFilterCli) Ask(ctx context.Context, request AskTableRequest) (*xatagenworkspace.AskTableResponse, error) {
+	dbBranchName, err := s.dbBranchName(request.BranchRequestOptional)
+	if err != nil {
+		return nil, err
+	}
+
+	var targetExpGen []*xatagenworkspace.TargetExpressionItem
+	var searchGen *xatagenworkspace.AskTableRequestSearch
+	if request.Payload.Search != nil {
+		searchGen = &xatagenworkspace.AskTableRequestSearch{
+			Fuzziness: request.Payload.Search.Fuzziness,
+			Target:    &targetExpGen,
+		}
+
+		if len(*request.Payload.Search.Target) > 0 {
+			for _, e := range *request.Payload.Search.Target {
+				targetExpGen = append(targetExpGen, (*xatagenworkspace.TargetExpressionItem)(e))
+			}
+		}
+	}
+
+	var vectorSearchGen *xatagenworkspace.AskTableRequestVectorSearch
+	if request.Payload.VectorSearch != nil {
+		vectorSearchGen = &xatagenworkspace.AskTableRequestVectorSearch{
+			Column:        request.Payload.VectorSearch.Column,
+			ContentColumn: request.Payload.VectorSearch.ContentColumn,
+			Filter:        (*xatagenworkspace.FilterExpression)(request.Payload.VectorSearch.Filter),
+		}
+	}
+
+	return s.generated.AskTable(ctx, dbBranchName, request.TableName, &xatagenworkspace.AskTableRequest{
+		Question:     request.Payload.Question,
+		SearchType:   (*xatagenworkspace.AskTableRequestSearchType)(request.Payload.SearchType),
+		Search:       searchGen,
+		VectorSearch: vectorSearchGen,
+		Rules:        request.Payload.Rules,
 	})
 }
 
