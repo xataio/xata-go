@@ -188,3 +188,158 @@ func Test_searchAndFilterCli_SearchBranch(t *testing.T) {
 		})
 	}
 }
+
+func Test_searchAndFilterCli_SearchTable(t *testing.T) {
+	assert := assert.New(t)
+
+	type tc struct {
+		name       string
+		want       *xatagenworkspace.SearchTableResponse
+		statusCode int
+		apiErr     *xatagencore.APIError
+	}
+
+	tests := []tc{
+		{
+			name: "should get a record successfully",
+			want: &xatagenworkspace.SearchTableResponse{
+				Records: []*xatagenworkspace.Record{
+					{
+						"key": "value",
+					},
+				},
+				Warning:    xata.String("warning"),
+				TotalCount: 1,
+			},
+			statusCode: http.StatusOK,
+		},
+	}
+
+	for _, eTC := range errTestCasesWorkspace {
+		tests = append(tests, tc{
+			name:       eTC.name,
+			statusCode: eTC.statusCode,
+			apiErr:     eTC.apiErr,
+		})
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testSrv := testService(t, http.MethodPost, "/db", tt.statusCode, tt.apiErr != nil, tt.want)
+
+			cli, err := xata.NewSearchAndFilterClient(
+				xata.WithBaseURL(testSrv.URL),
+				xata.WithAPIKey("test-key"),
+			)
+			assert.NoError(err)
+			assert.NotNil(cli)
+
+			prefix := xata.PrefixExpressionDisabled
+			got, err := cli.SearchTable(context.TODO(), xata.SearchTableRequest{
+				BranchRequestOptional: xata.BranchRequestOptional{
+					DatabaseName: xata.String("db"),
+					BranchName:   xata.String("branch"),
+				},
+				TableName: "table",
+				Payload: xata.SearchTableRequestPayload{
+					Query:     "test",
+					Fuzziness: xata.Int(0),
+					Target: []*xata.TargetExpressionItem{
+						xata.NewTargetExpression("column"),
+						xata.NewTargetExpressionWithColumnObject(xata.TargetExpressionItemColumn{
+							Column: "columnt",
+							Weight: xata.Float64(2),
+						}),
+					},
+					Prefix: &prefix,
+					Filter: &xata.FilterExpression{
+						All: xata.NewFilterListFromFilterExpression(&xata.FilterExpression{
+							Exists: xata.String("column"),
+						}),
+						Any: xata.NewFilterListFromFilterExpressionList([]*xata.FilterExpression{
+							{
+								Exists: xata.String("column"),
+							},
+						}),
+					},
+					Highlight: &xata.HighlightExpression{
+						Enabled:    xata.Bool(true),
+						EncodeHtml: xata.Bool(true),
+					},
+					Boosters: []*xata.BoosterExpression{
+						xata.NewBoosterExpressionFromBoosterExpressionValueBooster(&xata.BoosterExpressionValueBooster{
+							ValueBooster: &xata.ValueBooster{
+								Column: "column",
+								Value:  xata.NewValueBoosterValueFromString("test"),
+								Factor: 1,
+								IfMatchesFilter: &xata.FilterExpression{
+									All: xata.NewFilterListFromFilterExpression(&xata.FilterExpression{
+										Exists: xata.String("column"),
+									}),
+									Any: xata.NewFilterListFromFilterExpressionList([]*xata.FilterExpression{
+										{
+											Exists: xata.String("column"),
+										},
+									}),
+								},
+							},
+						}),
+						xata.NewBoosterExpressionFromBoosterExpressionNumericBooster(&xata.BoosterExpressionNumericBooster{
+							NumericBooster: &xata.NumericBooster{
+								Column:   "column",
+								Factor:   2,
+								Modifier: xata.Uint8(2),
+								IfMatchesFilter: &xata.FilterExpression{
+									All: xata.NewFilterListFromFilterExpression(&xata.FilterExpression{
+										Exists: xata.String("column"),
+									}),
+									Any: xata.NewFilterListFromFilterExpressionList([]*xata.FilterExpression{
+										{
+											Exists: xata.String("bool-olumn"),
+										},
+									}),
+								},
+							},
+						}),
+						xata.NewBoosterExpressionFromBoosterExpressionDateBooster(&xata.BoosterExpressionDateBooster{
+							DateBooster: &xata.DateBooster{
+								Column: "column",
+								Origin: xata.String("2023-01-02T15:04:05Z"),
+								Scale:  "1d",
+								Decay:  1,
+								Factor: xata.Float64(2),
+								IfMatchesFilter: &xata.FilterExpression{
+									All: xata.NewFilterListFromFilterExpression(&xata.FilterExpression{
+										Exists: xata.String("column"),
+									}),
+									Any: xata.NewFilterListFromFilterExpressionList([]*xata.FilterExpression{
+										{
+											Exists: xata.String("column"),
+										},
+									}),
+								},
+							},
+						}),
+					},
+					Page: &xata.SearchPageConfig{
+						Size:   xata.Int(2),
+						Offset: xata.Int(0),
+					},
+				},
+			})
+
+			if tt.apiErr != nil {
+				errAPI := tt.apiErr.Unwrap()
+				if errAPI == nil {
+					t.Fatal("expected error but got nil")
+				}
+				assert.ErrorAs(err, &errAPI)
+				assert.Equal(err.Error(), tt.apiErr.Error())
+				assert.Nil(got)
+			} else {
+				assert.Equal(tt.want.Records[0], got.Records[0])
+				assert.NoError(err)
+			}
+		})
+	}
+}
