@@ -309,4 +309,26 @@ func Test_searchAndFilterClient(t *testing.T) {
 			return searchTableResponse.TotalCount == 1
 		}, time.Second*10, time.Second)
 	})
+
+	t.Run("vector search", func(t *testing.T) {
+		searchVectorResp, err := searchFilterCli.VectorSearch(ctx, xata.VectorSearchTableRequest{
+			BranchRequestOptional: xata.BranchRequestOptional{
+				DatabaseName: xata.String(cfg.databaseName),
+			},
+			TableName: cfg.tableName,
+			Payload: xata.VectorSearchTableRequestPayload{
+				QueryVector:        []float64{10, 2},
+				Column:             vectorColumn,
+				SimilarityFunction: xata.String("cosineSimilarity"),
+				Size:               xata.Int(2),
+				Filter: &xata.FilterExpression{
+					All: xata.NewFilterListFromFilterExpression(&xata.FilterExpression{
+						Exists: xata.String(vectorColumn),
+					}),
+				},
+			},
+		})
+		assert.NoError(t, err)
+		assert.Equal(t, 1, searchVectorResp.TotalCount)
+	})
 }

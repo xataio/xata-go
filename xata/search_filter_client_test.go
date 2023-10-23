@@ -343,3 +343,83 @@ func Test_searchAndFilterCli_SearchTable(t *testing.T) {
 		})
 	}
 }
+
+func Test_searchAndFilterCli_VectorSearch(t *testing.T) {
+	assert := assert.New(t)
+
+	type tc struct {
+		name       string
+		want       *xatagenworkspace.VectorSearchTableResponse
+		statusCode int
+		apiErr     *xatagencore.APIError
+	}
+
+	tests := []tc{
+		{
+			name: "should get a record successfully",
+			want: &xatagenworkspace.VectorSearchTableResponse{
+				Records: []*xatagenworkspace.Record{
+					{
+						"key": "value",
+					},
+				},
+				Warning:    xata.String("warning"),
+				TotalCount: 1,
+			},
+			statusCode: http.StatusOK,
+		},
+	}
+
+	for _, eTC := range errTestCasesWorkspace {
+		tests = append(tests, tc{
+			name:       eTC.name,
+			statusCode: eTC.statusCode,
+			apiErr:     eTC.apiErr,
+		})
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testSrv := testService(t, http.MethodPost, "/db", tt.statusCode, tt.apiErr != nil, tt.want)
+
+			cli, err := xata.NewSearchAndFilterClient(
+				xata.WithBaseURL(testSrv.URL),
+				xata.WithAPIKey("test-key"),
+			)
+			assert.NoError(err)
+			assert.NotNil(cli)
+
+			got, err := cli.VectorSearch(context.TODO(), xata.VectorSearchTableRequest{
+				BranchRequestOptional: xata.BranchRequestOptional{
+					DatabaseName: xata.String("db"),
+					BranchName:   xata.String("branch"),
+				},
+				TableName: "table",
+				Payload: xata.VectorSearchTableRequestPayload{
+					QueryVector:        []float64{10, 2},
+					Column:             "vectorColumn",
+					SimilarityFunction: xata.String("cosineSimilarity"),
+					Size:               xata.Int(2),
+					Filter: &xata.FilterExpression{
+						All: xata.NewFilterListFromFilterExpression(&xata.FilterExpression{
+							Exists: xata.String("vectorColumn"),
+						}),
+					},
+				},
+			})
+
+			if tt.apiErr != nil {
+				errAPI := tt.apiErr.Unwrap()
+				if errAPI == nil {
+					t.Fatal("expected error but got nil")
+				}
+				assert.ErrorAs(err, &errAPI)
+				assert.Equal(err.Error(), tt.apiErr.Error())
+				assert.Nil(got)
+			} else {
+				assert.Equal(tt.want.Records[0], got.Records[0])
+				assert.NoError(err)
+			}
+		})
+	}
+}

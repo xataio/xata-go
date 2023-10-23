@@ -96,7 +96,7 @@ type SearchAndFilterClient interface {
 	Query(ctx context.Context, request QueryTableRequest) (*xatagenworkspace.QueryTableResponse, error)
 	SearchBranch(ctx context.Context, request SearchBranchRequest) (*xatagenworkspace.SearchBranchResponse, error)
 	SearchTable(ctx context.Context, request SearchTableRequest) (*xatagenworkspace.SearchTableResponse, error)
-	// VectorSearchTable(ctx context.Context, dbBranchName DbBranchName, tableName TableName, request *VectorSearchTableRequest) (*VectorSearchTableResponse, error)
+	VectorSearch(ctx context.Context, request VectorSearchTableRequest) (*xatagenworkspace.VectorSearchTableResponse, error)
 	// AskTable(ctx context.Context, dbBranchName DbBranchName, tableName TableName, request *AskTableRequest) (*AskTableResponse, error)
 	// AskTableSession(ctx context.Context, dbBranchName DbBranchName, tableName TableName, sessionId string, request *AskTableSessionRequest) (*AskTableSessionResponse, error)
 	// SummarizeTable(ctx context.Context, dbBranchName DbBranchName, tableName TableName, request *SummarizeTableRequest) (*SummarizeTableResponse, error)
@@ -351,6 +351,35 @@ func (s searchAndFilterCli) SearchTable(ctx context.Context, request SearchTable
 		Highlight: (*xatagenworkspace.HighlightExpression)(request.Payload.Highlight),
 		Boosters:  &boostersGen,
 		Page:      (*xatagenworkspace.SearchPageConfig)(request.Payload.Page),
+	})
+}
+
+type VectorSearchTableRequestPayload struct {
+	QueryVector        []float64
+	Column             string
+	SimilarityFunction *string
+	Size               *int
+	Filter             *FilterExpression
+}
+
+type VectorSearchTableRequest struct {
+	BranchRequestOptional
+	TableName string
+	Payload   VectorSearchTableRequestPayload
+}
+
+func (s searchAndFilterCli) VectorSearch(ctx context.Context, request VectorSearchTableRequest) (*xatagenworkspace.VectorSearchTableResponse, error) {
+	dbBranchName, err := s.dbBranchName(request.BranchRequestOptional)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.generated.VectorSearchTable(ctx, dbBranchName, request.TableName, &xatagenworkspace.VectorSearchTableRequest{
+		QueryVector:        request.Payload.QueryVector,
+		Column:             request.Payload.Column,
+		SimilarityFunction: request.Payload.SimilarityFunction,
+		Size:               request.Payload.Size,
+		Filter:             (*xatagenworkspace.FilterExpression)(request.Payload.Filter),
 	})
 }
 
