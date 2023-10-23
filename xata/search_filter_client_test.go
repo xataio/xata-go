@@ -423,3 +423,144 @@ func Test_searchAndFilterCli_VectorSearch(t *testing.T) {
 		})
 	}
 }
+
+func Test_searchAndFilterCli_Ask(t *testing.T) {
+	assert := assert.New(t)
+
+	type tc struct {
+		name       string
+		want       *xatagenworkspace.AskTableResponse
+		statusCode int
+		apiErr     *xatagencore.APIError
+	}
+
+	tests := []tc{
+		{
+			name: "should get a record successfully",
+			want: &xatagenworkspace.AskTableResponse{
+				Answer:    "id1",
+				SessionId: "id2",
+			},
+			statusCode: http.StatusOK,
+		},
+	}
+
+	for _, eTC := range errTestCasesWorkspace {
+		tests = append(tests, tc{
+			name:       eTC.name,
+			statusCode: eTC.statusCode,
+			apiErr:     eTC.apiErr,
+		})
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testSrv := testService(t, http.MethodPost, "/db", tt.statusCode, tt.apiErr != nil, tt.want)
+
+			cli, err := xata.NewSearchAndFilterClient(
+				xata.WithBaseURL(testSrv.URL),
+				xata.WithAPIKey("test-key"),
+			)
+			assert.NoError(err)
+			assert.NotNil(cli)
+
+			keyword := xata.AskTableRequestSearchTypeKeyword
+			prefix := xata.PrefixExpressionPhrase
+			got, err := cli.Ask(context.TODO(), xata.AskTableRequest{
+				BranchRequestOptional: xata.BranchRequestOptional{
+					DatabaseName: xata.String("db"),
+					BranchName:   xata.String("branch"),
+				},
+				TableName: "table",
+				Payload: xata.AskTableRequestPayload{
+					Question:   "how are you",
+					SearchType: &keyword,
+					Search: &xata.AskTableRequestSearch{
+						Target: []*xata.TargetExpressionItem{
+							xata.NewTargetExpression("columnName"),
+						},
+						Prefix: &prefix,
+						Filter: &xata.FilterExpression{
+							All: xata.NewFilterListFromFilterExpression(&xata.FilterExpression{
+								Exists: xata.String("column"),
+							}),
+							Any: xata.NewFilterListFromFilterExpressionList([]*xata.FilterExpression{
+								{
+									Exists: xata.String("column"),
+								},
+							}),
+						},
+						Boosters: []*xata.BoosterExpression{
+							xata.NewBoosterExpressionFromBoosterExpressionValueBooster(&xata.BoosterExpressionValueBooster{
+								ValueBooster: &xata.ValueBooster{
+									Column: "column",
+									Value:  xata.NewValueBoosterValueFromString("test"),
+									Factor: 1,
+									IfMatchesFilter: &xata.FilterExpression{
+										All: xata.NewFilterListFromFilterExpression(&xata.FilterExpression{
+											Exists: xata.String("column"),
+										}),
+										Any: xata.NewFilterListFromFilterExpressionList([]*xata.FilterExpression{
+											{
+												Exists: xata.String("column"),
+											},
+										}),
+									},
+								},
+							}),
+							xata.NewBoosterExpressionFromBoosterExpressionNumericBooster(&xata.BoosterExpressionNumericBooster{
+								NumericBooster: &xata.NumericBooster{
+									Column:   "column",
+									Factor:   2,
+									Modifier: xata.Uint8(2),
+									IfMatchesFilter: &xata.FilterExpression{
+										All: xata.NewFilterListFromFilterExpression(&xata.FilterExpression{
+											Exists: xata.String("column"),
+										}),
+										Any: xata.NewFilterListFromFilterExpressionList([]*xata.FilterExpression{
+											{
+												Exists: xata.String("bool-olumn"),
+											},
+										}),
+									},
+								},
+							}),
+							xata.NewBoosterExpressionFromBoosterExpressionDateBooster(&xata.BoosterExpressionDateBooster{
+								DateBooster: &xata.DateBooster{
+									Column: "column",
+									Origin: xata.String("2023-01-02T15:04:05Z"),
+									Scale:  "1d",
+									Decay:  1,
+									Factor: xata.Float64(2),
+									IfMatchesFilter: &xata.FilterExpression{
+										All: xata.NewFilterListFromFilterExpression(&xata.FilterExpression{
+											Exists: xata.String("column"),
+										}),
+										Any: xata.NewFilterListFromFilterExpressionList([]*xata.FilterExpression{
+											{
+												Exists: xata.String("column"),
+											},
+										}),
+									},
+								},
+							}),
+						},
+					},
+				},
+			})
+
+			if tt.apiErr != nil {
+				errAPI := tt.apiErr.Unwrap()
+				if errAPI == nil {
+					t.Fatal("expected error but got nil")
+				}
+				assert.ErrorAs(err, &errAPI)
+				assert.Equal(err.Error(), tt.apiErr.Error())
+				assert.Nil(got)
+			} else {
+				assert.Equal(tt.want.Answer, got.Answer)
+				assert.NoError(err)
+			}
+		})
+	}
+}

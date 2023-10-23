@@ -385,10 +385,10 @@ func (s searchAndFilterCli) VectorSearch(ctx context.Context, request VectorSear
 
 type AskTableRequestSearch struct {
 	Fuzziness *int
-	Target    *TargetExpression
+	Target    TargetExpression
 	Prefix    *PrefixExpression
 	Filter    *FilterExpression
-	Boosters  *[]*BoosterExpression
+	Boosters  []*BoosterExpression
 }
 
 type AskTableRequestSearchType uint8
@@ -449,8 +449,8 @@ func (s searchAndFilterCli) Ask(ctx context.Context, request AskTableRequest) (*
 			Target:    &targetExpGen,
 		}
 
-		if len(*request.Payload.Search.Target) > 0 {
-			for _, e := range *request.Payload.Search.Target {
+		if len(request.Payload.Search.Target) > 0 {
+			for _, e := range request.Payload.Search.Target {
 				targetExpGen = append(targetExpGen, (*xatagenworkspace.TargetExpressionItem)(e))
 			}
 		}

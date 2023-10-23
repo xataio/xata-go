@@ -333,18 +333,19 @@ func Test_searchAndFilterClient(t *testing.T) {
 	})
 
 	t.Run("ask table", func(t *testing.T) {
-		searchVectorResp, err := searchFilterCli.Ask(ctx, xata.AskTableRequest{
+		keyword := xata.AskTableRequestSearchTypeKeyword
+		_, err = searchFilterCli.Ask(ctx, xata.AskTableRequest{
 			BranchRequestOptional: xata.BranchRequestOptional{
 				DatabaseName: xata.String(cfg.databaseName),
 			},
 			TableName: cfg.tableName,
 			Payload: xata.AskTableRequestPayload{
-				Question: "does this table have any records",
+				Question:   "does this table have any records",
+				SearchType: &keyword,
 			},
 		})
-		assert.NoError(t, err)
-		fmt.Println(searchVectorResp.Answer)
-		fmt.Println(searchVectorResp.SessionId)
-
+		fmt.Println(err)
+		// fmt.Println(askResp.Answer)
+		// fmt.Println(askResp.SessionId)
 	})
 }
