@@ -332,7 +332,8 @@ func Test_searchAndFilterClient(t *testing.T) {
 		assert.Equal(t, 1, searchVectorResp.TotalCount)
 	})
 
-	t.Run("ask table", func(t *testing.T) {
+	t.Run("ask question to table and ask a follow up one", func(t *testing.T) {
+		var sessionID string
 		assert.Eventually(t, func() bool {
 			keyword := xata.AskTableRequestSearchTypeKeyword
 			askResp, err := searchFilterCli.Ask(ctx, xata.AskTableRequest{
@@ -346,7 +347,23 @@ func Test_searchAndFilterClient(t *testing.T) {
 				},
 			})
 
+			if askResp != nil && askResp.SessionId != "" {
+				sessionID = askResp.SessionId
+			}
+
 			return assert.NoError(t, err) && assert.NotEmpty(t, askResp.Answer) && assert.NotEmpty(t, askResp.SessionId)
 		}, time.Second*10, time.Second)
+
+		askFollowUpRes, err := searchFilterCli.AskFollowUp(ctx, xata.AskFollowUpRequest{
+			BranchRequestOptional: xata.BranchRequestOptional{
+				DatabaseName: xata.String(cfg.databaseName),
+			},
+			TableName: cfg.tableName,
+			SessionID: sessionID,
+			Question:  "Give me more info about atom, please.",
+		})
+
+		assert.NoError(t, err)
+		assert.NotEmpty(t, askFollowUpRes)
 	})
 }

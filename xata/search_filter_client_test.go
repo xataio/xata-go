@@ -564,3 +564,67 @@ func Test_searchAndFilterCli_Ask(t *testing.T) {
 		})
 	}
 }
+
+func Test_searchAndFilterCli_AskFollowUp(t *testing.T) {
+	assert := assert.New(t)
+
+	type tc struct {
+		name       string
+		want       *xatagenworkspace.AskTableSessionResponse
+		statusCode int
+		apiErr     *xatagencore.APIError
+	}
+
+	tests := []tc{
+		{
+			name: "should get a record successfully",
+			want: &xatagenworkspace.AskTableSessionResponse{
+				Answer: "Sure, here are more info...",
+			},
+			statusCode: http.StatusOK,
+		},
+	}
+
+	for _, eTC := range errTestCasesWorkspace {
+		tests = append(tests, tc{
+			name:       eTC.name,
+			statusCode: eTC.statusCode,
+			apiErr:     eTC.apiErr,
+		})
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testSrv := testService(t, http.MethodPost, "/db", tt.statusCode, tt.apiErr != nil, tt.want)
+
+			cli, err := xata.NewSearchAndFilterClient(
+				xata.WithBaseURL(testSrv.URL),
+				xata.WithAPIKey("test-key"),
+			)
+			assert.NoError(err)
+			assert.NotNil(cli)
+
+			got, err := cli.AskFollowUp(context.TODO(), xata.AskFollowUpRequest{
+				BranchRequestOptional: xata.BranchRequestOptional{
+					DatabaseName: xata.String("db"),
+					BranchName:   xata.String("branch"),
+				},
+				TableName: "table",
+				Question:  "give me more info on...",
+			})
+
+			if tt.apiErr != nil {
+				errAPI := tt.apiErr.Unwrap()
+				if errAPI == nil {
+					t.Fatal("expected error but got nil")
+				}
+				assert.ErrorAs(err, &errAPI)
+				assert.Equal(err.Error(), tt.apiErr.Error())
+				assert.Nil(got)
+			} else {
+				assert.Equal(tt.want.Answer, got.Answer)
+				assert.NoError(err)
+			}
+		})
+	}
+}

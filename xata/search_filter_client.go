@@ -92,13 +92,20 @@ type SearchTableRequest struct {
 	Payload   SearchTableRequestPayload
 }
 
+type AskFollowUpRequest struct {
+	BranchRequestOptional
+	TableName string
+	SessionID string
+	Question  string
+}
+
 type SearchAndFilterClient interface {
 	Query(ctx context.Context, request QueryTableRequest) (*xatagenworkspace.QueryTableResponse, error)
 	SearchBranch(ctx context.Context, request SearchBranchRequest) (*xatagenworkspace.SearchBranchResponse, error)
 	SearchTable(ctx context.Context, request SearchTableRequest) (*xatagenworkspace.SearchTableResponse, error)
 	VectorSearch(ctx context.Context, request VectorSearchTableRequest) (*xatagenworkspace.VectorSearchTableResponse, error)
 	Ask(ctx context.Context, request AskTableRequest) (*xatagenworkspace.AskTableResponse, error)
-	// AskTableSession(ctx context.Context, dbBranchName DbBranchName, tableName TableName, sessionId string, request *AskTableSessionRequest) (*AskTableSessionResponse, error)
+	AskFollowUp(ctx context.Context, request AskFollowUpRequest) (*xatagenworkspace.AskTableSessionResponse, error)
 	// SummarizeTable(ctx context.Context, dbBranchName DbBranchName, tableName TableName, request *SummarizeTableRequest) (*SummarizeTableResponse, error)
 	// AggregateTable(ctx context.Context, dbBranchName DbBranchName, tableName TableName, request *AggregateTableRequest) (*AggregateTableResponse, error)
 }
@@ -472,6 +479,21 @@ func (s searchAndFilterCli) Ask(ctx context.Context, request AskTableRequest) (*
 		VectorSearch: vectorSearchGen,
 		Rules:        request.Payload.Rules,
 	})
+}
+
+func (s searchAndFilterCli) AskFollowUp(ctx context.Context, request AskFollowUpRequest) (*xatagenworkspace.AskTableSessionResponse, error) {
+	dbBranchName, err := s.dbBranchName(request.BranchRequestOptional)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.generated.AskTableSession(
+		ctx,
+		dbBranchName,
+		request.TableName,
+		request.SessionID,
+		&xatagenworkspace.AskTableSessionRequest{Message: String(request.Question)},
+	)
 }
 
 func NewSearchAndFilterClient(opts ...ClientOption) (SearchAndFilterClient, error) {
