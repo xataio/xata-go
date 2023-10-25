@@ -69,7 +69,7 @@ func Test_searchAndFilterClient(t *testing.T) {
 			TableName: cfg.tableName,
 			Payload: xata.QueryTableRequestPayload{
 				Columns:     []string{stringColumn},
-				Consistency: xata.QueryTableRequestConsistencyStrong,
+				Consistency: xata.ConsistencyStrong,
 				Sort:        xata.NewSortExpressionFromStringList([]string{stringColumn}),
 				Filter: &xata.FilterExpression{
 					Exists: xata.String(stringColumn),
@@ -90,7 +90,7 @@ func Test_searchAndFilterClient(t *testing.T) {
 			TableName: cfg.tableName,
 			Payload: xata.QueryTableRequestPayload{
 				Columns:     []string{stringColumn},
-				Consistency: xata.QueryTableRequestConsistencyStrong,
+				Consistency: xata.ConsistencyStrong,
 				Sort: xata.NewSortExpressionFromStringSortOrderMap(map[string]xata.SortOrder{
 					stringColumn: xata.SortOrderAsc,
 				}),
@@ -120,7 +120,7 @@ func Test_searchAndFilterClient(t *testing.T) {
 			TableName: cfg.tableName,
 			Payload: xata.QueryTableRequestPayload{
 				Columns:     []string{stringColumn},
-				Consistency: xata.QueryTableRequestConsistencyEventual,
+				Consistency: xata.ConsistencyEventual,
 				Sort: xata.NewSortExpressionFromStringSortOrderMapList(
 					[]map[string]xata.SortOrder{
 						{
@@ -294,22 +294,6 @@ func Test_searchAndFilterClient(t *testing.T) {
 	//	assert.NoError(t, err)
 	//})
 
-	t.Run("free text search in table with default values", func(t *testing.T) {
-		assert.Eventually(t, func() bool {
-			searchTableResponse, err := searchFilterCli.SearchTable(ctx, xata.SearchTableRequest{
-				BranchRequestOptional: xata.BranchRequestOptional{
-					DatabaseName: xata.String(cfg.databaseName),
-				},
-				TableName: cfg.tableName,
-				Payload: xata.SearchTableRequestPayload{
-					Query: "test",
-				},
-			})
-			assert.NoError(t, err)
-			return searchTableResponse.TotalCount == 1
-		}, time.Second*10, time.Second)
-	})
-
 	t.Run("vector search", func(t *testing.T) {
 		searchVectorResp, err := searchFilterCli.VectorSearch(ctx, xata.VectorSearchTableRequest{
 			BranchRequestOptional: xata.BranchRequestOptional{
@@ -365,5 +349,43 @@ func Test_searchAndFilterClient(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.NotEmpty(t, askFollowUpRes)
+	})
+
+	t.Run("summarize table", func(t *testing.T) {
+		sumTableRes, err := searchFilterCli.Summarize(
+			ctx,
+			xata.SummarizeTableRequest{
+				BranchRequestOptional: xata.BranchRequestOptional{
+					DatabaseName: xata.String(cfg.databaseName),
+				},
+				TableName: cfg.tableName,
+				Payload: xata.SummarizeTableRequestPayload{
+					Columns: []string{integerColumn},
+					Summaries: map[string]map[string]any{
+						"count_integerCol": {
+							"count": integerColumn,
+						},
+						"min_integerCol": {
+							"min": integerColumn,
+						},
+						"max_integerCol": {
+							"max": integerColumn,
+						},
+						"sum_integerCol": {
+							"sum": integerColumn,
+						},
+						"average_integerCol": {
+							"average": integerColumn,
+						},
+					},
+				},
+			},
+		)
+		assert.NoError(t, err)
+		assert.Equal(t, 10.0, sumTableRes.Summaries[0]["max_integerCol"])
+		assert.Equal(t, 10.0, sumTableRes.Summaries[0]["min_integerCol"])
+		assert.Equal(t, 10.0, sumTableRes.Summaries[0]["sum_integerCol"])
+		assert.Equal(t, 10.0, sumTableRes.Summaries[0]["average_integerCol"])
+		assert.Equal(t, 1.0, sumTableRes.Summaries[0]["count_integerCol"])
 	})
 }

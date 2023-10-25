@@ -23,8 +23,8 @@ type PageConfig xatagenworkspace.PageConfig
 type QueryTableRequestConsistency uint8
 
 const (
-	QueryTableRequestConsistencyStrong QueryTableRequestConsistency = iota + 1
-	QueryTableRequestConsistencyEventual
+	ConsistencyStrong QueryTableRequestConsistency = iota + 1
+	ConsistencyEventual
 )
 
 type QueryTableRequestPayload struct {
@@ -106,7 +106,7 @@ type SearchAndFilterClient interface {
 	VectorSearch(ctx context.Context, request VectorSearchTableRequest) (*xatagenworkspace.VectorSearchTableResponse, error)
 	Ask(ctx context.Context, request AskTableRequest) (*xatagenworkspace.AskTableResponse, error)
 	AskFollowUp(ctx context.Context, request AskFollowUpRequest) (*xatagenworkspace.AskTableSessionResponse, error)
-	// SummarizeTable(ctx context.Context, dbBranchName DbBranchName, tableName TableName, request *SummarizeTableRequest) (*SummarizeTableResponse, error)
+	Summarize(ctx context.Context, request SummarizeTableRequest) (*xatagenworkspace.SummarizeTableResponse, error)
 	// AggregateTable(ctx context.Context, dbBranchName DbBranchName, tableName TableName, request *AggregateTableRequest) (*AggregateTableResponse, error)
 }
 
@@ -494,6 +494,58 @@ func (s searchAndFilterCli) AskFollowUp(ctx context.Context, request AskFollowUp
 		request.SessionID,
 		&xatagenworkspace.AskTableSessionRequest{Message: String(request.Question)},
 	)
+}
+
+type SummarizeTableRequestConsistency uint8
+
+type SummarizeTableRequestPayload struct {
+	Filter          *FilterExpression
+	Columns         []string
+	Summaries       map[string]map[string]any
+	Sort            *xatagenworkspace.SortExpression
+	SummariesFilter *FilterExpression
+	// The consistency level for this request.
+	Consistency  *SummarizeTableRequestConsistency
+	NumberOfPage *int
+}
+
+type SummarizeTableRequest struct {
+	BranchRequestOptional
+	TableName string
+	Payload   SummarizeTableRequestPayload
+}
+
+func (s searchAndFilterCli) Summarize(ctx context.Context, request SummarizeTableRequest) (*xatagenworkspace.SummarizeTableResponse, error) {
+	dbBranchName, err := s.dbBranchName(request.BranchRequestOptional)
+	if err != nil {
+		return nil, err
+	}
+
+	var sumExpList xatagenworkspace.SummaryExpressionList
+	if len(request.Payload.Summaries) > 0 {
+		sumExpList = make(xatagenworkspace.SummaryExpressionList, len(request.Payload.Summaries))
+		for k, v := range request.Payload.Summaries {
+			if len(v) > 0 {
+				sumExp := make(xatagenworkspace.SummaryExpression, len(v))
+				for k1, v1 := range v {
+					sumExp[k1] = v1
+				}
+				sumExpList[k] = sumExp
+			}
+		}
+	}
+
+	return s.generated.SummarizeTable(ctx, dbBranchName, request.TableName, &xatagenworkspace.SummarizeTableRequest{
+		Filter:          (*xatagenworkspace.FilterExpression)(request.Payload.Filter),
+		Columns:         &request.Payload.Columns,
+		Summaries:       &sumExpList,
+		Sort:            request.Payload.Sort,
+		SummariesFilter: (*xatagenworkspace.FilterExpression)(request.Payload.SummariesFilter),
+		Consistency:     (*xatagenworkspace.SummarizeTableRequestConsistency)(request.Payload.Consistency),
+		Page: &xatagenworkspace.SummarizeTableRequestPage{
+			Size: request.Payload.NumberOfPage,
+		},
+	})
 }
 
 func NewSearchAndFilterClient(opts ...ClientOption) (SearchAndFilterClient, error) {

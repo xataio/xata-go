@@ -35,7 +35,7 @@ func Test_searchAndFilterCli_Query(t *testing.T) {
 
 	tests := []tc{
 		{
-			name: "should get a record successfully",
+			name: "should query",
 			want: &xatagenworkspace.QueryTableResponse{
 				Records: []*xatagenworkspace.Record{
 					{
@@ -80,7 +80,7 @@ func Test_searchAndFilterCli_Query(t *testing.T) {
 				TableName: "some-table",
 				Payload: xata.QueryTableRequestPayload{
 					Columns:     []string{"column-name"},
-					Consistency: xata.QueryTableRequestConsistencyEventual,
+					Consistency: xata.ConsistencyEventual,
 					Sort: xata.NewSortExpressionFromStringSortOrderMapList(
 						[]map[string]xata.SortOrder{
 							{
@@ -118,7 +118,7 @@ func Test_searchAndFilterCli_SearchBranch(t *testing.T) {
 
 	tests := []tc{
 		{
-			name: "should get a record successfully",
+			name: "should search branch",
 			want: &xatagenworkspace.SearchBranchResponse{
 				Records: []*xatagenworkspace.Record{
 					{
@@ -201,7 +201,7 @@ func Test_searchAndFilterCli_SearchTable(t *testing.T) {
 
 	tests := []tc{
 		{
-			name: "should get a record successfully",
+			name: "should search table",
 			want: &xatagenworkspace.SearchTableResponse{
 				Records: []*xatagenworkspace.Record{
 					{
@@ -356,7 +356,7 @@ func Test_searchAndFilterCli_VectorSearch(t *testing.T) {
 
 	tests := []tc{
 		{
-			name: "should get a record successfully",
+			name: "should vector search",
 			want: &xatagenworkspace.VectorSearchTableResponse{
 				Records: []*xatagenworkspace.Record{
 					{
@@ -436,7 +436,7 @@ func Test_searchAndFilterCli_Ask(t *testing.T) {
 
 	tests := []tc{
 		{
-			name: "should get a record successfully",
+			name: "should ask a question",
 			want: &xatagenworkspace.AskTableResponse{
 				Answer:    "id1",
 				SessionId: "id2",
@@ -577,7 +577,7 @@ func Test_searchAndFilterCli_AskFollowUp(t *testing.T) {
 
 	tests := []tc{
 		{
-			name: "should get a record successfully",
+			name: "should ask a follow up question",
 			want: &xatagenworkspace.AskTableSessionResponse{
 				Answer: "Sure, here are more info...",
 			},
@@ -623,6 +623,78 @@ func Test_searchAndFilterCli_AskFollowUp(t *testing.T) {
 				assert.Nil(got)
 			} else {
 				assert.Equal(tt.want.Answer, got.Answer)
+				assert.NoError(err)
+			}
+		})
+	}
+}
+
+func Test_searchAndFilterCli_Summarize(t *testing.T) {
+	assert := assert.New(t)
+
+	type tc struct {
+		name       string
+		want       *xatagenworkspace.SummarizeTableResponse
+		statusCode int
+		apiErr     *xatagencore.APIError
+	}
+
+	tests := []tc{
+		{
+			name: "should summarize a table",
+			want: &xatagenworkspace.SummarizeTableResponse{Summaries: []map[string]any{
+				{
+					"k": "v",
+				},
+			}},
+			statusCode: http.StatusOK,
+		},
+	}
+
+	for _, eTC := range errTestCasesWorkspace {
+		tests = append(tests, tc{
+			name:       eTC.name,
+			statusCode: eTC.statusCode,
+			apiErr:     eTC.apiErr,
+		})
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testSrv := testService(t, http.MethodPost, "/db", tt.statusCode, tt.apiErr != nil, tt.want)
+
+			cli, err := xata.NewSearchAndFilterClient(
+				xata.WithBaseURL(testSrv.URL),
+				xata.WithAPIKey("test-key"),
+			)
+			assert.NoError(err)
+			assert.NotNil(cli)
+
+			got, err := cli.Summarize(
+				context.TODO(),
+				xata.SummarizeTableRequest{
+					BranchRequestOptional: xata.BranchRequestOptional{
+						DatabaseName: xata.String("db"),
+						BranchName:   xata.String("branch"),
+					},
+					TableName: "table",
+					Payload: xata.SummarizeTableRequestPayload{
+						Columns:   []string{"col"},
+						Summaries: map[string]map[string]any{"count_col": {"count": "col"}},
+					},
+				},
+			)
+
+			if tt.apiErr != nil {
+				errAPI := tt.apiErr.Unwrap()
+				if errAPI == nil {
+					t.Fatal("expected error but got nil")
+				}
+				assert.ErrorAs(err, &errAPI)
+				assert.Equal(err.Error(), tt.apiErr.Error())
+				assert.Nil(got)
+			} else {
+				assert.Equal(tt.want, got)
 				assert.NoError(err)
 			}
 		})
