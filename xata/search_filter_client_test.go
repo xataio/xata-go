@@ -700,3 +700,80 @@ func Test_searchAndFilterCli_Summarize(t *testing.T) {
 		})
 	}
 }
+
+func Test_searchAndFilterCli_Aggregate(t *testing.T) {
+	assert := assert.New(t)
+
+	type tc struct {
+		name       string
+		want       *xatagenworkspace.AggregateTableResponse
+		statusCode int
+		apiErr     *xatagencore.APIError
+	}
+
+	aggRes := map[string]*xatagenworkspace.AggResponse{
+		"test": xatagenworkspace.NewAggResponseFromDoubleOptional(xata.Float64(2)),
+	}
+
+	tests := []tc{
+		{
+			name:       "should aggregate a table",
+			want:       &xatagenworkspace.AggregateTableResponse{Aggs: &aggRes},
+			statusCode: http.StatusOK,
+		},
+	}
+
+	for _, eTC := range errTestCasesWorkspace {
+		tests = append(tests, tc{
+			name:       eTC.name,
+			statusCode: eTC.statusCode,
+			apiErr:     eTC.apiErr,
+		})
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testSrv := testService(t, http.MethodPost, "/db", tt.statusCode, tt.apiErr != nil, tt.want)
+
+			cli, err := xata.NewSearchAndFilterClient(
+				xata.WithBaseURL(testSrv.URL),
+				xata.WithAPIKey("test-key"),
+			)
+			assert.NoError(err)
+			assert.NotNil(cli)
+
+			got, err := cli.Aggregate(
+				context.TODO(),
+				xata.AggregateTableRequest{
+					BranchRequestOptional: xata.BranchRequestOptional{
+						DatabaseName: xata.String("my-db"),
+					},
+					TableName: "my-table",
+					Payload: xata.AggregateTableRequestPayload{
+						Aggregations: xata.AggExpressionMap{
+							"histogram": xata.NewDateHistogramAggExpression(xata.DateHistogramAgg{
+								Column:           "my-column",
+								Interval:         xata.String("1d"),
+								CalendarInterval: nil,
+								Timezone:         nil,
+							}),
+						},
+					},
+				},
+			)
+
+			if tt.apiErr != nil {
+				errAPI := tt.apiErr.Unwrap()
+				if errAPI == nil {
+					t.Fatal("expected error but got nil")
+				}
+				assert.ErrorAs(err, &errAPI)
+				assert.Equal(err.Error(), tt.apiErr.Error())
+				assert.Nil(got)
+			} else {
+				assert.Equal(tt.want, got)
+				assert.NoError(err)
+			}
+		})
+	}
+}

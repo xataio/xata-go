@@ -1,8 +1,10 @@
 package xata
 
-import "github.com/xataio/xata-go/xata/internal/fern-workspace/generated/go"
+import (
+	xatagenworkspace "github.com/xataio/xata-go/xata/internal/fern-workspace/generated/go"
+)
 
-type SortOrder api.SortOrder
+type SortOrder xatagenworkspace.SortOrder
 
 const (
 	SortOrderAsc SortOrder = iota + 1
@@ -10,9 +12,9 @@ const (
 	SortOrderRandom
 )
 
-type FilterExpression api.FilterExpression
+type FilterExpression xatagenworkspace.FilterExpression
 
-type PageConfig api.PageConfig
+type PageConfig xatagenworkspace.PageConfig
 
 type QueryTableRequestConsistency uint8
 
@@ -28,82 +30,82 @@ const (
 	PrefixExpressionDisabled
 )
 
-type SearchBranchRequestTablesItem api.SearchBranchRequestTablesItem
+type SearchBranchRequestTablesItem xatagenworkspace.SearchBranchRequestTablesItem
 
-type HighlightExpression api.HighlightExpression
+type HighlightExpression xatagenworkspace.HighlightExpression
 
-type SearchPageConfig api.SearchPageConfig
+type SearchPageConfig xatagenworkspace.SearchPageConfig
 
-type BoosterExpression api.BoosterExpression
+type BoosterExpression xatagenworkspace.BoosterExpression
 
-func NewSortExpressionFromStringList(value []string) *api.SortExpression {
-	return api.NewSortExpressionFromStringList(value)
+func NewSortExpressionFromStringList(value []string) *xatagenworkspace.SortExpression {
+	return xatagenworkspace.NewSortExpressionFromStringList(value)
 }
 
-func NewSortExpressionFromStringSortOrderMap(value map[string]SortOrder) *api.SortExpression {
-	valGen := make(map[string]api.SortOrder, len(value))
+func NewSortExpressionFromStringSortOrderMap(value map[string]SortOrder) *xatagenworkspace.SortExpression {
+	valGen := make(map[string]xatagenworkspace.SortOrder, len(value))
 	for k, v := range value {
-		valGen[k] = (api.SortOrder)(v)
+		valGen[k] = (xatagenworkspace.SortOrder)(v)
 	}
 
-	return api.NewSortExpressionFromStringSortOrderMap(valGen)
+	return xatagenworkspace.NewSortExpressionFromStringSortOrderMap(valGen)
 }
 
-func NewSortExpressionFromStringSortOrderMapList(value []map[string]SortOrder) *api.SortExpression {
-	valGen := make([]map[string]api.SortOrder, len(value))
+func NewSortExpressionFromStringSortOrderMapList(value []map[string]SortOrder) *xatagenworkspace.SortExpression {
+	valGen := make([]map[string]xatagenworkspace.SortOrder, len(value))
 	for i, vs := range value {
 		for k, v := range vs {
-			valGen[i] = make(map[string]api.SortOrder, len(vs))
-			valGen[i][k] = (api.SortOrder)(v)
+			valGen[i] = make(map[string]xatagenworkspace.SortOrder, len(vs))
+			valGen[i][k] = (xatagenworkspace.SortOrder)(v)
 		}
 	}
 
-	return api.NewSortExpressionFromStringSortOrderMapList(valGen)
+	return xatagenworkspace.NewSortExpressionFromStringSortOrderMapList(valGen)
 }
 
-func NewFilterListFromFilterExpression(value *FilterExpression) *api.FilterList {
-	return api.NewFilterListFromFilterExpression((*api.FilterExpression)(value))
+func NewFilterListFromFilterExpression(value *FilterExpression) *xatagenworkspace.FilterList {
+	return xatagenworkspace.NewFilterListFromFilterExpression((*xatagenworkspace.FilterExpression)(value))
 }
 
-func NewFilterListFromFilterExpressionList(value []*FilterExpression) *api.FilterList {
-	var valGen []*api.FilterExpression
+func NewFilterListFromFilterExpressionList(value []*FilterExpression) *xatagenworkspace.FilterList {
+	var valGen []*xatagenworkspace.FilterExpression
 	for _, v := range value {
-		valGen = append(valGen, (*api.FilterExpression)(v))
+		valGen = append(valGen, (*xatagenworkspace.FilterExpression)(v))
 	}
-	return api.NewFilterListFromFilterExpressionList(valGen)
+	return xatagenworkspace.NewFilterListFromFilterExpressionList(valGen)
 }
 
 func NewSearchBranchRequestTablesItemFromString(value string) *SearchBranchRequestTablesItem {
-	return (*SearchBranchRequestTablesItem)(api.NewSearchBranchRequestTablesItemFromString(value))
+	return (*SearchBranchRequestTablesItem)(xatagenworkspace.NewSearchBranchRequestTablesItemFromString(value))
 }
 
-type TargetExpressionItem api.TargetExpressionItem
+type TargetExpressionItem xatagenworkspace.TargetExpressionItem
 
 type TargetExpression []*TargetExpressionItem
 
 func NewTargetExpression(columnName string) *TargetExpressionItem {
-	return (*TargetExpressionItem)(api.NewTargetExpressionItemFromString(columnName))
+	return (*TargetExpressionItem)(xatagenworkspace.NewTargetExpressionItemFromString(columnName))
 }
 
-type TargetExpressionItemColumn api.TargetExpressionItemColumn
+type TargetExpressionItemColumn xatagenworkspace.TargetExpressionItemColumn
 
 func NewTargetExpressionWithColumnObject(colObj TargetExpressionItemColumn) *TargetExpressionItem {
-	colObjGen := &api.TargetExpressionItemColumn{
+	colObjGen := &xatagenworkspace.TargetExpressionItemColumn{
 		Column: colObj.Column,
 		Weight: colObj.Weight,
 	}
-	return (*TargetExpressionItem)(api.NewTargetExpressionItemFromTargetExpressionItemColumn(colObjGen))
+	return (*TargetExpressionItem)(xatagenworkspace.NewTargetExpressionItemFromTargetExpressionItemColumn(colObjGen))
 }
 
 type ValueBooster struct {
 	Column          string
-	Value           *api.ValueBoosterValue
+	Value           *xatagenworkspace.ValueBoosterValue
 	Factor          float64
 	IfMatchesFilter *FilterExpression
 }
 
-func NewValueBoosterValueFromString(value string) *api.ValueBoosterValue {
-	return api.NewValueBoosterValueFromString(value)
+func NewValueBoosterValueFromString(value string) *xatagenworkspace.ValueBoosterValue {
+	return xatagenworkspace.NewValueBoosterValueFromString(value)
 }
 
 type BoosterExpressionValueBooster struct {
@@ -111,13 +113,13 @@ type BoosterExpressionValueBooster struct {
 }
 
 func NewBoosterExpressionFromBoosterExpressionValueBooster(value *BoosterExpressionValueBooster) *BoosterExpression {
-	genBoosterExpVal := &api.BoosterExpressionValueBooster{ValueBooster: &api.ValueBooster{
+	genBoosterExpVal := &xatagenworkspace.BoosterExpressionValueBooster{ValueBooster: &xatagenworkspace.ValueBooster{
 		Column:          value.ValueBooster.Column,
 		Value:           value.ValueBooster.Value,
 		Factor:          value.ValueBooster.Factor,
-		IfMatchesFilter: (*api.FilterExpression)(value.ValueBooster.IfMatchesFilter),
+		IfMatchesFilter: (*xatagenworkspace.FilterExpression)(value.ValueBooster.IfMatchesFilter),
 	}}
-	return (*BoosterExpression)(api.NewBoosterExpressionFromBoosterExpressionValueBooster(genBoosterExpVal))
+	return (*BoosterExpression)(xatagenworkspace.NewBoosterExpressionFromBoosterExpressionValueBooster(genBoosterExpVal))
 }
 
 type NumericBooster struct {
@@ -145,15 +147,15 @@ type BoosterExpressionNumericBooster struct {
 }
 
 func NewBoosterExpressionFromBoosterExpressionNumericBooster(value *BoosterExpressionNumericBooster) *BoosterExpression {
-	genValue := &api.BoosterExpressionNumericBooster{
-		NumericBooster: &api.NumericBooster{
+	genValue := &xatagenworkspace.BoosterExpressionNumericBooster{
+		NumericBooster: &xatagenworkspace.NumericBooster{
 			Column:          value.NumericBooster.Column,
 			Factor:          value.NumericBooster.Factor,
-			Modifier:        (*api.NumericBoosterModifier)(value.NumericBooster.Modifier),
-			IfMatchesFilter: (*api.FilterExpression)(value.NumericBooster.IfMatchesFilter),
+			Modifier:        (*xatagenworkspace.NumericBoosterModifier)(value.NumericBooster.Modifier),
+			IfMatchesFilter: (*xatagenworkspace.FilterExpression)(value.NumericBooster.IfMatchesFilter),
 		},
 	}
-	return (*BoosterExpression)(api.NewBoosterExpressionFromBoosterExpressionNumericBooster(genValue))
+	return (*BoosterExpression)(xatagenworkspace.NewBoosterExpressionFromBoosterExpressionNumericBooster(genValue))
 }
 
 // DateBooster records based on the value of a datetime column. It is configured via "origin", "scale", and "decay". The further away from the "origin",
@@ -176,21 +178,21 @@ type DateBooster struct {
 }
 
 type BoosterExpressionDateBooster struct {
-	DateBooster *DateBooster `json:"dateBooster,omitempty"`
+	DateBooster *DateBooster
 }
 
 func NewBoosterExpressionFromBoosterExpressionDateBooster(value *BoosterExpressionDateBooster) *BoosterExpression {
-	genVal := &api.BoosterExpressionDateBooster{
-		DateBooster: &api.DateBooster{
+	genVal := &xatagenworkspace.BoosterExpressionDateBooster{
+		DateBooster: &xatagenworkspace.DateBooster{
 			Column:          value.DateBooster.Column,
 			Origin:          value.DateBooster.Origin,
 			Scale:           value.DateBooster.Scale,
 			Decay:           value.DateBooster.Decay,
 			Factor:          value.DateBooster.Factor,
-			IfMatchesFilter: (*api.FilterExpression)(value.DateBooster.IfMatchesFilter),
+			IfMatchesFilter: (*xatagenworkspace.FilterExpression)(value.DateBooster.IfMatchesFilter),
 		},
 	}
-	return (*BoosterExpression)(api.NewBoosterExpressionFromBoosterExpressionDateBooster(genVal))
+	return (*BoosterExpression)(xatagenworkspace.NewBoosterExpressionFromBoosterExpressionDateBooster(genVal))
 }
 
 type AskTableRequestSearch struct {
@@ -218,6 +220,143 @@ type AskTableRequestVectorSearch struct {
 
 type SummarizeTableRequestConsistency uint8
 
-//func NewAggExpressionFromAggExpressionCount(value *AggExpressionCount) *api.AggExpression {
-//
-//}
+type AggExpression *xatagenworkspace.AggExpression
+
+type AggExpressionMap = map[string]AggExpression
+
+type AggExpressionCount xatagenworkspace.AggExpressionCount
+
+type CountAggFilter struct {
+	Filter FilterExpression
+}
+
+func CountByFilter(value CountAggFilter) *xatagenworkspace.CountAgg {
+	return xatagenworkspace.NewCountAggFromCountAggFilter(&xatagenworkspace.CountAggFilter{
+		Filter: (*xatagenworkspace.FilterExpression)(&value.Filter),
+	})
+}
+
+func CountAll() *xatagenworkspace.CountAgg {
+	return xatagenworkspace.NewCountAggWithStringLiteral()
+}
+
+func NewCountAggExpression(value AggExpressionCount) AggExpression {
+	return xatagenworkspace.NewAggExpressionFromAggExpressionCount((*xatagenworkspace.AggExpressionCount)(&value))
+}
+
+func NewSumAggExpression(column string) *xatagenworkspace.AggExpression {
+	return xatagenworkspace.NewAggExpressionFromAggExpressionSum(&xatagenworkspace.AggExpressionSum{
+		Sum: &xatagenworkspace.SumAgg{Column: column},
+	})
+}
+
+func NewMaxAggExpression(column string) *xatagenworkspace.AggExpression {
+	return xatagenworkspace.NewAggExpressionFromAggExpressionMax(&xatagenworkspace.AggExpressionMax{
+		Max: &xatagenworkspace.MaxAgg{Column: column},
+	})
+}
+
+func NewMinAggExpression(column string) *xatagenworkspace.AggExpression {
+	return xatagenworkspace.NewAggExpressionFromAggExpressionMin(&xatagenworkspace.AggExpressionMin{
+		Min: &xatagenworkspace.MinAgg{Column: column},
+	})
+}
+
+func NewAverageAggExpression(column string) *xatagenworkspace.AggExpression {
+	return xatagenworkspace.NewAggExpressionFromAggExpressionAverage(&xatagenworkspace.AggExpressionAverage{
+		Average: &xatagenworkspace.AverageAgg{Column: column},
+	})
+}
+
+type UniqueCountAgg struct {
+	Column             string
+	PrecisionThreshold *int
+}
+
+func NewUniqueCountAggExpression(value UniqueCountAgg) *xatagenworkspace.AggExpression {
+	return xatagenworkspace.NewAggExpressionFromAggExpressionUniqueCount(&xatagenworkspace.AggExpressionUniqueCount{
+		UniqueCount: &xatagenworkspace.UniqueCountAgg{
+			Column:             value.Column,
+			PrecisionThreshold: value.PrecisionThreshold,
+		},
+	})
+}
+
+type DateHistogramAggCalendarInterval uint8
+
+const (
+	DateHistogramAggCalendarIntervalMinute DateHistogramAggCalendarInterval = iota + 1
+	DateHistogramAggCalendarIntervalHour
+	DateHistogramAggCalendarIntervalDay
+	DateHistogramAggCalendarIntervalWeek
+	DateHistogramAggCalendarIntervalMonth
+	DateHistogramAggCalendarIntervalQuarter
+	DateHistogramAggCalendarIntervalYear
+)
+
+// Split data into buckets by a datetime column. Accepts sub-aggregations for each bucket.
+type DateHistogramAgg struct {
+	// The column to use for bucketing. Must be of type datetime.
+	Column string
+	// The fixed interval to use when bucketing.
+	// It is formatted as number + units, for example: `5d`, `20m`, `10s`.
+	Interval *string
+	// The calendar-aware interval to use when bucketing. Possible values are: `minute`,
+	// `hour`, `day`, `week`, `month`, `quarter`, `year`.
+	CalendarInterval *DateHistogramAggCalendarInterval `json:"calendarInterval,omitempty"`
+	// The timezone to use for bucketing. By default, UTC is assumed.
+	// The accepted format is as an ISO 8601 UTC offset. For example: `+01:00` or
+	// `-08:00`.
+	Timezone *string
+}
+
+func NewDateHistogramAggExpression(value DateHistogramAgg) *xatagenworkspace.AggExpression {
+	return xatagenworkspace.NewAggExpressionFromAggExpressionDateHistogram(&xatagenworkspace.AggExpressionDateHistogram{
+		DateHistogram: &xatagenworkspace.DateHistogramAgg{
+			Column:           value.Column,
+			Interval:         value.Interval,
+			CalendarInterval: (*xatagenworkspace.DateHistogramAggCalendarInterval)(value.CalendarInterval),
+			Timezone:         value.Timezone,
+		},
+	})
+}
+
+// Split data into buckets by the unique values in a column. Accepts sub-aggregations for each bucket.
+// The top values as ordered by the number of records (`$count`) are returned.
+type TopValuesAgg struct {
+	// The column to use for bucketing. Accepted types are `string`, `email`, `int`, `float`, or `bool`.
+	Column string
+	// The maximum number of unique values to return.
+	Size *int
+}
+
+func NewTopValuesAggExpression(value TopValuesAgg) *xatagenworkspace.AggExpression {
+	return xatagenworkspace.NewAggExpressionFromAggExpressionTopValues(&xatagenworkspace.AggExpressionTopValues{
+		TopValues: &xatagenworkspace.TopValuesAgg{
+			Column: value.Column,
+			Size:   value.Size,
+		},
+	})
+}
+
+// Split data into buckets by dynamic numeric ranges. Accepts sub-aggregations for each bucket.
+type NumericHistogramAgg struct {
+	// The column to use for bucketing. Must be of numeric type.
+	Column string
+	// The numeric interval to use for bucketing. The resulting buckets will be ranges
+	// with this value as size.
+	Interval float64
+	// By default the bucket keys start with 0 and then continue in `interval` steps. The bucket
+	// boundaries can be shifted by using the offset option. For example, if the `interval` is 100,
+	// but you prefer the bucket boundaries to be `[50, 150), [150, 250), etc.`, you can set `offset`
+	// to 50.
+	Offset *float64
+}
+
+func NewNumericHistogramAggExpression(value NumericHistogramAgg) *xatagenworkspace.AggExpression {
+	return xatagenworkspace.NewAggExpressionFromAggExpressionNumericHistogram(&xatagenworkspace.AggExpressionNumericHistogram{NumericHistogram: &xatagenworkspace.NumericHistogramAgg{
+		Column:   value.Column,
+		Offset:   value.Offset,
+		Interval: value.Interval,
+	}})
+}

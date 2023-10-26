@@ -3,6 +3,7 @@ package xata
 import (
 	"context"
 	"fmt"
+
 	xatagenworkspace "github.com/xataio/xata-go/xata/internal/fern-workspace/generated/go"
 	xatagenclient "github.com/xataio/xata-go/xata/internal/fern-workspace/generated/go/core"
 )
@@ -333,7 +334,7 @@ func (s searchAndFilterCli) Summarize(ctx context.Context, request SummarizeTabl
 
 type AggregateTableRequestPayload struct {
 	Filter       *FilterExpression
-	Aggregations xatagenworkspace.AggExpressionMap
+	Aggregations AggExpressionMap
 }
 
 type AggregateTableRequest struct {

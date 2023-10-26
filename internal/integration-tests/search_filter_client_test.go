@@ -388,4 +388,257 @@ func Test_searchAndFilterClient(t *testing.T) {
 		assert.Equal(t, 10.0, sumTableRes.Summaries[0]["average_integerCol"])
 		assert.Equal(t, 1.0, sumTableRes.Summaries[0]["count_integerCol"])
 	})
+
+	t.Run("aggregate table count with filter", func(t *testing.T) {
+		assert.Eventually(t, func() bool {
+			aggTableRes, err := searchFilterCli.Aggregate(ctx, xata.AggregateTableRequest{
+				BranchRequestOptional: xata.BranchRequestOptional{
+					DatabaseName: xata.String(cfg.databaseName),
+				},
+				TableName: cfg.tableName,
+				Payload: xata.AggregateTableRequestPayload{
+					Aggregations: xata.AggExpressionMap{
+						"filteredCount": xata.NewCountAggExpression(xata.AggExpressionCount{
+							Count: xata.CountByFilter(xata.CountAggFilter{
+								Filter: xata.FilterExpression{
+									All: xata.NewFilterListFromFilterExpression(&xata.FilterExpression{
+										Exists: xata.String(stringColumn),
+									}),
+								},
+							}),
+						}),
+					},
+				},
+			})
+			assert.NoError(t, err)
+			return int(*(*aggTableRes.Aggs)["filteredCount"].DoubleOptional) == 1
+		}, time.Second*10, time.Second)
+	})
+
+	t.Run("aggregate table count all", func(t *testing.T) {
+		assert.Eventually(t, func() bool {
+			aggTableRes, err := searchFilterCli.Aggregate(ctx, xata.AggregateTableRequest{
+				BranchRequestOptional: xata.BranchRequestOptional{
+					DatabaseName: xata.String(cfg.databaseName),
+				},
+				TableName: cfg.tableName,
+				Payload: xata.AggregateTableRequestPayload{
+					Aggregations: xata.AggExpressionMap{
+						"totalCount": xata.NewCountAggExpression(xata.AggExpressionCount{
+							Count: xata.CountAll(),
+						}),
+					},
+				},
+			})
+			assert.NoError(t, err)
+			return int(*(*aggTableRes.Aggs)["totalCount"].DoubleOptional) == 1
+		}, time.Second*10, time.Second)
+	})
+
+	t.Run("aggregate table sum", func(t *testing.T) {
+		assert.Eventually(t, func() bool {
+			aggTableRes, err := searchFilterCli.Aggregate(ctx, xata.AggregateTableRequest{
+				BranchRequestOptional: xata.BranchRequestOptional{
+					DatabaseName: xata.String(cfg.databaseName),
+				},
+				TableName: cfg.tableName,
+				Payload: xata.AggregateTableRequestPayload{
+					Aggregations: xata.AggExpressionMap{
+						"sum": xata.NewSumAggExpression(integerColumn),
+					},
+				},
+			})
+			assert.NoError(t, err)
+			return int(*(*aggTableRes.Aggs)["sum"].DoubleOptional) == 10
+		}, time.Second*10, time.Second)
+	})
+
+	t.Run("aggregate table max", func(t *testing.T) {
+		assert.Eventually(t, func() bool {
+			aggTableRes, err := searchFilterCli.Aggregate(ctx, xata.AggregateTableRequest{
+				BranchRequestOptional: xata.BranchRequestOptional{
+					DatabaseName: xata.String(cfg.databaseName),
+				},
+				TableName: cfg.tableName,
+				Payload: xata.AggregateTableRequestPayload{
+					Aggregations: xata.AggExpressionMap{
+						"max": xata.NewMaxAggExpression(integerColumn),
+					},
+				},
+			})
+			assert.NoError(t, err)
+			if (*aggTableRes.Aggs)["max"] != nil {
+				return int(*(*aggTableRes.Aggs)["max"].DoubleOptional) == 10
+			}
+			return false
+		}, time.Second*10, time.Second)
+	})
+
+	t.Run("aggregate table min", func(t *testing.T) {
+		assert.Eventually(t, func() bool {
+			aggTableRes, err := searchFilterCli.Aggregate(ctx, xata.AggregateTableRequest{
+				BranchRequestOptional: xata.BranchRequestOptional{
+					DatabaseName: xata.String(cfg.databaseName),
+				},
+				TableName: cfg.tableName,
+				Payload: xata.AggregateTableRequestPayload{
+					Aggregations: xata.AggExpressionMap{
+						"min": xata.NewMinAggExpression(integerColumn),
+					},
+				},
+			})
+			assert.NoError(t, err)
+			if (*aggTableRes.Aggs)["min"] != nil {
+				return int(*(*aggTableRes.Aggs)["min"].DoubleOptional) == 10
+			}
+			return false
+		}, time.Second*10, time.Second)
+	})
+
+	t.Run("aggregate table average", func(t *testing.T) {
+		assert.Eventually(t, func() bool {
+			aggTableRes, err := searchFilterCli.Aggregate(ctx, xata.AggregateTableRequest{
+				BranchRequestOptional: xata.BranchRequestOptional{
+					DatabaseName: xata.String(cfg.databaseName),
+				},
+				TableName: cfg.tableName,
+				Payload: xata.AggregateTableRequestPayload{
+					Aggregations: xata.AggExpressionMap{
+						"average": xata.NewAverageAggExpression(integerColumn),
+					},
+				},
+			})
+			assert.NoError(t, err)
+			if (*aggTableRes.Aggs)["average"] != nil {
+				return int(*(*aggTableRes.Aggs)["average"].DoubleOptional) == 10
+			}
+			return false
+		}, time.Second*10, time.Second)
+	})
+
+	t.Run("aggregate table unique", func(t *testing.T) {
+		assert.Eventually(t, func() bool {
+			aggTableRes, err := searchFilterCli.Aggregate(ctx, xata.AggregateTableRequest{
+				BranchRequestOptional: xata.BranchRequestOptional{
+					DatabaseName: xata.String(cfg.databaseName),
+				},
+				TableName: cfg.tableName,
+				Payload: xata.AggregateTableRequestPayload{
+					Aggregations: xata.AggExpressionMap{
+						"unique": xata.NewUniqueCountAggExpression(xata.UniqueCountAgg{
+							Column:             stringColumn,
+							PrecisionThreshold: xata.Int(1),
+						}),
+					},
+				},
+			})
+			assert.NoError(t, err)
+			if (*aggTableRes.Aggs)["unique"] != nil {
+				return int(*(*aggTableRes.Aggs)["unique"].DoubleOptional) == 1
+			}
+			return false
+		}, time.Second*10, time.Second)
+	})
+
+	t.Run("aggregate table date histogram", func(t *testing.T) {
+		assert.Eventually(t, func() bool {
+			aggTableRes, err := searchFilterCli.Aggregate(ctx, xata.AggregateTableRequest{
+				BranchRequestOptional: xata.BranchRequestOptional{
+					DatabaseName: xata.String(cfg.databaseName),
+				},
+				TableName: cfg.tableName,
+				Payload: xata.AggregateTableRequestPayload{
+					Aggregations: xata.AggExpressionMap{
+						"histogram": xata.NewDateHistogramAggExpression(xata.DateHistogramAgg{
+							Column:           dateTimeColumn,
+							Interval:         xata.String("1d"),
+							CalendarInterval: nil,
+							Timezone:         nil,
+						}),
+					},
+				},
+			})
+			assert.NoError(t, err)
+			if (*aggTableRes.Aggs)["histogram"] != nil &&
+				(*aggTableRes.Aggs)["histogram"].AggResponseValues != nil {
+				return len((*aggTableRes.Aggs)["histogram"].AggResponseValues.Values) > 0
+			}
+			return false
+		}, time.Second*10, time.Second)
+	})
+
+	t.Run("aggregate table date histogram", func(t *testing.T) {
+		assert.Eventually(t, func() bool {
+			aggTableRes, err := searchFilterCli.Aggregate(ctx, xata.AggregateTableRequest{
+				BranchRequestOptional: xata.BranchRequestOptional{
+					DatabaseName: xata.String(cfg.databaseName),
+				},
+				TableName: cfg.tableName,
+				Payload: xata.AggregateTableRequestPayload{
+					Aggregations: xata.AggExpressionMap{
+						"histogram": xata.NewDateHistogramAggExpression(xata.DateHistogramAgg{
+							Column:           dateTimeColumn,
+							Interval:         xata.String("1d"),
+							CalendarInterval: nil,
+							Timezone:         nil,
+						}),
+					},
+				},
+			})
+			assert.NoError(t, err)
+			if (*aggTableRes.Aggs)["histogram"] != nil && (*aggTableRes.Aggs)["histogram"].AggResponseValues != nil {
+				return len((*aggTableRes.Aggs)["histogram"].AggResponseValues.Values) > 0
+			}
+			return false
+		}, time.Second*10, time.Second)
+	})
+
+	t.Run("aggregate table top values", func(t *testing.T) {
+		assert.Eventually(t, func() bool {
+			aggTableRes, err := searchFilterCli.Aggregate(ctx, xata.AggregateTableRequest{
+				BranchRequestOptional: xata.BranchRequestOptional{
+					DatabaseName: xata.String(cfg.databaseName),
+				},
+				TableName: cfg.tableName,
+				Payload: xata.AggregateTableRequestPayload{
+					Aggregations: xata.AggExpressionMap{
+						"top_values": xata.NewTopValuesAggExpression(xata.TopValuesAgg{
+							Column: stringColumn,
+							Size:   nil,
+						}),
+					},
+				},
+			})
+			assert.NoError(t, err)
+			if (*aggTableRes.Aggs)["top_values"] != nil && (*aggTableRes.Aggs)["top_values"].AggResponseValues != nil {
+				return len((*aggTableRes.Aggs)["top_values"].AggResponseValues.Values) > 0
+			}
+			return false
+		}, time.Second*10, time.Second)
+	})
+
+	t.Run("aggregate table numeric histogram", func(t *testing.T) {
+		assert.Eventually(t, func() bool {
+			aggTableRes, err := searchFilterCli.Aggregate(ctx, xata.AggregateTableRequest{
+				BranchRequestOptional: xata.BranchRequestOptional{
+					DatabaseName: xata.String(cfg.databaseName),
+				},
+				TableName: cfg.tableName,
+				Payload: xata.AggregateTableRequestPayload{
+					Aggregations: xata.AggExpressionMap{
+						"num_histogram": xata.NewNumericHistogramAggExpression(xata.NumericHistogramAgg{
+							Column:   integerColumn,
+							Interval: 1.0,
+							Offset:   nil,
+						}),
+					},
+				},
+			})
+			assert.NoError(t, err)
+			if (*aggTableRes.Aggs)["num_histogram"] != nil && (*aggTableRes.Aggs)["num_histogram"].AggResponseValues != nil {
+				return len((*aggTableRes.Aggs)["num_histogram"].AggResponseValues.Values) > 0
+			}
+			return false
+		}, time.Second*10, time.Second)
+	})
 }
