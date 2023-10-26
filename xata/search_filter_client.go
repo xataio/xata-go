@@ -3,101 +3,9 @@ package xata
 import (
 	"context"
 	"fmt"
-
 	xatagenworkspace "github.com/xataio/xata-go/xata/internal/fern-workspace/generated/go"
 	xatagenclient "github.com/xataio/xata-go/xata/internal/fern-workspace/generated/go/core"
 )
-
-type SortOrder xatagenworkspace.SortOrder
-
-const (
-	SortOrderAsc SortOrder = iota + 1
-	SortOrderDesc
-	SortOrderRandom
-)
-
-type FilterExpression xatagenworkspace.FilterExpression
-
-type PageConfig xatagenworkspace.PageConfig
-
-type QueryTableRequestConsistency uint8
-
-const (
-	ConsistencyStrong QueryTableRequestConsistency = iota + 1
-	ConsistencyEventual
-)
-
-type QueryTableRequestPayload struct {
-	Filter      *FilterExpression
-	Sort        *xatagenworkspace.SortExpression
-	Page        *PageConfig
-	Columns     []string
-	Consistency QueryTableRequestConsistency
-}
-
-type QueryTableRequest struct {
-	BranchRequestOptional
-	TableName string
-	Payload   QueryTableRequestPayload
-}
-
-type PrefixExpression uint8
-
-const (
-	PrefixExpressionPhrase PrefixExpression = iota + 1
-	PrefixExpressionDisabled
-)
-
-type SearchBranchRequestTablesItem xatagenworkspace.SearchBranchRequestTablesItem
-
-type HighlightExpression xatagenworkspace.HighlightExpression
-
-type SearchPageConfig xatagenworkspace.SearchPageConfig
-
-type SearchBranchRequestPayload struct {
-	Tables    []*SearchBranchRequestTablesItem
-	Query     string
-	Fuzziness *int
-	Prefix    *PrefixExpression
-	Highlight *HighlightExpression
-	Page      *SearchPageConfig
-}
-
-type BoosterExpression xatagenworkspace.BoosterExpression
-
-type BranchRequestOptional struct {
-	DatabaseName *string
-	BranchName   *string
-}
-
-type SearchBranchRequest struct {
-	BranchRequestOptional
-	Payload SearchBranchRequestPayload
-}
-
-type SearchTableRequestPayload struct {
-	Query     string
-	Fuzziness *int
-	Target    TargetExpression
-	Prefix    *PrefixExpression
-	Filter    *FilterExpression
-	Highlight *HighlightExpression
-	Boosters  []*BoosterExpression
-	Page      *SearchPageConfig
-}
-
-type SearchTableRequest struct {
-	BranchRequestOptional
-	TableName string
-	Payload   SearchTableRequestPayload
-}
-
-type AskFollowUpRequest struct {
-	BranchRequestOptional
-	TableName string
-	SessionID string
-	Question  string
-}
 
 type SearchAndFilterClient interface {
 	Query(ctx context.Context, request QueryTableRequest) (*xatagenworkspace.QueryTableResponse, error)
@@ -107,7 +15,12 @@ type SearchAndFilterClient interface {
 	Ask(ctx context.Context, request AskTableRequest) (*xatagenworkspace.AskTableResponse, error)
 	AskFollowUp(ctx context.Context, request AskFollowUpRequest) (*xatagenworkspace.AskTableSessionResponse, error)
 	Summarize(ctx context.Context, request SummarizeTableRequest) (*xatagenworkspace.SummarizeTableResponse, error)
-	// AggregateTable(ctx context.Context, dbBranchName DbBranchName, tableName TableName, request *AggregateTableRequest) (*AggregateTableResponse, error)
+	Aggregate(ctx context.Context, request AggregateTableRequest) (*xatagenworkspace.AggregateTableResponse, error)
+}
+
+type BranchRequestOptional struct {
+	DatabaseName *string
+	BranchName   *string
 }
 
 type searchAndFilterCli struct {
@@ -134,41 +47,18 @@ func (s searchAndFilterCli) dbBranchName(request BranchRequestOptional) (string,
 	return fmt.Sprintf("%s:%s", *request.DatabaseName, *request.BranchName), nil
 }
 
-func NewSortExpressionFromStringList(value []string) *xatagenworkspace.SortExpression {
-	return xatagenworkspace.NewSortExpressionFromStringList(value)
+type QueryTableRequestPayload struct {
+	Filter      *FilterExpression
+	Sort        *xatagenworkspace.SortExpression
+	Page        *PageConfig
+	Columns     []string
+	Consistency QueryTableRequestConsistency
 }
 
-func NewSortExpressionFromStringSortOrderMap(value map[string]SortOrder) *xatagenworkspace.SortExpression {
-	valGen := make(map[string]xatagenworkspace.SortOrder, len(value))
-	for k, v := range value {
-		valGen[k] = (xatagenworkspace.SortOrder)(v)
-	}
-
-	return xatagenworkspace.NewSortExpressionFromStringSortOrderMap(valGen)
-}
-
-func NewSortExpressionFromStringSortOrderMapList(value []map[string]SortOrder) *xatagenworkspace.SortExpression {
-	valGen := make([]map[string]xatagenworkspace.SortOrder, len(value))
-	for i, vs := range value {
-		for k, v := range vs {
-			valGen[i] = make(map[string]xatagenworkspace.SortOrder, len(vs))
-			valGen[i][k] = (xatagenworkspace.SortOrder)(v)
-		}
-	}
-
-	return xatagenworkspace.NewSortExpressionFromStringSortOrderMapList(valGen)
-}
-
-func NewFilterListFromFilterExpression(value *FilterExpression) *xatagenworkspace.FilterList {
-	return xatagenworkspace.NewFilterListFromFilterExpression((*xatagenworkspace.FilterExpression)(value))
-}
-
-func NewFilterListFromFilterExpressionList(value []*FilterExpression) *xatagenworkspace.FilterList {
-	var valGen []*xatagenworkspace.FilterExpression
-	for _, v := range value {
-		valGen = append(valGen, (*xatagenworkspace.FilterExpression)(v))
-	}
-	return xatagenworkspace.NewFilterListFromFilterExpressionList(valGen)
+type QueryTableRequest struct {
+	BranchRequestOptional
+	TableName string
+	Payload   QueryTableRequestPayload
 }
 
 func (s searchAndFilterCli) Query(ctx context.Context, request QueryTableRequest) (*xatagenworkspace.QueryTableResponse, error) {
@@ -186,8 +76,18 @@ func (s searchAndFilterCli) Query(ctx context.Context, request QueryTableRequest
 	})
 }
 
-func NewSearchBranchRequestTablesItemFromString(value string) *SearchBranchRequestTablesItem {
-	return (*SearchBranchRequestTablesItem)(xatagenworkspace.NewSearchBranchRequestTablesItemFromString(value))
+type SearchBranchRequestPayload struct {
+	Tables    []*SearchBranchRequestTablesItem
+	Query     string
+	Fuzziness *int
+	Prefix    *PrefixExpression
+	Highlight *HighlightExpression
+	Page      *SearchPageConfig
+}
+
+type SearchBranchRequest struct {
+	BranchRequestOptional
+	Payload SearchBranchRequestPayload
 }
 
 func (s searchAndFilterCli) SearchBranch(ctx context.Context, request SearchBranchRequest) (*xatagenworkspace.SearchBranchResponse, error) {
@@ -213,120 +113,21 @@ func (s searchAndFilterCli) SearchBranch(ctx context.Context, request SearchBran
 	})
 }
 
-type TargetExpressionItem xatagenworkspace.TargetExpressionItem
-
-type TargetExpression []*TargetExpressionItem
-
-func NewTargetExpression(columnName string) *TargetExpressionItem {
-	return (*TargetExpressionItem)(xatagenworkspace.NewTargetExpressionItemFromString(columnName))
+type SearchTableRequestPayload struct {
+	Query     string
+	Fuzziness *int
+	Target    TargetExpression
+	Prefix    *PrefixExpression
+	Filter    *FilterExpression
+	Highlight *HighlightExpression
+	Boosters  []*BoosterExpression
+	Page      *SearchPageConfig
 }
 
-type TargetExpressionItemColumn xatagenworkspace.TargetExpressionItemColumn
-
-func NewTargetExpressionWithColumnObject(colObj TargetExpressionItemColumn) *TargetExpressionItem {
-	colObjGen := &xatagenworkspace.TargetExpressionItemColumn{
-		Column: colObj.Column,
-		Weight: colObj.Weight,
-	}
-	return (*TargetExpressionItem)(xatagenworkspace.NewTargetExpressionItemFromTargetExpressionItemColumn(colObjGen))
-}
-
-type ValueBooster struct {
-	Column          string
-	Value           *xatagenworkspace.ValueBoosterValue
-	Factor          float64
-	IfMatchesFilter *FilterExpression
-}
-
-func NewValueBoosterValueFromString(value string) *xatagenworkspace.ValueBoosterValue {
-	return xatagenworkspace.NewValueBoosterValueFromString(value)
-}
-
-type BoosterExpressionValueBooster struct {
-	ValueBooster *ValueBooster
-}
-
-func NewBoosterExpressionFromBoosterExpressionValueBooster(value *BoosterExpressionValueBooster) *BoosterExpression {
-	genBoosterExpVal := &xatagenworkspace.BoosterExpressionValueBooster{ValueBooster: &xatagenworkspace.ValueBooster{
-		Column:          value.ValueBooster.Column,
-		Value:           value.ValueBooster.Value,
-		Factor:          value.ValueBooster.Factor,
-		IfMatchesFilter: (*xatagenworkspace.FilterExpression)(value.ValueBooster.IfMatchesFilter),
-	}}
-	return (*BoosterExpression)(xatagenworkspace.NewBoosterExpressionFromBoosterExpressionValueBooster(genBoosterExpVal))
-}
-
-type NumericBooster struct {
-	// The column in which to look for the value.
-	Column string
-	// The factor with which to multiply the value of the column before adding it to the item score.
-	Factor float64
-	// Modifier to be applied to the column value, before being multiplied with the factor. The possible values are:
-	//   - none (default).
-	//   - log: common logarithm (base 10)
-	//   - log1p: add 1 then take the common logarithm. This ensures that the value is positive if the
-	//     value is between 0 and 1.
-	//   - ln: natural logarithm (base e)
-	//   - ln1p: add 1 then take the natural logarithm. This ensures that the value is positive if the
-	//     value is between 0 and 1.
-	//   - square: raise the value to the power of two.
-	//   - sqrt: take the square root of the value.
-	//   - reciprocal: reciprocate the value (if the value is `x`, the reciprocal is `1/x`).
-	Modifier        *uint8
-	IfMatchesFilter *FilterExpression
-}
-
-type BoosterExpressionNumericBooster struct {
-	NumericBooster *NumericBooster
-}
-
-func NewBoosterExpressionFromBoosterExpressionNumericBooster(value *BoosterExpressionNumericBooster) *BoosterExpression {
-	genValue := &xatagenworkspace.BoosterExpressionNumericBooster{
-		NumericBooster: &xatagenworkspace.NumericBooster{
-			Column:          value.NumericBooster.Column,
-			Factor:          value.NumericBooster.Factor,
-			Modifier:        (*xatagenworkspace.NumericBoosterModifier)(value.NumericBooster.Modifier),
-			IfMatchesFilter: (*xatagenworkspace.FilterExpression)(value.NumericBooster.IfMatchesFilter),
-		},
-	}
-	return (*BoosterExpression)(xatagenworkspace.NewBoosterExpressionFromBoosterExpressionNumericBooster(genValue))
-}
-
-// DateBooster records based on the value of a datetime column. It is configured via "origin", "scale", and "decay". The further away from the "origin",
-// the more the score is decayed. The decay function uses an exponential function. For example if origin is "now", and scale is 10 days and decay is 0.5, it
-// should be interpreted as: a record with a date 10 days before/after origin will be boosted 2 times less than a record with the date at origin.
-// The result of the exponential function is a boost between 0 and 1. The "factor" allows you to control how impactful this boost is, by multiplying it with a given value.
-type DateBooster struct {
-	// The column in which to look for the value.
-	Column string
-	// The datetime (formatted as RFC3339) from where to apply the score decay function. The maximum boost will be applied for records with values at this time.
-	// If it is not specified, the current date and time is used.
-	Origin *string
-	// The duration at which distance from origin the score is decayed with factor, using an exponential function. It is formatted as number + units, for example: `5d`, `20m`, `10s`.
-	Scale string
-	// The decay factor to expect at "scale" distance from the "origin".
-	Decay float64
-	// The factor with which to multiply the added boost.
-	Factor          *float64
-	IfMatchesFilter *FilterExpression
-}
-
-type BoosterExpressionDateBooster struct {
-	DateBooster *DateBooster `json:"dateBooster,omitempty"`
-}
-
-func NewBoosterExpressionFromBoosterExpressionDateBooster(value *BoosterExpressionDateBooster) *BoosterExpression {
-	genVal := &xatagenworkspace.BoosterExpressionDateBooster{
-		DateBooster: &xatagenworkspace.DateBooster{
-			Column:          value.DateBooster.Column,
-			Origin:          value.DateBooster.Origin,
-			Scale:           value.DateBooster.Scale,
-			Decay:           value.DateBooster.Decay,
-			Factor:          value.DateBooster.Factor,
-			IfMatchesFilter: (*xatagenworkspace.FilterExpression)(value.DateBooster.IfMatchesFilter),
-		},
-	}
-	return (*BoosterExpression)(xatagenworkspace.NewBoosterExpressionFromBoosterExpressionDateBooster(genVal))
+type SearchTableRequest struct {
+	BranchRequestOptional
+	TableName string
+	Payload   SearchTableRequestPayload
 }
 
 func (s searchAndFilterCli) SearchTable(ctx context.Context, request SearchTableRequest) (*xatagenworkspace.SearchTableResponse, error) {
@@ -388,29 +189,6 @@ func (s searchAndFilterCli) VectorSearch(ctx context.Context, request VectorSear
 		Size:               request.Payload.Size,
 		Filter:             (*xatagenworkspace.FilterExpression)(request.Payload.Filter),
 	})
-}
-
-type AskTableRequestSearch struct {
-	Fuzziness *int
-	Target    TargetExpression
-	Prefix    *PrefixExpression
-	Filter    *FilterExpression
-	Boosters  []*BoosterExpression
-}
-
-type AskTableRequestSearchType uint8
-
-const (
-	AskTableRequestSearchTypeKeyword AskTableRequestSearchType = iota + 1
-	AskTableRequestSearchTypeVector
-)
-
-type AskTableRequestVectorSearch struct {
-	// The column to use for vector search. It must be of type `vector`.
-	Column string
-	// The column containing the text for vector search. Must be of type `text`.
-	ContentColumn string
-	Filter        *FilterExpression
 }
 
 type AskTableRequestPayload struct {
@@ -481,6 +259,13 @@ func (s searchAndFilterCli) Ask(ctx context.Context, request AskTableRequest) (*
 	})
 }
 
+type AskFollowUpRequest struct {
+	BranchRequestOptional
+	TableName string
+	SessionID string
+	Question  string
+}
+
 func (s searchAndFilterCli) AskFollowUp(ctx context.Context, request AskFollowUpRequest) (*xatagenworkspace.AskTableSessionResponse, error) {
 	dbBranchName, err := s.dbBranchName(request.BranchRequestOptional)
 	if err != nil {
@@ -495,8 +280,6 @@ func (s searchAndFilterCli) AskFollowUp(ctx context.Context, request AskFollowUp
 		&xatagenworkspace.AskTableSessionRequest{Message: String(request.Question)},
 	)
 }
-
-type SummarizeTableRequestConsistency uint8
 
 type SummarizeTableRequestPayload struct {
 	Filter          *FilterExpression
@@ -545,6 +328,37 @@ func (s searchAndFilterCli) Summarize(ctx context.Context, request SummarizeTabl
 		Page: &xatagenworkspace.SummarizeTableRequestPage{
 			Size: request.Payload.NumberOfPage,
 		},
+	})
+}
+
+type AggregateTableRequestPayload struct {
+	Filter       *FilterExpression
+	Aggregations xatagenworkspace.AggExpressionMap
+}
+
+type AggregateTableRequest struct {
+	BranchRequestOptional
+	TableName string
+	Payload   AggregateTableRequestPayload
+}
+
+func (s searchAndFilterCli) Aggregate(ctx context.Context, request AggregateTableRequest) (*xatagenworkspace.AggregateTableResponse, error) {
+	dbBranchName, err := s.dbBranchName(request.BranchRequestOptional)
+	if err != nil {
+		return nil, err
+	}
+
+	var aggsGen xatagenworkspace.AggExpressionMap
+	if len(request.Payload.Aggregations) > 0 {
+		aggsGen = make(xatagenworkspace.AggExpressionMap, len(request.Payload.Aggregations))
+		for k, v := range request.Payload.Aggregations {
+			aggsGen[k] = v
+		}
+	}
+
+	return s.generated.AggregateTable(ctx, dbBranchName, request.TableName, &xatagenworkspace.AggregateTableRequest{
+		Filter: (*xatagenworkspace.FilterExpression)(request.Payload.Filter),
+		Aggs:   &aggsGen,
 	})
 }
 
