@@ -12,7 +12,7 @@ smoke-test:
 
 test:
 	@echo "Running unit tests"
-	@go test -v -count=1 -cover -race ./...
+	@go test -count=1 -cover -race ./...
 
 integration-test:
 	@echo "Running integration test"

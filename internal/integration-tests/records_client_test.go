@@ -3,7 +3,6 @@ package integrationtests
 import (
 	"context"
 	"fmt"
-	"os"
 	"testing"
 	"time"
 
@@ -29,11 +28,6 @@ const (
 )
 
 func Test_recordsClient_Insert_Get(t *testing.T) {
-	apiKey, found := os.LookupEnv("XATA_API_KEY")
-	if !found {
-		t.Skipf("%s not found in env vars", "XATA_API_KEY")
-	}
-
 	cfg, err := setupDatabase()
 	if err != nil {
 		t.Fatalf("unable to setup database: %v", err)
@@ -53,7 +47,7 @@ func Test_recordsClient_Insert_Get(t *testing.T) {
 	})
 
 	recordsCli, err := xata.NewRecordsClient(
-		xata.WithAPIKey(apiKey),
+		xata.WithAPIKey(cfg.apiKey),
 		xata.WithBaseURL(fmt.Sprintf(
 			"https://%s.%s.xata.sh",
 			cfg.wsID,
@@ -175,7 +169,7 @@ func generateInsertRecordRequest(databaseName, tableName string) xata.InsertReco
 			emailColumn:    xata.ValueFromString("test-value-from-SDK-integration@test.com"),
 			boolColumn:     xata.ValueFromBoolean(true),
 			dateTimeColumn: xata.ValueFromDateTime(time.Now()),
-			textColumn:     xata.ValueFromString("test-for-text-column"),
+			textColumn:     xata.ValueFromString(textContent),
 			integerColumn:  xata.ValueFromInteger(10),
 			floatColumn:    xata.ValueFromDouble(10.3),
 			fileColumn: xata.ValueFromInputFile(xata.InputFile{
@@ -188,3 +182,5 @@ func generateInsertRecordRequest(databaseName, tableName string) xata.InsertReco
 		},
 	}
 }
+
+var textContent = "An atom is a particle that consists of a nucleus of protons and neutrons surrounded by an electromagnetically-bound cloud of electrons. The atom is the basic particle of the chemical elements, and the chemical elements are distinguished from each other by the number of protons that are in their atoms. For example, any atom that contains 11 protons is sodium, and any atom that contains 29 protons is copper. The number of neutrons defines the isotope of the element.\n\nAtoms are extremely small, typically around 100 picometers across. A human hair is about a million carbon atoms wide. This is smaller than the shortest wavelength of visible light, which means humans cannot see atoms with conventional microscopes. Atoms are so small that accurately predicting their behavior using classical physics is not possible due to quantum effects.\n\nMore than 99.94% of an atom's mass is in the nucleus. Each proton has a positive electric charge, while each electron has a negative charge, and the neutrons, if any are present, have no electric charge. If the numbers of protons and electrons are equal, as they normally are, then the atom is electrically neutral. If an atom has more electrons than protons, then it has an overall negative charge, and is called a negative ion (or anion). Conversely, if it has more protons than electrons, it has a positive charge, and is called a positive ion (or cation)."

@@ -72,6 +72,18 @@ func Bool(in bool) *bool {
 	return &in
 }
 
+func Int(in int) *int {
+	return &in
+}
+
+func Float64(in float64) *float64 {
+	return &in
+}
+
+func Uint8(in uint8) *uint8 {
+	return &in
+}
+
 type databaseConfig struct {
 	workspaceID     string
 	region          string
