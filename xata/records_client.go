@@ -33,6 +33,14 @@ type InsertRecordWithIDRequest struct {
 	Body       map[string]*DataInputRecordValue
 }
 
+type UpdateRecordRequest struct {
+	RecordRequest
+	RecordID  string
+	IfVersion *int
+	Columns   []string
+	Body      map[string]*DataInputRecordValue
+}
+
 type GetRecordRequest struct {
 	RecordRequest
 	RecordID string
@@ -51,6 +59,7 @@ type Record struct {
 
 type RecordsClient interface {
 	Insert(ctx context.Context, request InsertRecordRequest) (*Record, error)
+	Update(ctx context.Context, request UpdateRecordRequest) (*Record, error)
 	InsertWithID(ctx context.Context, request InsertRecordWithIDRequest) (*Record, error)
 	Get(ctx context.Context, request GetRecordRequest) (*Record, error)
 }
@@ -111,13 +120,13 @@ type recordsClient struct {
 }
 
 func (r recordsClient) Insert(ctx context.Context, request InsertRecordRequest) (*Record, error) {
-	insRecReq := &xatagenworkspace.InsertRecordRequest{
+	recGen := &xatagenworkspace.InsertRecordRequest{
 		Columns: constructColumns(request.Columns),
 		Body:    make(map[string]*xatagenworkspace.DataInputRecordValue),
 	}
 
 	for k, v := range request.Body {
-		insRecReq.Body[k] = (*xatagenworkspace.DataInputRecordValue)(v)
+		recGen.Body[k] = (*xatagenworkspace.DataInputRecordValue)(v)
 	}
 
 	dbBranchName, err := r.dbBranchName(request.RecordRequest)
@@ -125,7 +134,7 @@ func (r recordsClient) Insert(ctx context.Context, request InsertRecordRequest) 
 		return nil, err
 	}
 
-	record, err := r.generated.InsertRecord(ctx, dbBranchName, request.TableName, insRecReq)
+	record, err := r.generated.InsertRecord(ctx, dbBranchName, request.TableName, recGen)
 	if err != nil {
 		return nil, err
 	}
@@ -139,7 +148,7 @@ func (r recordsClient) Insert(ctx context.Context, request InsertRecordRequest) 
 }
 
 func (r recordsClient) InsertWithID(ctx context.Context, request InsertRecordWithIDRequest) (*Record, error) {
-	insRecReq := &xatagenworkspace.InsertRecordWithIdRequest{
+	recGen := &xatagenworkspace.InsertRecordWithIdRequest{
 		CreateOnly: request.CreateOnly,
 		IfVersion:  request.IfVersion,
 		Columns:    constructColumns(request.Columns),
@@ -147,7 +156,7 @@ func (r recordsClient) InsertWithID(ctx context.Context, request InsertRecordWit
 	}
 
 	for k, v := range request.Body {
-		insRecReq.Body[k] = (*xatagenworkspace.DataInputRecordValue)(v)
+		recGen.Body[k] = (*xatagenworkspace.DataInputRecordValue)(v)
 	}
 
 	dbBranchName, err := r.dbBranchName(request.RecordRequest)
@@ -155,7 +164,36 @@ func (r recordsClient) InsertWithID(ctx context.Context, request InsertRecordWit
 		return nil, err
 	}
 
-	record, err := r.generated.InsertRecordWithId(ctx, dbBranchName, request.TableName, request.RecordID, insRecReq)
+	record, err := r.generated.InsertRecordWithId(ctx, dbBranchName, request.TableName, request.RecordID, recGen)
+	if err != nil {
+		return nil, err
+	}
+
+	respRec, err := constructRecord(*record)
+	if err != nil {
+		return nil, err
+	}
+
+	return respRec, nil
+}
+
+func (r recordsClient) Update(ctx context.Context, request UpdateRecordRequest) (*Record, error) {
+	recGen := &xatagenworkspace.UpdateRecordWithIdRequest{
+		IfVersion: request.IfVersion,
+		Columns:   constructColumns(request.Columns),
+		Body:      make(map[string]*xatagenworkspace.DataInputRecordValue),
+	}
+
+	for k, v := range request.Body {
+		recGen.Body[k] = (*xatagenworkspace.DataInputRecordValue)(v)
+	}
+
+	dbBranchName, err := r.dbBranchName(request.RecordRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	record, err := r.generated.UpdateRecordWithId(ctx, dbBranchName, request.TableName, request.RecordID, recGen)
 	if err != nil {
 		return nil, err
 	}
