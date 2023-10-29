@@ -79,7 +79,7 @@ func Test_recordsClient_Insert_Get(t *testing.T) {
 		assert.Equal(t, insertRecordRequest.Body[jsonColumn].String, record.Data[jsonColumn])
 	})
 
-	t.Run("should create a record with ID and update it", func(t *testing.T) {
+	t.Run("should create a record with ID and update/upsert it", func(t *testing.T) {
 		providedRecordID := "random-string-for-ID"
 		insertRecordRequest := generateInsertRecordRequest(databaseName, tableName)
 
@@ -105,6 +105,25 @@ func Test_recordsClient_Insert_Get(t *testing.T) {
 		assert.Equal(t, insertRecordRequest.Body[jsonColumn].String, record.Data[jsonColumn])
 
 		record, err = recordsCli.Update(ctx, xata.UpdateRecordRequest{
+			RecordRequest: insertRecordRequest.RecordRequest,
+			RecordID:      providedRecordID,
+			Columns:       insertRecordRequest.Columns,
+			Body:          insertRecordRequest.Body,
+		})
+		assert.NoError(t, err)
+		assert.NotNil(t, record)
+		assert.Equal(t, insertRecordRequest.Body[emailColumn].String, record.Data[emailColumn])
+		assert.Equal(t, insertRecordRequest.Body[boolColumn].Boolean, record.Data[boolColumn])
+		assert.Equal(t, insertRecordRequest.Body[stringColumn].String, record.Data[stringColumn])
+		assert.Equal(t, insertRecordRequest.Body[textColumn].String, record.Data[textColumn])
+		assert.Equal(t, insertRecordRequest.Body[integerColumn].Double, record.Data[integerColumn])
+		assert.Equal(t, insertRecordRequest.Body[floatColumn].Double, record.Data[floatColumn])
+		assert.Equal(t, insertRecordRequest.Body[fileColumn].InputFile.Name, record.Data[fileColumn].(map[string]interface{})["name"])
+		assert.ElementsMatch(t, insertRecordRequest.Body[vectorColumn].DoubleList, record.Data[vectorColumn])
+		assert.ElementsMatch(t, insertRecordRequest.Body[multipleColumn].StringList, record.Data[multipleColumn])
+		assert.Equal(t, insertRecordRequest.Body[jsonColumn].String, record.Data[jsonColumn])
+
+		record, err = recordsCli.Upsert(ctx, xata.UpsertRecordRequest{
 			RecordRequest: insertRecordRequest.RecordRequest,
 			RecordID:      providedRecordID,
 			Columns:       insertRecordRequest.Columns,

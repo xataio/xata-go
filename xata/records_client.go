@@ -41,6 +41,8 @@ type UpdateRecordRequest struct {
 	Body      map[string]*DataInputRecordValue
 }
 
+type UpsertRecordRequest UpdateRecordRequest
+
 type GetRecordRequest struct {
 	RecordRequest
 	RecordID string
@@ -60,6 +62,7 @@ type Record struct {
 type RecordsClient interface {
 	Insert(ctx context.Context, request InsertRecordRequest) (*Record, error)
 	Update(ctx context.Context, request UpdateRecordRequest) (*Record, error)
+	Upsert(ctx context.Context, request UpsertRecordRequest) (*Record, error)
 	InsertWithID(ctx context.Context, request InsertRecordWithIDRequest) (*Record, error)
 	Get(ctx context.Context, request GetRecordRequest) (*Record, error)
 }
@@ -178,6 +181,35 @@ func (r recordsClient) InsertWithID(ctx context.Context, request InsertRecordWit
 }
 
 func (r recordsClient) Update(ctx context.Context, request UpdateRecordRequest) (*Record, error) {
+	recGen := &xatagenworkspace.UpdateRecordWithIdRequest{
+		IfVersion: request.IfVersion,
+		Columns:   constructColumns(request.Columns),
+		Body:      make(map[string]*xatagenworkspace.DataInputRecordValue),
+	}
+
+	for k, v := range request.Body {
+		recGen.Body[k] = (*xatagenworkspace.DataInputRecordValue)(v)
+	}
+
+	dbBranchName, err := r.dbBranchName(request.RecordRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	record, err := r.generated.UpdateRecordWithId(ctx, dbBranchName, request.TableName, request.RecordID, recGen)
+	if err != nil {
+		return nil, err
+	}
+
+	respRec, err := constructRecord(*record)
+	if err != nil {
+		return nil, err
+	}
+
+	return respRec, nil
+}
+
+func (r recordsClient) Upsert(ctx context.Context, request UpsertRecordRequest) (*Record, error) {
 	recGen := &xatagenworkspace.UpdateRecordWithIdRequest{
 		IfVersion: request.IfVersion,
 		Columns:   constructColumns(request.Columns),
