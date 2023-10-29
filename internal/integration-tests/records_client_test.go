@@ -79,6 +79,31 @@ func Test_recordsClient_Insert_Get(t *testing.T) {
 		assert.Equal(t, insertRecordRequest.Body[jsonColumn].String, record.Data[jsonColumn])
 	})
 
+	t.Run("should create a record with ID", func(t *testing.T) {
+		insertRecordRequest := generateInsertRecordRequest(databaseName, tableName)
+
+		record, err := recordsCli.InsertWithID(ctx, xata.InsertRecordWithIDRequest{
+			RecordRequest: insertRecordRequest.RecordRequest,
+			RecordID:      "random-string-for-ID",
+			CreateOnly:    xata.Bool(false),
+			IfVersion:     xata.Int(20),
+			Columns:       insertRecordRequest.Columns,
+			Body:          insertRecordRequest.Body,
+		})
+		assert.NoError(t, err)
+		assert.NotNil(t, record)
+		assert.Equal(t, insertRecordRequest.Body[emailColumn].String, record.Data[emailColumn])
+		assert.Equal(t, insertRecordRequest.Body[boolColumn].Boolean, record.Data[boolColumn])
+		assert.Equal(t, insertRecordRequest.Body[stringColumn].String, record.Data[stringColumn])
+		assert.Equal(t, insertRecordRequest.Body[textColumn].String, record.Data[textColumn])
+		assert.Equal(t, insertRecordRequest.Body[integerColumn].Double, record.Data[integerColumn])
+		assert.Equal(t, insertRecordRequest.Body[floatColumn].Double, record.Data[floatColumn])
+		assert.Equal(t, insertRecordRequest.Body[fileColumn].InputFile.Name, record.Data[fileColumn].(map[string]interface{})["name"])
+		assert.ElementsMatch(t, insertRecordRequest.Body[vectorColumn].DoubleList, record.Data[vectorColumn])
+		assert.ElementsMatch(t, insertRecordRequest.Body[multipleColumn].StringList, record.Data[multipleColumn])
+		assert.Equal(t, insertRecordRequest.Body[jsonColumn].String, record.Data[jsonColumn])
+	})
+
 	t.Run("should get a record", func(t *testing.T) {
 		// first, create a record
 		insertRecordRequest := generateInsertRecordRequest(databaseName, tableName)
