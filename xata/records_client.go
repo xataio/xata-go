@@ -24,6 +24,31 @@ type InsertRecordRequest struct {
 	Body    map[string]*DataInputRecordValue
 }
 
+type BulkInsertRecordRequest struct {
+	RecordRequest
+	Columns []string
+	Records []map[string]*DataInputRecordValue
+}
+
+type InsertRecordWithIDRequest struct {
+	RecordRequest
+	RecordID   string
+	CreateOnly *bool
+	IfVersion  *int
+	Columns    []string
+	Body       map[string]*DataInputRecordValue
+}
+
+type UpdateRecordRequest struct {
+	RecordRequest
+	RecordID  string
+	IfVersion *int
+	Columns   []string
+	Body      map[string]*DataInputRecordValue
+}
+
+type UpsertRecordRequest UpdateRecordRequest
+
 type GetRecordRequest struct {
 	RecordRequest
 	RecordID string
@@ -40,8 +65,17 @@ type Record struct {
 	Data map[string]interface{}
 }
 
+type BulkRecords struct {
+	RecordIDs []string
+	Records   []Record
+}
+
 type RecordsClient interface {
 	Insert(ctx context.Context, request InsertRecordRequest) (*Record, error)
+	BulkInsert(ctx context.Context, request BulkInsertRecordRequest) ([]*Record, error)
+	Update(ctx context.Context, request UpdateRecordRequest) (*Record, error)
+	Upsert(ctx context.Context, request UpsertRecordRequest) (*Record, error)
+	InsertWithID(ctx context.Context, request InsertRecordWithIDRequest) (*Record, error)
 	Get(ctx context.Context, request GetRecordRequest) (*Record, error)
 }
 
@@ -101,13 +135,13 @@ type recordsClient struct {
 }
 
 func (r recordsClient) Insert(ctx context.Context, request InsertRecordRequest) (*Record, error) {
-	insRecReq := &xatagenworkspace.InsertRecordRequest{
+	recGen := &xatagenworkspace.InsertRecordRequest{
 		Columns: constructColumns(request.Columns),
 		Body:    make(map[string]*xatagenworkspace.DataInputRecordValue),
 	}
 
 	for k, v := range request.Body {
-		insRecReq.Body[k] = (*xatagenworkspace.DataInputRecordValue)(v)
+		recGen.Body[k] = (*xatagenworkspace.DataInputRecordValue)(v)
 	}
 
 	dbBranchName, err := r.dbBranchName(request.RecordRequest)
@@ -115,7 +149,121 @@ func (r recordsClient) Insert(ctx context.Context, request InsertRecordRequest) 
 		return nil, err
 	}
 
-	record, err := r.generated.InsertRecord(ctx, dbBranchName, request.TableName, insRecReq)
+	record, err := r.generated.InsertRecord(ctx, dbBranchName, request.TableName, recGen)
+	if err != nil {
+		return nil, err
+	}
+
+	respRec, err := constructRecord(*record)
+	if err != nil {
+		return nil, err
+	}
+
+	return respRec, nil
+}
+
+func (r recordsClient) BulkInsert(ctx context.Context, request BulkInsertRecordRequest) ([]*Record, error) {
+	recGen := &xatagenworkspace.BulkInsertTableRecordsRequest{
+		Columns: constructColumns(request.Columns),
+	}
+
+	for _, record := range request.Records {
+		dataInput := make(map[string]*xatagenworkspace.DataInputRecordValue, len(record))
+		for col, val := range record {
+			dataInput[col] = (*xatagenworkspace.DataInputRecordValue)(val)
+		}
+		recGen.Records = append(recGen.Records, dataInput)
+	}
+
+	dbBranchName, err := r.dbBranchName(request.RecordRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	records, err := r.generated.BulkInsertTableRecords(ctx, dbBranchName, request.TableName, recGen)
+	if err != nil {
+		return nil, err
+	}
+
+	return constructBulkRecords(*records)
+}
+
+func (r recordsClient) InsertWithID(ctx context.Context, request InsertRecordWithIDRequest) (*Record, error) {
+	recGen := &xatagenworkspace.InsertRecordWithIdRequest{
+		CreateOnly: request.CreateOnly,
+		IfVersion:  request.IfVersion,
+		Columns:    constructColumns(request.Columns),
+		Body:       make(map[string]*xatagenworkspace.DataInputRecordValue),
+	}
+
+	for k, v := range request.Body {
+		recGen.Body[k] = (*xatagenworkspace.DataInputRecordValue)(v)
+	}
+
+	dbBranchName, err := r.dbBranchName(request.RecordRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	record, err := r.generated.InsertRecordWithId(ctx, dbBranchName, request.TableName, request.RecordID, recGen)
+	if err != nil {
+		return nil, err
+	}
+
+	respRec, err := constructRecord(*record)
+	if err != nil {
+		return nil, err
+	}
+
+	return respRec, nil
+}
+
+func (r recordsClient) Update(ctx context.Context, request UpdateRecordRequest) (*Record, error) {
+	recGen := &xatagenworkspace.UpdateRecordWithIdRequest{
+		IfVersion: request.IfVersion,
+		Columns:   constructColumns(request.Columns),
+		Body:      make(map[string]*xatagenworkspace.DataInputRecordValue),
+	}
+
+	for k, v := range request.Body {
+		recGen.Body[k] = (*xatagenworkspace.DataInputRecordValue)(v)
+	}
+
+	dbBranchName, err := r.dbBranchName(request.RecordRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	record, err := r.generated.UpdateRecordWithId(ctx, dbBranchName, request.TableName, request.RecordID, recGen)
+	if err != nil {
+		return nil, err
+	}
+
+	respRec, err := constructRecord(*record)
+	if err != nil {
+		return nil, err
+	}
+
+	return respRec, nil
+}
+
+func (r recordsClient) Upsert(ctx context.Context, request UpsertRecordRequest) (*Record, error) {
+	recGen := &xatagenworkspace.UpdateRecordWithIdRequest{
+		IfVersion: request.IfVersion,
+		Columns:   constructColumns(request.Columns),
+		Body:      make(map[string]*xatagenworkspace.DataInputRecordValue),
+	}
+
+	for k, v := range request.Body {
+		recGen.Body[k] = (*xatagenworkspace.DataInputRecordValue)(v)
+	}
+
+	dbBranchName, err := r.dbBranchName(request.RecordRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	record, err := r.generated.UpdateRecordWithId(ctx, dbBranchName, request.TableName, request.RecordID, recGen)
 	if err != nil {
 		return nil, err
 	}
@@ -183,8 +331,24 @@ func constructColumns(columns []string) []*string {
 	return []*string{String(strings.Join(columns, ","))}
 }
 
-func constructRecord(response map[string]interface{}) (*Record, error) {
-	rawResponse, err := json.Marshal(response)
+func constructBulkRecords(in xatagenworkspace.BulkInsertTableRecordsResponse) ([]*Record, error) {
+	var records []*Record
+
+	// response has a key `records` that holds the records
+	for _, rec := range in["records"] {
+		record, err := constructRecord(rec)
+		if err != nil {
+			return nil, err
+		}
+
+		records = append(records, record)
+	}
+
+	return records, nil
+}
+
+func constructRecord(in map[string]interface{}) (*Record, error) {
+	rawResponse, err := json.Marshal(in)
 	if err != nil {
 		return nil, err
 	}
@@ -200,7 +364,7 @@ func constructRecord(response map[string]interface{}) (*Record, error) {
 		Data:       make(map[string]interface{}),
 	}
 
-	for k, v := range response {
+	for k, v := range in {
 		if k == "id" {
 			continue
 		}

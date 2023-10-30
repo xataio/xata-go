@@ -2,64 +2,62 @@
 
 package api
 
-import (
-	json "encoding/json"
-	fmt "fmt"
-)
+type InsertRecordWithIdResponse map[string]interface{}
 
-type InsertRecordWithIdResponse struct {
-	typeName                     string
-	Record                       *Record
-	InsertRecordWithIdResponseId *InsertRecordWithIdResponseId
-}
-
-func NewInsertRecordWithIdResponseFromRecord(value *Record) *InsertRecordWithIdResponse {
-	return &InsertRecordWithIdResponse{typeName: "record", Record: value}
-}
-
-func NewInsertRecordWithIdResponseFromInsertRecordWithIdResponseId(value *InsertRecordWithIdResponseId) *InsertRecordWithIdResponse {
-	return &InsertRecordWithIdResponse{typeName: "insertRecordWithIdResponseId", InsertRecordWithIdResponseId: value}
-}
-
-func (i *InsertRecordWithIdResponse) UnmarshalJSON(data []byte) error {
-	valueRecord := new(Record)
-	if err := json.Unmarshal(data, &valueRecord); err == nil {
-		i.typeName = "record"
-		i.Record = valueRecord
-		return nil
-	}
-	valueInsertRecordWithIdResponseId := new(InsertRecordWithIdResponseId)
-	if err := json.Unmarshal(data, &valueInsertRecordWithIdResponseId); err == nil {
-		i.typeName = "insertRecordWithIdResponseId"
-		i.InsertRecordWithIdResponseId = valueInsertRecordWithIdResponseId
-		return nil
-	}
-	return fmt.Errorf("%s cannot be deserialized as a %T", data, i)
-}
-
-func (i InsertRecordWithIdResponse) MarshalJSON() ([]byte, error) {
-	switch i.typeName {
-	default:
-		return nil, fmt.Errorf("invalid type %s in %T", i.typeName, i)
-	case "record":
-		return json.Marshal(i.Record)
-	case "insertRecordWithIdResponseId":
-		return json.Marshal(i.InsertRecordWithIdResponseId)
-	}
-}
-
-type InsertRecordWithIdResponseVisitor interface {
-	VisitRecord(*Record) error
-	VisitInsertRecordWithIdResponseId(*InsertRecordWithIdResponseId) error
-}
-
-func (i *InsertRecordWithIdResponse) Accept(v InsertRecordWithIdResponseVisitor) error {
-	switch i.typeName {
-	default:
-		return fmt.Errorf("invalid type %s in %T", i.typeName, i)
-	case "record":
-		return v.VisitRecord(i.Record)
-	case "insertRecordWithIdResponseId":
-		return v.VisitInsertRecordWithIdResponseId(i.InsertRecordWithIdResponseId)
-	}
-}
+//
+//type InsertRecordWithIdResponse struct {
+//	typeName                     string
+//	Record                       *Record
+//	InsertRecordWithIdResponseId *InsertRecordWithIdResponseId
+//}
+//
+//func NewInsertRecordWithIdResponseFromRecord(value *Record) *InsertRecordWithIdResponse {
+//	return &InsertRecordWithIdResponse{typeName: "record", Record: value}
+//}
+//
+//func NewInsertRecordWithIdResponseFromInsertRecordWithIdResponseId(value *InsertRecordWithIdResponseId) *InsertRecordWithIdResponse {
+//	return &InsertRecordWithIdResponse{typeName: "insertRecordWithIdResponseId", InsertRecordWithIdResponseId: value}
+//}
+//
+//func (i *InsertRecordWithIdResponse) UnmarshalJSON(data []byte) error {
+//	valueRecord := new(Record)
+//	if err := json.Unmarshal(data, &valueRecord); err == nil {
+//		i.typeName = "record"
+//		i.Record = valueRecord
+//		return nil
+//	}
+//	valueInsertRecordWithIdResponseId := new(InsertRecordWithIdResponseId)
+//	if err := json.Unmarshal(data, &valueInsertRecordWithIdResponseId); err == nil {
+//		i.typeName = "insertRecordWithIdResponseId"
+//		i.InsertRecordWithIdResponseId = valueInsertRecordWithIdResponseId
+//		return nil
+//	}
+//	return fmt.Errorf("%s cannot be deserialized as a %T", data, i)
+//}
+//
+//func (i InsertRecordWithIdResponse) MarshalJSON() ([]byte, error) {
+//	switch i.typeName {
+//	default:
+//		return nil, fmt.Errorf("invalid type %s in %T", i.typeName, i)
+//	case "record":
+//		return json.Marshal(i.Record)
+//	case "insertRecordWithIdResponseId":
+//		return json.Marshal(i.InsertRecordWithIdResponseId)
+//	}
+//}
+//
+//type InsertRecordWithIdResponseVisitor interface {
+//	VisitRecord(*Record) error
+//	VisitInsertRecordWithIdResponseId(*InsertRecordWithIdResponseId) error
+//}
+//
+//func (i *InsertRecordWithIdResponse) Accept(v InsertRecordWithIdResponseVisitor) error {
+//	switch i.typeName {
+//	default:
+//		return fmt.Errorf("invalid type %s in %T", i.typeName, i)
+//	case "record":
+//		return v.VisitRecord(i.Record)
+//	case "insertRecordWithIdResponseId":
+//		return v.VisitInsertRecordWithIdResponseId(i.InsertRecordWithIdResponseId)
+//	}
+//}
