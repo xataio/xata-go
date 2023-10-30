@@ -60,6 +60,11 @@ type GetRecordRequest struct {
 	Columns  []string
 }
 
+type DeleteRecordRequest struct {
+	RecordRequest
+	RecordID string
+}
+
 type RecordMeta struct {
 	Id   string                           `json:"id"` // nolint
 	Xata *xatagenworkspace.RecordMetaXata `json:"xata,omitempty"`
@@ -83,6 +88,7 @@ type RecordsClient interface {
 	Upsert(ctx context.Context, request UpsertRecordRequest) (*Record, error)
 	InsertWithID(ctx context.Context, request InsertRecordWithIDRequest) (*Record, error)
 	Get(ctx context.Context, request GetRecordRequest) (*Record, error)
+	Delete(ctx context.Context, request DeleteRecordRequest) error
 }
 
 type DataInputRecordValue xatagenworkspace.DataInputRecordValue
@@ -358,8 +364,16 @@ func (r recordsClient) Transaction(ctx context.Context, request TransactionReque
 
 	return r.generated.BranchTransaction(ctx, dbBranchName, &xatagenworkspace.BranchTransactionRequest{
 		Operations: operationsGen,
-	},
-	)
+	})
+}
+
+func (r recordsClient) Delete(ctx context.Context, request DeleteRecordRequest) error {
+	dbBranchName, err := r.dbBranchName(request.RecordRequest)
+	if err != nil {
+		return err
+	}
+
+	return r.generated.DeleteRecord(ctx, dbBranchName, request.TableName, request.RecordID)
 }
 
 func (r recordsClient) dbBranchName(request RecordRequest) (string, error) {

@@ -79,6 +79,23 @@ func Test_recordsClient_Insert_Get(t *testing.T) {
 		assert.Equal(t, insertRecordRequest.Body[jsonColumn].String, record.Data[jsonColumn])
 	})
 
+	t.Run("should delete a record", func(t *testing.T) {
+		insertRecordRequest := generateInsertRecordRequest(databaseName, tableName)
+
+		record, err := recordsCli.Insert(ctx, insertRecordRequest)
+		assert.NoError(t, err)
+		assert.NotNil(t, record)
+
+		err = recordsCli.Delete(ctx, xata.DeleteRecordRequest{
+			RecordRequest: xata.RecordRequest{
+				DatabaseName: xata.String(databaseName),
+				TableName:    tableName,
+			},
+			RecordID: record.Id,
+		})
+		assert.NoError(t, err)
+	})
+
 	t.Run("should bulk insert records", func(t *testing.T) {
 		insertRecordRequest := generateInsertRecordRequest(databaseName, tableName)
 
