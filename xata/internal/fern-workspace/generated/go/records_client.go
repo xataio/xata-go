@@ -21,7 +21,7 @@ type RecordsClient interface {
 	UpsertRecordWithId(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId, request *UpsertRecordWithIdRequest) (*UpsertRecordWithIdResponse, error)
 	InsertRecordWithId(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId, request *InsertRecordWithIdRequest) (*InsertRecordWithIdResponse, error)
 	UpdateRecordWithId(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId, request *UpdateRecordWithIdRequest) (*UpdateRecordWithIdResponse, error)
-	DeleteRecord(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId, request *DeleteRecordRequest) (*Record, error)
+	DeleteRecord(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId) error
 	BulkInsertTableRecords(ctx context.Context, dbBranchName DbBranchName, tableName TableName, request *BulkInsertTableRecordsRequest) (*BulkInsertTableRecordsResponse, error)
 }
 
@@ -495,7 +495,7 @@ func (r *recordsClient) UpdateRecordWithId(ctx context.Context, dbBranchName DbB
 //
 // The Table name
 // The Record name
-func (r *recordsClient) DeleteRecord(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId, request *DeleteRecordRequest) (*Record, error) {
+func (r *recordsClient) DeleteRecord(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId) error {
 	baseURL := "/"
 	if r.baseURL != "" {
 		baseURL = r.baseURL
@@ -503,9 +503,6 @@ func (r *recordsClient) DeleteRecord(ctx context.Context, dbBranchName DbBranchN
 	endpointURL := fmt.Sprintf(baseURL+"/"+"db/%v/tables/%v/data/%v", dbBranchName, tableName, recordId)
 
 	queryParams := make(url.Values)
-	for _, value := range request.Columns {
-		queryParams.Add("columns", fmt.Sprintf("%v", *value))
-	}
 	if len(queryParams) > 0 {
 		endpointURL += "?" + queryParams.Encode()
 	}
@@ -543,21 +540,21 @@ func (r *recordsClient) DeleteRecord(ctx context.Context, dbBranchName DbBranchN
 		return apiError
 	}
 
-	var response *Record
+	//var response *Record
 	if err := core.DoRequest(
 		ctx,
 		r.httpClient,
 		endpointURL,
 		http.MethodDelete,
-		request,
-		&response,
+		nil,
+		nil,
 		false,
 		r.header,
 		errorDecoder,
 	); err != nil {
-		return response, err
+		return err
 	}
-	return response, nil
+	return nil
 }
 
 // Bulk insert records
