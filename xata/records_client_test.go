@@ -440,3 +440,74 @@ func Test_recordsClient_BulkInsert(t *testing.T) {
 		})
 	}
 }
+
+func Test_recordsClient_Transaction(t *testing.T) {
+	assert := assert.New(t)
+
+	type tc struct {
+		name       string
+		want       *xatagenworkspace.TransactionSuccess
+		statusCode int
+		apiErr     *xatagencore.APIError
+	}
+
+	tests := []tc{
+		{
+			name:       "should send a transaction successfully",
+			want:       &xatagenworkspace.TransactionSuccess{},
+			statusCode: http.StatusOK,
+		},
+	}
+
+	for _, eTC := range errTestCasesWorkspace {
+		tests = append(tests, tc{
+			name:       eTC.name,
+			statusCode: eTC.statusCode,
+			apiErr:     eTC.apiErr,
+		})
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testSrv := testService(
+				t,
+				http.MethodPost,
+				"/db",
+				tt.statusCode,
+				tt.apiErr != nil,
+				tt.want,
+			)
+
+			cli, err := xata.NewRecordsClient(xata.WithBaseURL(testSrv.URL), xata.WithAPIKey("test-key"))
+			assert.NoError(err)
+			assert.NotNil(cli)
+
+			got, err := cli.Transaction(context.TODO(), xata.TransactionRequest{
+				RecordRequest: xata.RecordRequest{
+					DatabaseName: xata.String("test-db"),
+					BranchName:   xata.String("main"),
+					TableName:    "test-table",
+				},
+				Operations: []xata.TransactionOperation{
+					xata.NewDeleteTransaction(xata.TransactionDeleteOp{
+						Table: "test-table",
+						Id:    "some-id",
+					}),
+				},
+			})
+
+			if tt.apiErr != nil {
+				errAPI := tt.apiErr.Unwrap()
+				if errAPI == nil {
+					t.Fatal("expected error but got nil")
+				}
+				assert.ErrorAs(err, &errAPI)
+				assert.Equal(err.Error(), tt.apiErr.Error())
+				assert.Nil(got)
+			} else {
+				assert.NoError(err)
+				assert.Equal(tt.want, got)
+			}
+		})
+	}
+}

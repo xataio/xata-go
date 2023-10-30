@@ -191,12 +191,168 @@ func Test_recordsClient_Insert_Get(t *testing.T) {
 			},
 			RecordID: record.RecordMeta.Id,
 		}
-		record, err = recordsCli.Get(ctx, getRecordRequest)
+		recordRetrieved, err := recordsCli.Get(ctx, getRecordRequest)
+		assert.NoError(t, err)
+		assert.NotNil(t, recordRetrieved)
+		assert.Equal(t, insertRecordRequest.Body[emailColumn].String, recordRetrieved.Data[emailColumn])
+		assert.Equal(t, insertRecordRequest.Body[boolColumn].Boolean, recordRetrieved.Data[boolColumn])
+		assert.Equal(t, insertRecordRequest.Body[stringColumn].String, recordRetrieved.Data[stringColumn])
+	})
+
+	t.Run("should get a record with get transaction and columns in query", func(t *testing.T) {
+		// first, create a record
+		insertRecordRequest := generateInsertRecordRequest(databaseName, tableName)
+
+		record, err := recordsCli.Insert(ctx, insertRecordRequest)
 		assert.NoError(t, err)
 		assert.NotNil(t, record)
-		assert.Equal(t, insertRecordRequest.Body[emailColumn].String, record.Data[emailColumn])
-		assert.Equal(t, insertRecordRequest.Body[boolColumn].Boolean, record.Data[boolColumn])
-		assert.Equal(t, insertRecordRequest.Body[stringColumn].String, record.Data[stringColumn])
+
+		// retrieve the record
+		columns := []string{stringColumn, emailColumn, boolColumn}
+		transactionRes, err := recordsCli.Transaction(ctx, xata.TransactionRequest{
+			RecordRequest: xata.RecordRequest{
+				DatabaseName: xata.String(databaseName),
+				TableName:    tableName,
+			},
+			Operations: []xata.TransactionOperation{
+				xata.NewGetTransaction(xata.TransactionGetOp{
+					Table:   tableName,
+					Id:      record.Id,
+					Columns: &columns,
+				}),
+			},
+		})
+		assert.NoError(t, err)
+		assert.NotNil(t, transactionRes)
+		assert.Equal(t, insertRecordRequest.Body[emailColumn].String, (*transactionRes.Results[0].Columns)[emailColumn])
+		assert.Equal(t, insertRecordRequest.Body[boolColumn].Boolean, (*transactionRes.Results[0].Columns)[boolColumn])
+		assert.Equal(t, insertRecordRequest.Body[stringColumn].String, (*transactionRes.Results[0].Columns)[stringColumn])
+	})
+
+	t.Run("should get a record with get transaction", func(t *testing.T) {
+		// first, create a record
+		insertRecordRequest := generateInsertRecordRequest(databaseName, tableName)
+
+		record, err := recordsCli.Insert(ctx, insertRecordRequest)
+		assert.NoError(t, err)
+		assert.NotNil(t, record)
+
+		// retrieve the record
+		transactionRes, err := recordsCli.Transaction(ctx, xata.TransactionRequest{
+			RecordRequest: xata.RecordRequest{
+				DatabaseName: xata.String(databaseName),
+				TableName:    tableName,
+			},
+			Operations: []xata.TransactionOperation{
+				xata.NewGetTransaction(xata.TransactionGetOp{
+					Table: tableName,
+					Id:    record.Id,
+				}),
+			},
+		})
+		assert.NoError(t, err)
+		assert.NotNil(t, transactionRes)
+		assert.Equal(t, record.Id, (*transactionRes.Results[0].Columns)["id"])
+		assert.NotNil(t, (*transactionRes.Results[0].Columns)["xata"])
+	})
+
+	t.Run("should insert a record with insert transaction", func(t *testing.T) {
+		stringVal := "test-from-insert-transaction"
+		columns := []string{stringColumn, emailColumn, boolColumn}
+		transactionRes, err := recordsCli.Transaction(ctx, xata.TransactionRequest{
+			RecordRequest: xata.RecordRequest{
+				DatabaseName: xata.String(databaseName),
+				TableName:    tableName,
+			},
+			Operations: []xata.TransactionOperation{
+				xata.NewInsertTransaction(xata.TransactionInsertOp{
+					Table:   tableName,
+					Record:  map[string]any{stringColumn: stringVal},
+					Columns: &columns,
+				}),
+			},
+		})
+		assert.NoError(t, err)
+		assert.NotNil(t, transactionRes)
+		assert.Equal(t, stringVal, (*transactionRes.Results[0].Columns)[stringColumn])
+	})
+
+	t.Run("should update a record with update transaction", func(t *testing.T) {
+		// insert a record first
+		stringVal := "test-from-insert-transaction"
+		transactionRes, err := recordsCli.Transaction(ctx, xata.TransactionRequest{
+			RecordRequest: xata.RecordRequest{
+				DatabaseName: xata.String(databaseName),
+				TableName:    tableName,
+			},
+			Operations: []xata.TransactionOperation{
+				xata.NewInsertTransaction(xata.TransactionInsertOp{
+					Table:  tableName,
+					Record: map[string]any{stringColumn: stringVal},
+				}),
+			},
+		})
+		assert.NoError(t, err)
+		assert.NotNil(t, transactionRes)
+
+		// then update it
+		updatedStrValue := "this-is-updated"
+		columns := []string{stringColumn}
+		transactionResUpdate, err := recordsCli.Transaction(ctx, xata.TransactionRequest{
+			RecordRequest: xata.RecordRequest{
+				DatabaseName: xata.String(databaseName),
+				TableName:    tableName,
+			},
+			Operations: []xata.TransactionOperation{
+				xata.NewUpdateTransaction(xata.TransactionUpdateOp{
+					Table:   tableName,
+					Id:      transactionRes.Results[0].Id,
+					Fields:  map[string]any{stringColumn: updatedStrValue},
+					Columns: &columns,
+				}),
+			},
+		})
+		assert.NoError(t, err)
+		assert.NotNil(t, transactionResUpdate)
+		assert.Equal(t, updatedStrValue, (*transactionResUpdate.Results[0].Columns)[stringColumn])
+		assert.Equal(t, transactionRes.Results[0].Id, transactionResUpdate.Results[0].Id)
+		assert.Equal(t, 1, transactionResUpdate.Results[0].Rows)
+	})
+
+	t.Run("should delete a record with delete transaction", func(t *testing.T) {
+		// insert a record first
+		stringVal := "test-from-insert-transaction"
+		transactionRes, err := recordsCli.Transaction(ctx, xata.TransactionRequest{
+			RecordRequest: xata.RecordRequest{
+				DatabaseName: xata.String(databaseName),
+				TableName:    tableName,
+			},
+			Operations: []xata.TransactionOperation{
+				xata.NewInsertTransaction(xata.TransactionInsertOp{
+					Table:  tableName,
+					Record: map[string]any{stringColumn: stringVal},
+				}),
+			},
+		})
+		assert.NoError(t, err)
+		assert.NotNil(t, transactionRes)
+
+		// then delete it
+		transactionResDel, err := recordsCli.Transaction(ctx, xata.TransactionRequest{
+			RecordRequest: xata.RecordRequest{
+				DatabaseName: xata.String(databaseName),
+				TableName:    tableName,
+			},
+			Operations: []xata.TransactionOperation{
+				xata.NewDeleteTransaction(xata.TransactionDeleteOp{
+					Table: tableName,
+					Id:    transactionRes.Results[0].Id,
+				}),
+			},
+		})
+		assert.NoError(t, err)
+		assert.NotNil(t, transactionResDel)
+		assert.Equal(t, 1, transactionResDel.Results[0].Rows)
 	})
 
 	t.Run("should get a record with filtering by columns", func(t *testing.T) {
