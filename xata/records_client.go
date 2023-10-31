@@ -24,6 +24,11 @@ type InsertRecordRequest struct {
 	Body    map[string]*DataInputRecordValue
 }
 
+type TransactionRequest struct {
+	RecordRequest
+	Operations []TransactionOperation
+}
+
 type BulkInsertRecordRequest struct {
 	RecordRequest
 	Columns []string
@@ -55,6 +60,11 @@ type GetRecordRequest struct {
 	Columns  []string
 }
 
+type DeleteRecordRequest struct {
+	RecordRequest
+	RecordID string
+}
+
 type RecordMeta struct {
 	Id   string                           `json:"id"` // nolint
 	Xata *xatagenworkspace.RecordMetaXata `json:"xata,omitempty"`
@@ -71,12 +81,14 @@ type BulkRecords struct {
 }
 
 type RecordsClient interface {
+	Transaction(ctx context.Context, request TransactionRequest) (*xatagenworkspace.TransactionSuccess, error)
 	Insert(ctx context.Context, request InsertRecordRequest) (*Record, error)
 	BulkInsert(ctx context.Context, request BulkInsertRecordRequest) ([]*Record, error)
 	Update(ctx context.Context, request UpdateRecordRequest) (*Record, error)
 	Upsert(ctx context.Context, request UpsertRecordRequest) (*Record, error)
 	InsertWithID(ctx context.Context, request InsertRecordWithIDRequest) (*Record, error)
 	Get(ctx context.Context, request GetRecordRequest) (*Record, error)
+	Delete(ctx context.Context, request DeleteRecordRequest) error
 }
 
 type DataInputRecordValue xatagenworkspace.DataInputRecordValue
@@ -303,6 +315,65 @@ func (r recordsClient) Get(ctx context.Context, request GetRecordRequest) (*Reco
 	}
 
 	return respRec, nil
+}
+
+type TransactionOperation *xatagenworkspace.TransactionOperation
+
+type TransactionInsertOp xatagenworkspace.TransactionInsertOp
+
+func NewInsertTransaction(value TransactionInsertOp) TransactionOperation {
+	return xatagenworkspace.NewTransactionOperationFromTransactionOperationInsert(&xatagenworkspace.TransactionOperationInsert{
+		Insert: (*xatagenworkspace.TransactionInsertOp)(&value),
+	})
+}
+
+type TransactionGetOp xatagenworkspace.TransactionGetOp
+
+func NewGetTransaction(value TransactionGetOp) TransactionOperation {
+	return xatagenworkspace.NewTransactionOperationFromTransactionOperationGet(&xatagenworkspace.TransactionOperationGet{
+		Get: (*xatagenworkspace.TransactionGetOp)(&value),
+	})
+}
+
+type TransactionUpdateOp xatagenworkspace.TransactionUpdateOp
+
+func NewUpdateTransaction(value TransactionUpdateOp) TransactionOperation {
+	return xatagenworkspace.NewTransactionOperationFromTransactionOperationUpdate(&xatagenworkspace.TransactionOperationUpdate{
+		Update: (*xatagenworkspace.TransactionUpdateOp)(&value),
+	})
+}
+
+type TransactionDeleteOp xatagenworkspace.TransactionDeleteOp
+
+func NewDeleteTransaction(value TransactionDeleteOp) TransactionOperation {
+	return xatagenworkspace.NewTransactionOperationFromTransactionOperationDelete(&xatagenworkspace.TransactionOperationDelete{
+		Delete: (*xatagenworkspace.TransactionDeleteOp)(&value),
+	})
+}
+
+func (r recordsClient) Transaction(ctx context.Context, request TransactionRequest) (*xatagenworkspace.TransactionSuccess, error) {
+	dbBranchName, err := r.dbBranchName(request.RecordRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	var operationsGen []*xatagenworkspace.TransactionOperation
+	for _, op := range request.Operations {
+		operationsGen = append(operationsGen, op)
+	}
+
+	return r.generated.BranchTransaction(ctx, dbBranchName, &xatagenworkspace.BranchTransactionRequest{
+		Operations: operationsGen,
+	})
+}
+
+func (r recordsClient) Delete(ctx context.Context, request DeleteRecordRequest) error {
+	dbBranchName, err := r.dbBranchName(request.RecordRequest)
+	if err != nil {
+		return err
+	}
+
+	return r.generated.DeleteRecord(ctx, dbBranchName, request.TableName, request.RecordID)
 }
 
 func (r recordsClient) dbBranchName(request RecordRequest) (string, error) {
