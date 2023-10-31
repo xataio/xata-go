@@ -7,9 +7,8 @@ import (
 	"strings"
 	"time"
 
-	xatagenclient "github.com/xataio/xata-go/xata/internal/fern-workspace/generated/go/core"
-
 	xatagenworkspace "github.com/xataio/xata-go/xata/internal/fern-workspace/generated/go"
+	xatagenclient "github.com/xataio/xata-go/xata/internal/fern-workspace/generated/go/core"
 )
 
 type RecordRequest struct {

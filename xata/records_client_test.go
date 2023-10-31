@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"testing"
 
-	xatagenworkspace "github.com/xataio/xata-go/xata/internal/fern-workspace/generated/go"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/xataio/xata-go/xata"
+
+	xatagenworkspace "github.com/xataio/xata-go/xata/internal/fern-workspace/generated/go"
 	xatagencore "github.com/xataio/xata-go/xata/internal/fern-workspace/generated/go/core"
 )
 
