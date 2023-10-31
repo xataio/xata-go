@@ -216,6 +216,20 @@ func Test_recordsClient_Insert_Get(t *testing.T) {
 		assert.Equal(t, insertRecordRequest.Body[stringColumn].String, recordRetrieved.Data[stringColumn])
 	})
 
+	t.Run("should fail to get a non-existing record", func(t *testing.T) {
+		getRecordRequest := xata.GetRecordRequest{
+			RecordRequest: xata.RecordRequest{
+				DatabaseName: xata.String(databaseName),
+				TableName:    tableName,
+			},
+			RecordID: "non-existing-record-id",
+		}
+		recordRetrieved, err := recordsCli.Get(ctx, getRecordRequest)
+		assert.NotNil(t, err)
+		assert.Contains(t, err.Error(), "404")
+		assert.Nil(t, recordRetrieved)
+	})
+
 	t.Run("should get a record with get transaction and columns in query", func(t *testing.T) {
 		// first, create a record
 		insertRecordRequest := generateInsertRecordRequest(databaseName, tableName)
