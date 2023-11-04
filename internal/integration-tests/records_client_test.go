@@ -2,6 +2,7 @@ package integrationtests
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"testing"
 	"time"
@@ -21,6 +22,7 @@ const (
 	integerColumn  = "integer-column"
 	floatColumn    = "float-column"
 	fileColumn     = "file-column"
+	fileContent    = "file content"
 	jsonColumn     = "json-column"
 	vectorColumn   = "vector-column" // it is important to set a vector dimension on the UI: 2
 	multipleColumn = "multiple-column"
@@ -457,7 +459,7 @@ func generateInsertRecordRequest(databaseName, tableName string) xata.InsertReco
 			floatColumn:    xata.ValueFromDouble(10.3),
 			fileColumn: xata.ValueFromInputFile(xata.InputFile{
 				Name:          testFileName,
-				Base64Content: xata.String("ZmlsZSBjb250ZW50"), // file content
+				Base64Content: xata.String(base64.StdEncoding.EncodeToString([]byte(fileContent))),
 			}),
 			vectorColumn:   xata.ValueFromDoubleList([]float64{10.3, 20.2}),
 			multipleColumn: xata.ValueFromStringList([]string{"hello", "world"}),

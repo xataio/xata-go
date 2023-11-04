@@ -12,7 +12,7 @@ type FilesClient interface {
 	// GetFileItem(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId, columnName ColumnName, fileId FileItemId) error
 	// PutFileItem(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId, columnName ColumnName, fileId FileItemId) (*FileResponse, error)
 	// DeleteFileItem(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId, columnName ColumnName, fileId FileItemId) (*FileResponse, error)
-	// GetFile(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId, columnName ColumnName) error
+	Get(ctx context.Context, request GetFileRequest) (*xatagenworkspace.GetFileResponse, error)
 	Put(ctx context.Context, request PutFileRequest) (*xatagenworkspace.FileResponse, error)
 	Delete(ctx context.Context, request DeleteFileRequest) (*xatagenworkspace.FileResponse, error)
 }
@@ -80,6 +80,17 @@ func (f filesClient) Put(ctx context.Context, request PutFileRequest) (*xatagenw
 	f.generated.SetContentTypeHeader(contentType)
 
 	return f.generated.PutFile(ctx, dbBranchName, request.TableName, request.RecordId, request.ColumnName, request.Data)
+}
+
+type GetFileRequest DeleteFileRequest
+
+func (f filesClient) Get(ctx context.Context, request GetFileRequest) (*xatagenworkspace.GetFileResponse, error) {
+	dbBranchName, err := f.dbBranchName(request.BranchRequestOptional)
+	if err != nil {
+		return nil, err
+	}
+
+	return f.generated.GetFile(ctx, dbBranchName, request.TableName, request.RecordId, request.ColumnName)
 }
 
 func NewFilesClient(opts ...ClientOption) (FilesClient, error) {

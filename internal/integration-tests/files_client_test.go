@@ -62,6 +62,19 @@ func Test_filesClient(t *testing.T) {
 		t.Fatalf("unable to construct files cli: %v", err)
 	}
 
+	t.Run("get a file", func(t *testing.T) {
+		getFileRes, err := filesCli.Get(ctx, xata.GetFileRequest{
+			BranchRequestOptional: xata.BranchRequestOptional{
+				DatabaseName: xata.String(cfg.databaseName),
+			},
+			TableName:  cfg.tableName,
+			RecordId:   record.Id,
+			ColumnName: fileColumn,
+		})
+		assert.NoError(t, err)
+		assert.Equal(t, fileContent, string(getFileRes.Content))
+	})
+
 	t.Run("put a file", func(t *testing.T) {
 		fileRes, err := filesCli.Put(ctx, xata.PutFileRequest{
 			BranchRequestOptional: xata.BranchRequestOptional{
