@@ -17,7 +17,7 @@ type FilesClient interface {
 	GetFileItem(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId, columnName ColumnName, fileId FileItemId) error
 	PutFileItem(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId, columnName ColumnName, fileId FileItemId) (*FileResponse, error)
 	DeleteFileItem(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId, columnName ColumnName, fileId FileItemId) (*FileResponse, error)
-	GetFile(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId, columnName ColumnName) error
+	GetFile(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId, columnName ColumnName) (*GetFileResponse, error)
 	PutFile(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId, columnName ColumnName, data []byte) (*FileResponse, error)
 	DeleteFile(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId, columnName ColumnName) (*FileResponse, error)
 	SetContentTypeHeader(value string)
@@ -253,7 +253,7 @@ func (f *filesClient) DeleteFileItem(ctx context.Context, dbBranchName DbBranchN
 // The Table name
 // The Record name
 // The Column name
-func (f *filesClient) GetFile(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId, columnName ColumnName) error {
+func (f *filesClient) GetFile(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId, columnName ColumnName) (*GetFileResponse, error) {
 	baseURL := "/"
 	if f.baseURL != "" {
 		baseURL = f.baseURL
@@ -293,20 +293,21 @@ func (f *filesClient) GetFile(ctx context.Context, dbBranchName DbBranchName, ta
 		return apiError
 	}
 
+	response := &GetFileResponse{}
 	if err := core.DoRequest(
 		ctx,
 		f.httpClient,
 		endpointURL,
 		http.MethodGet,
 		nil,
-		nil,
+		response,
 		false,
 		f.header,
 		errorDecoder,
 	); err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return response, nil
 }
 
 // Uploads the file content to the given file column
