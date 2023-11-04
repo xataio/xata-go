@@ -13,7 +13,7 @@ type FilesClient interface {
 	// PutFileItem(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId, columnName ColumnName, fileId FileItemId) (*FileResponse, error)
 	// DeleteFileItem(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId, columnName ColumnName, fileId FileItemId) (*FileResponse, error)
 	// GetFile(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId, columnName ColumnName) error
-	// PutFile(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId, columnName ColumnName) (*FileResponse, error)
+	Put(ctx context.Context, request PutFileRequest) (*xatagenworkspace.FileResponse, error)
 	Delete(ctx context.Context, request DeleteFileRequest) (*xatagenworkspace.FileResponse, error)
 }
 
@@ -55,6 +55,31 @@ func (f filesClient) Delete(ctx context.Context, request DeleteFileRequest) (*xa
 	}
 
 	return f.generated.DeleteFile(ctx, dbBranchName, request.TableName, request.RecordId, request.ColumnName)
+}
+
+type PutFileRequest struct {
+	BranchRequestOptional
+	ContentType *string
+	TableName   string
+	RecordId    string
+	ColumnName  string
+	Data        []byte
+}
+
+func (f filesClient) Put(ctx context.Context, request PutFileRequest) (*xatagenworkspace.FileResponse, error) {
+	dbBranchName, err := f.dbBranchName(request.BranchRequestOptional)
+	if err != nil {
+		return nil, err
+	}
+
+	contentType := "application/octet-stream"
+	if request.ContentType != nil && *request.ContentType != "" {
+		contentType = *request.ContentType
+	}
+
+	f.generated.SetContentTypeHeader(contentType)
+
+	return f.generated.PutFile(ctx, dbBranchName, request.TableName, request.RecordId, request.ColumnName, request.Data)
 }
 
 func NewFilesClient(opts ...ClientOption) (FilesClient, error) {

@@ -29,18 +29,6 @@ func Test_filesClient(t *testing.T) {
 		}
 	})
 
-	filesCli, err := xata.NewFilesClient(xata.WithAPIKey(cfg.apiKey),
-		xata.WithBaseURL(fmt.Sprintf(
-			"https://%s.%s.xata.sh",
-			cfg.wsID,
-			cfg.region,
-		)),
-		xata.WithHTTPClient(retryablehttp.NewClient().StandardClient()),
-	)
-	if err != nil {
-		t.Fatalf("unable to construct files cli: %v", err)
-	}
-
 	recordsCli, err := xata.NewRecordsClient(
 		xata.WithAPIKey(cfg.apiKey),
 		xata.WithBaseURL(fmt.Sprintf(
@@ -61,6 +49,35 @@ func Test_filesClient(t *testing.T) {
 		t.Fatal(err)
 	}
 	assert.NotNil(t, record)
+
+	filesCli, err := xata.NewFilesClient(xata.WithAPIKey(cfg.apiKey),
+		xata.WithBaseURL(fmt.Sprintf(
+			"https://%s.%s.xata.sh",
+			cfg.wsID,
+			cfg.region,
+		)),
+		xata.WithHTTPClient(retryablehttp.NewClient().StandardClient()),
+	)
+	if err != nil {
+		t.Fatalf("unable to construct files cli: %v", err)
+	}
+
+	t.Run("put a file", func(t *testing.T) {
+		fileRes, err := filesCli.Put(ctx, xata.PutFileRequest{
+			BranchRequestOptional: xata.BranchRequestOptional{
+				DatabaseName: xata.String(cfg.databaseName),
+			},
+			TableName:   cfg.tableName,
+			RecordId:    record.Id,
+			ColumnName:  fileColumn,
+			ContentType: xata.String("text/plain"),
+			Data:        []byte(`new content`),
+		})
+		assert.NoError(t, err)
+		assert.NotNil(t, fileRes.Attributes)
+		assert.Equal(t, "", fileRes.Name)
+		assert.Nil(t, fileRes.Id)
+	})
 
 	t.Run("delete a file", func(t *testing.T) {
 		delRes, err := filesCli.Delete(ctx, xata.DeleteFileRequest{
