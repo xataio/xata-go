@@ -18,8 +18,9 @@ type FilesClient interface {
 	PutFileItem(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId, columnName ColumnName, fileId FileItemId) (*FileResponse, error)
 	DeleteFileItem(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId, columnName ColumnName, fileId FileItemId) (*FileResponse, error)
 	GetFile(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId, columnName ColumnName) error
-	PutFile(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId, columnName ColumnName) (*FileResponse, error)
+	PutFile(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId, columnName ColumnName, data []byte) (*FileResponse, error)
 	DeleteFile(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId, columnName ColumnName) (*FileResponse, error)
+	SetContentTypeHeader(value string)
 }
 
 func NewFilesClient(opts ...core.ClientOption) FilesClient {
@@ -32,6 +33,10 @@ func NewFilesClient(opts ...core.ClientOption) FilesClient {
 		httpClient: options.HTTPClient,
 		header:     options.ToHeader(),
 	}
+}
+
+func (f *filesClient) SetContentTypeHeader(value string) {
+	f.header.Set("content-type", value)
 }
 
 type filesClient struct {
@@ -311,7 +316,7 @@ func (f *filesClient) GetFile(ctx context.Context, dbBranchName DbBranchName, ta
 // The Table name
 // The Record name
 // The Column name
-func (f *filesClient) PutFile(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId, columnName ColumnName) (*FileResponse, error) {
+func (f *filesClient) PutFile(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId, columnName ColumnName, data []byte) (*FileResponse, error) {
 	baseURL := "/"
 	if f.baseURL != "" {
 		baseURL = f.baseURL
@@ -364,7 +369,7 @@ func (f *filesClient) PutFile(ctx context.Context, dbBranchName DbBranchName, ta
 		f.httpClient,
 		endpointURL,
 		http.MethodPut,
-		nil,
+		data,
 		&response,
 		false,
 		f.header,
