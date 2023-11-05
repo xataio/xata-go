@@ -106,6 +106,8 @@ func Test_recordsClient_Insert_Get(t *testing.T) {
 		// 400: {"errors":[{
 		//"status":400,"message":"column [file-column]: file upload not permitted in transaction"},
 		delete(insertRecordRequest.Body, fileColumn)
+		//"status":400,"message":"column [fileArrayColumn]: file entry [0]: file upload not permitted in transaction"}
+		delete(insertRecordRequest.Body, fileArrayColumn)
 
 		records, err := recordsCli.BulkInsert(ctx, xata.BulkInsertRecordRequest{
 			RecordRequest: insertRecordRequest.RecordRequest,

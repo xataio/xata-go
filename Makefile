@@ -16,7 +16,7 @@ test:
 
 integration-test:
 	@echo "Running integration test"
-	@go test -v -count=1 -cover -race ./internal/integration-tests
+	@go test -count=1 -cover -race ./internal/integration-tests
 
 download-openapi-specs:
 	@echo "Downloading openapi specs"
