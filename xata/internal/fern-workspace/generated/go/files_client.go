@@ -15,7 +15,7 @@ import (
 
 type FilesClient interface {
 	GetFileItem(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId, columnName ColumnName, fileId FileItemId) (*GetFileResponse, error)
-	PutFileItem(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId, columnName ColumnName, fileId FileItemId) (*FileResponse, error)
+	PutFileItem(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId, columnName ColumnName, fileId FileItemId, data []byte) (*FileResponse, error)
 	DeleteFileItem(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId, columnName ColumnName, fileId FileItemId) (*FileResponse, error)
 	GetFile(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId, columnName ColumnName) (*GetFileResponse, error)
 	PutFile(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId, columnName ColumnName, data []byte) (*FileResponse, error)
@@ -118,7 +118,7 @@ func (f *filesClient) GetFileItem(ctx context.Context, dbBranchName DbBranchName
 // The Record name
 // The Column name
 // The File Identifier
-func (f *filesClient) PutFileItem(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId, columnName ColumnName, fileId FileItemId) (*FileResponse, error) {
+func (f *filesClient) PutFileItem(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId, columnName ColumnName, fileId FileItemId, data []byte) (*FileResponse, error) {
 	baseURL := "/"
 	if f.baseURL != "" {
 		baseURL = f.baseURL
@@ -171,7 +171,7 @@ func (f *filesClient) PutFileItem(ctx context.Context, dbBranchName DbBranchName
 		f.httpClient,
 		endpointURL,
 		http.MethodPut,
-		nil,
+		data,
 		&response,
 		false,
 		f.header,
