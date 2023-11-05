@@ -11,7 +11,7 @@ import (
 type FilesClient interface {
 	GetItem(ctx context.Context, request GetFileItemRequest) (*xatagenworkspace.GetFileResponse, error)
 	PutItem(ctx context.Context, request PutFileItemRequest) (*xatagenworkspace.FileResponse, error)
-	// DeleteFileItem(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId, columnName ColumnName, fileId FileItemId) (*FileResponse, error)
+	DeleteItem(ctx context.Context, request DeleteFileItemRequest) (*xatagenworkspace.FileResponse, error)
 	Get(ctx context.Context, request GetFileRequest) (*xatagenworkspace.GetFileResponse, error)
 	Put(ctx context.Context, request PutFileRequest) (*xatagenworkspace.FileResponse, error)
 	Delete(ctx context.Context, request DeleteFileRequest) (*xatagenworkspace.FileResponse, error)
@@ -139,6 +139,23 @@ func (f filesClient) PutItem(ctx context.Context, request PutFileItemRequest) (*
 	f.generated.SetContentTypeHeader(contentType)
 
 	return f.generated.PutFileItem(ctx, dbBranchName, request.TableName, request.RecordId, request.ColumnName, request.FileID, request.Data)
+}
+
+type DeleteFileItemRequest struct {
+	BranchRequestOptional
+	TableName  string
+	RecordId   string
+	ColumnName string
+	FileID     string
+}
+
+func (f filesClient) DeleteItem(ctx context.Context, request DeleteFileItemRequest) (*xatagenworkspace.FileResponse, error) {
+	dbBranchName, err := f.dbBranchName(request.BranchRequestOptional)
+	if err != nil {
+		return nil, err
+	}
+
+	return f.generated.DeleteFileItem(ctx, dbBranchName, request.TableName, request.RecordId, request.ColumnName, request.FileID)
 }
 
 func NewFilesClient(opts ...ClientOption) (FilesClient, error) {

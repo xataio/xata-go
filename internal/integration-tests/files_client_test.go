@@ -160,4 +160,24 @@ func Test_filesClient(t *testing.T) {
 		assert.Equal(t, "", fileRes.Name)
 		assert.NotNil(t, fileRes.Id)
 	})
+
+	t.Run("delete a file item", func(t *testing.T) {
+		record, err := recordsCli.Insert(ctx, insertRecordRequest)
+		if err != nil {
+			t.Fatal(err)
+		}
+		assert.NotNil(t, record)
+
+		delRes, err := filesCli.DeleteItem(ctx, xata.DeleteFileItemRequest{
+			BranchRequestOptional: xata.BranchRequestOptional{
+				DatabaseName: xata.String(cfg.databaseName),
+			},
+			TableName:  cfg.tableName,
+			RecordId:   record.Id,
+			ColumnName: fileArrayColumn,
+			FileID:     record.Data[fileArrayColumn].([]interface{})[0].(map[string]any)["id"].(string),
+		})
+		assert.NoError(t, err)
+		assert.Equal(t, testFileName, delRes.Name)
+	})
 }
