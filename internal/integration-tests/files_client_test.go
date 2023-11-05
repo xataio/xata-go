@@ -44,12 +44,6 @@ func Test_filesClient(t *testing.T) {
 
 	insertRecordRequest := generateInsertRecordRequest(cfg.databaseName, cfg.tableName)
 
-	record, err := recordsCli.Insert(ctx, insertRecordRequest)
-	if err != nil {
-		t.Fatal(err)
-	}
-	assert.NotNil(t, record)
-
 	filesCli, err := xata.NewFilesClient(xata.WithAPIKey(cfg.apiKey),
 		xata.WithBaseURL(fmt.Sprintf(
 			"https://%s.%s.xata.sh",
@@ -63,6 +57,12 @@ func Test_filesClient(t *testing.T) {
 	}
 
 	t.Run("get a file", func(t *testing.T) {
+		record, err := recordsCli.Insert(ctx, insertRecordRequest)
+		if err != nil {
+			t.Fatal(err)
+		}
+		assert.NotNil(t, record)
+
 		getFileRes, err := filesCli.Get(ctx, xata.GetFileRequest{
 			BranchRequestOptional: xata.BranchRequestOptional{
 				DatabaseName: xata.String(cfg.databaseName),
@@ -76,6 +76,12 @@ func Test_filesClient(t *testing.T) {
 	})
 
 	t.Run("put a file", func(t *testing.T) {
+		record, err := recordsCli.Insert(ctx, insertRecordRequest)
+		if err != nil {
+			t.Fatal(err)
+		}
+		assert.NotNil(t, record)
+
 		fileRes, err := filesCli.Put(ctx, xata.PutFileRequest{
 			BranchRequestOptional: xata.BranchRequestOptional{
 				DatabaseName: xata.String(cfg.databaseName),
@@ -93,6 +99,12 @@ func Test_filesClient(t *testing.T) {
 	})
 
 	t.Run("delete a file", func(t *testing.T) {
+		record, err := recordsCli.Insert(ctx, insertRecordRequest)
+		if err != nil {
+			t.Fatal(err)
+		}
+		assert.NotNil(t, record)
+
 		delRes, err := filesCli.Delete(ctx, xata.DeleteFileRequest{
 			BranchRequestOptional: xata.BranchRequestOptional{
 				DatabaseName: xata.String(cfg.databaseName),
