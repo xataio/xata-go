@@ -10,7 +10,7 @@ import (
 
 type FilesClient interface {
 	GetItem(ctx context.Context, request GetFileItemRequest) (*xatagenworkspace.GetFileResponse, error)
-	// PutFileItem(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId, columnName ColumnName, fileId FileItemId) (*FileResponse, error)
+	PutItem(ctx context.Context, request PutFileItemRequest) (*xatagenworkspace.FileResponse, error)
 	// DeleteFileItem(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId, columnName ColumnName, fileId FileItemId) (*FileResponse, error)
 	Get(ctx context.Context, request GetFileRequest) (*xatagenworkspace.GetFileResponse, error)
 	Put(ctx context.Context, request PutFileRequest) (*xatagenworkspace.FileResponse, error)
@@ -113,6 +113,32 @@ func (f filesClient) GetItem(ctx context.Context, request GetFileItemRequest) (*
 	}
 
 	return f.generated.GetFileItem(ctx, dbBranchName, request.TableName, request.RecordId, request.ColumnName, request.FileID)
+}
+
+type PutFileItemRequest struct {
+	BranchRequestOptional
+	ContentType *string
+	TableName   string
+	RecordId    string
+	ColumnName  string
+	FileID      string
+	Data        []byte
+}
+
+func (f filesClient) PutItem(ctx context.Context, request PutFileItemRequest) (*xatagenworkspace.FileResponse, error) {
+	dbBranchName, err := f.dbBranchName(request.BranchRequestOptional)
+	if err != nil {
+		return nil, err
+	}
+
+	contentType := "application/octet-stream"
+	if request.ContentType != nil && *request.ContentType != "" {
+		contentType = *request.ContentType
+	}
+
+	f.generated.SetContentTypeHeader(contentType)
+
+	return f.generated.PutFileItem(ctx, dbBranchName, request.TableName, request.RecordId, request.ColumnName, request.FileID, request.Data)
 }
 
 func NewFilesClient(opts ...ClientOption) (FilesClient, error) {

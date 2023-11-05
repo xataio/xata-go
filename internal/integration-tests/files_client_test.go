@@ -136,4 +136,28 @@ func Test_filesClient(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, fileContent, string(getItemRes.Content))
 	})
+
+	t.Run("put a file item", func(t *testing.T) {
+		record, err := recordsCli.Insert(ctx, insertRecordRequest)
+		if err != nil {
+			t.Fatal(err)
+		}
+		assert.NotNil(t, record)
+
+		fileRes, err := filesCli.PutItem(ctx, xata.PutFileItemRequest{
+			BranchRequestOptional: xata.BranchRequestOptional{
+				DatabaseName: xata.String(cfg.databaseName),
+			},
+			TableName:   cfg.tableName,
+			RecordId:    record.Id,
+			ColumnName:  fileArrayColumn,
+			FileID:      record.Data[fileArrayColumn].([]interface{})[0].(map[string]any)["id"].(string),
+			ContentType: xata.String("text/plain"),
+			Data:        []byte(`new content`),
+		})
+		assert.NoError(t, err)
+		assert.NotNil(t, fileRes.Attributes)
+		assert.Equal(t, "", fileRes.Name)
+		assert.NotNil(t, fileRes.Id)
+	})
 }
