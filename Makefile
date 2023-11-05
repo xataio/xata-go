@@ -21,3 +21,7 @@ integration-test:
 download-openapi-specs:
 	@echo "Downloading openapi specs"
 	@cd internal/docs && go run . && cd ../..
+
+clean-workspaces:
+	@echo "Cleaning integration test workspaces"
+	go test -v -run Test_cleanupIntegrationWorkspaces ./...
