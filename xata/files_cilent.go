@@ -9,7 +9,7 @@ import (
 )
 
 type FilesClient interface {
-	// GetFileItem(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId, columnName ColumnName, fileId FileItemId) error
+	GetItem(ctx context.Context, request GetFileItemRequest) (*xatagenworkspace.GetFileResponse, error)
 	// PutFileItem(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId, columnName ColumnName, fileId FileItemId) (*FileResponse, error)
 	// DeleteFileItem(ctx context.Context, dbBranchName DbBranchName, tableName TableName, recordId RecordId, columnName ColumnName, fileId FileItemId) (*FileResponse, error)
 	Get(ctx context.Context, request GetFileRequest) (*xatagenworkspace.GetFileResponse, error)
@@ -82,7 +82,12 @@ func (f filesClient) Put(ctx context.Context, request PutFileRequest) (*xatagenw
 	return f.generated.PutFile(ctx, dbBranchName, request.TableName, request.RecordId, request.ColumnName, request.Data)
 }
 
-type GetFileRequest DeleteFileRequest
+type GetFileRequest struct {
+	BranchRequestOptional
+	TableName  string
+	RecordId   string
+	ColumnName string
+}
 
 func (f filesClient) Get(ctx context.Context, request GetFileRequest) (*xatagenworkspace.GetFileResponse, error) {
 	dbBranchName, err := f.dbBranchName(request.BranchRequestOptional)
@@ -91,6 +96,23 @@ func (f filesClient) Get(ctx context.Context, request GetFileRequest) (*xatagenw
 	}
 
 	return f.generated.GetFile(ctx, dbBranchName, request.TableName, request.RecordId, request.ColumnName)
+}
+
+type GetFileItemRequest struct {
+	BranchRequestOptional
+	TableName  string
+	RecordId   string
+	ColumnName string
+	FileID     string
+}
+
+func (f filesClient) GetItem(ctx context.Context, request GetFileItemRequest) (*xatagenworkspace.GetFileResponse, error) {
+	dbBranchName, err := f.dbBranchName(request.BranchRequestOptional)
+	if err != nil {
+		return nil, err
+	}
+
+	return f.generated.GetFileItem(ctx, dbBranchName, request.TableName, request.RecordId, request.ColumnName, request.FileID)
 }
 
 func NewFilesClient(opts ...ClientOption) (FilesClient, error) {

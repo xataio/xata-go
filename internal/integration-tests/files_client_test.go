@@ -116,4 +116,24 @@ func Test_filesClient(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, testFileName, delRes.Name)
 	})
+
+	t.Run("get file item", func(t *testing.T) {
+		record, err := recordsCli.Insert(ctx, insertRecordRequest)
+		if err != nil {
+			t.Fatal(err)
+		}
+		assert.NotNil(t, record)
+
+		getItemRes, err := filesCli.GetItem(ctx, xata.GetFileItemRequest{
+			BranchRequestOptional: xata.BranchRequestOptional{
+				DatabaseName: xata.String(cfg.databaseName),
+			},
+			TableName:  cfg.tableName,
+			RecordId:   record.Id,
+			ColumnName: fileArrayColumn,
+			FileID:     record.Data[fileArrayColumn].([]interface{})[0].(map[string]any)["id"].(string),
+		})
+		assert.NoError(t, err)
+		assert.Equal(t, fileContent, string(getItemRes.Content))
+	})
 }

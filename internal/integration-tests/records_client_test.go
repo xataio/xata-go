@@ -14,19 +14,20 @@ import (
 )
 
 const (
-	stringColumn   = "user-name"
-	boolColumn     = "active"
-	textColumn     = "text-column"
-	emailColumn    = "email"
-	dateTimeColumn = "date-of-birth"
-	integerColumn  = "integer-column"
-	floatColumn    = "float-column"
-	fileColumn     = "file-column"
-	fileContent    = "file content"
-	jsonColumn     = "json-column"
-	vectorColumn   = "vector-column" // it is important to set a vector dimension on the UI: 2
-	multipleColumn = "multiple-column"
-	testFileName   = "file-name.txt"
+	stringColumn    = "user-name"
+	boolColumn      = "active"
+	textColumn      = "text-column"
+	emailColumn     = "email"
+	dateTimeColumn  = "date-of-birth"
+	integerColumn   = "integer-column"
+	floatColumn     = "float-column"
+	fileColumn      = "file-column"
+	fileArrayColumn = "fileArrayColumn"
+	fileContent     = "file content"
+	jsonColumn      = "json-column"
+	vectorColumn    = "vector-column" // it is important to set a vector dimension on the UI: 2
+	multipleColumn  = "multiple-column"
+	testFileName    = "file-name.txt"
 )
 
 func Test_recordsClient_Insert_Get(t *testing.T) {
@@ -75,7 +76,8 @@ func Test_recordsClient_Insert_Get(t *testing.T) {
 		assert.Equal(t, insertRecordRequest.Body[textColumn].String, record.Data[textColumn])
 		assert.Equal(t, insertRecordRequest.Body[integerColumn].Double, record.Data[integerColumn])
 		assert.Equal(t, insertRecordRequest.Body[floatColumn].Double, record.Data[floatColumn])
-		assert.Equal(t, insertRecordRequest.Body[fileColumn].InputFile.Name, record.Data[fileColumn].(map[string]interface{})["name"])
+		assert.Equal(t, insertRecordRequest.Body[fileColumn].InputFile.Name, record.Data[fileColumn].(map[string]any)["name"])
+		assert.Equal(t, *(insertRecordRequest.Body[fileArrayColumn].InputFileArray[0]).Name, record.Data[fileArrayColumn].([]interface{})[0].(map[string]any)["name"])
 		assert.ElementsMatch(t, insertRecordRequest.Body[vectorColumn].DoubleList, record.Data[vectorColumn])
 		assert.ElementsMatch(t, insertRecordRequest.Body[multipleColumn].StringList, record.Data[multipleColumn])
 		assert.Equal(t, insertRecordRequest.Body[jsonColumn].String, record.Data[jsonColumn])
@@ -445,6 +447,7 @@ func generateInsertRecordRequest(databaseName, tableName string) xata.InsertReco
 			integerColumn,
 			floatColumn,
 			fileColumn,
+			fileArrayColumn,
 			jsonColumn,
 			vectorColumn,
 			multipleColumn,
@@ -460,6 +463,12 @@ func generateInsertRecordRequest(databaseName, tableName string) xata.InsertReco
 			fileColumn: xata.ValueFromInputFile(xata.InputFile{
 				Name:          testFileName,
 				Base64Content: xata.String(base64.StdEncoding.EncodeToString([]byte(fileContent))),
+			}),
+			fileArrayColumn: xata.ValueFromInputFileArray(xata.InputFileArray{
+				{
+					Name:          xata.String(testFileName),
+					Base64Content: xata.String(base64.StdEncoding.EncodeToString([]byte(fileContent))),
+				},
 			}),
 			vectorColumn:   xata.ValueFromDoubleList([]float64{10.3, 20.2}),
 			multipleColumn: xata.ValueFromStringList([]string{"hello", "world"}),
