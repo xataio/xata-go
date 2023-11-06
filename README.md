@@ -1,3 +1,11 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./assets/logo_dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="./assets/logo_light.svg">
+    <img width="400" alt="Xata" src="./assets/logo_dark.svg">
+  </picture>
+</p>
+
 # Golang SDK for Xata
 
 Simple Golang client for xata.io databases. Currently work in progress.
