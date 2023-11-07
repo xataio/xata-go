@@ -1,9 +1,10 @@
 name: Pull Request
 
 on: [push, pull_request]
+
 jobs:
-  lint_and_test:
-    name: Tests
+  build:
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
     - name: Set up Go
@@ -22,5 +23,9 @@ jobs:
         XATA_API_KEY: ${{ secrets.XATA_API_KEY }}
     - name: Integration tests
       run: make integration-test
+      env:
+        XATA_API_KEY: ${{ secrets.XATA_API_KEY }}
+    - name: Cleanup
+      run: make clean-workspaces
       env:
         XATA_API_KEY: ${{ secrets.XATA_API_KEY }}
