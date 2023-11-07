@@ -25,3 +25,6 @@ go.work
 .env
 .idea
 **/.xatarc
+
+# ignore license header checker
+bin/license-header-checker
