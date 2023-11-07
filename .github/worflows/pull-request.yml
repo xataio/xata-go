@@ -12,6 +12,10 @@ jobs:
         go-version: '1.21'
     - name: Lint
       run: make lint
+    - name: License check
+      run: |
+        curl -s https://raw.githubusercontent.com/lluissm/license-header-checker/master/install.sh | bash
+        ./bin/license-header-checker -a -r .github/license-header.txt . go && [[ -z `git status -s` ]]
     - name: Unit tests
       run: make test
       env:
