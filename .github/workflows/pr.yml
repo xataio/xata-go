@@ -1,0 +1,31 @@
+name: Pull Request
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21'
+    - name: Lint
+      run: make lint
+    - name: License check
+      run: |
+        curl -s https://raw.githubusercontent.com/lluissm/license-header-checker/master/install.sh | bash
+        ./bin/license-header-checker -a -r .github/license-header.txt . go && [[ -z `git status -s` ]]
+    - name: Unit tests
+      run: make test
+      env:
+        XATA_API_KEY: ${{ secrets.XATA_API_KEY }}
+    - name: Integration tests
+      run: make integration-test
+      env:
+        XATA_API_KEY: ${{ secrets.XATA_API_KEY }}
+    - name: Cleanup
+      run: make clean-workspaces
+      env:
+        XATA_API_KEY: ${{ secrets.XATA_API_KEY }}
