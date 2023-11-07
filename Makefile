@@ -12,7 +12,7 @@ smoke-test: ## smoke tests
 
 test: ## run all tests
 	@echo "Running unit tests"
-	@go test -count=1 -cover -race ./xata
+	@go test -v -count=1 -cover -race ./xata
 
 integration-test: ## run integration tests
 	@echo "Running integration test"
