@@ -89,7 +89,7 @@ func Test_filesClient(t *testing.T) {
 			TableName:   cfg.tableName,
 			RecordId:    record.Id,
 			ColumnName:  fileColumn,
-			ContentType: xata.String(""application/octet-stream""),
+			ContentType: xata.String("application/octet-stream"),
 			Data:        []byte(`new content`),
 		})
 		assert.NoError(t, err)
