@@ -255,6 +255,25 @@ func setupTableWithColumns(ctx context.Context, cfg *config) error {
 			DatabaseName: xata.String(cfg.databaseName),
 		},
 		Column: &xata.Column{
+			Name: fileArrayColumn,
+			Type: xata.ColumnTypeFileMap,
+			File: &xata.ColumnFile{
+				DefaultPublicAccess: xata.Bool(true),
+			},
+			NotNull: xata.Bool(false),
+			Unique:  xata.Bool(false),
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	_, err = tableCli.AddColumn(ctx, xata.AddColumnRequest{
+		TableRequest: xata.TableRequest{
+			TableName:    cfg.tableName,
+			DatabaseName: xata.String(cfg.databaseName),
+		},
+		Column: &xata.Column{
 			Name:    jsonColumn,
 			Type:    xata.ColumnTypeJSON,
 			NotNull: xata.Bool(false),

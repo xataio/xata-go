@@ -12,12 +12,16 @@ smoke-test:
 
 test:
 	@echo "Running unit tests"
-	@go test -count=1 -cover -race ./...
+	@go test -count=1 -cover -race ./xata
 
 integration-test:
 	@echo "Running integration test"
-	@go test -v --tags=integration -count=1 -cover -race ./internal/integration-tests
+	@go test -count=1 -cover -race ./internal/integration-tests
 
 download-openapi-specs:
 	@echo "Downloading openapi specs"
 	@cd internal/docs && go run . && cd ../..
+
+clean-workspaces:
+	@echo "Cleaning integration test workspaces"
+	CLEAN_UP_INTEGRATION_WORKSPACES=true go test -v -run Test_cleanupIntegrationWorkspaces ./...

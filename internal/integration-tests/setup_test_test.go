@@ -2,6 +2,7 @@ package integrationtests
 
 import (
 	"context"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -30,6 +31,9 @@ func Test_setup_cleanup(t *testing.T) {
 }
 
 func Test_cleanupIntegrationWorkspaces(t *testing.T) {
+	if _, found := os.LookupEnv("CLEAN_UP_INTEGRATION_WORKSPACES"); !found {
+		t.Skip("skipping integration workspaces cleanup")
+	}
 	err := cleanAllWorkspaces()
 	if err != nil {
 		t.Fatal(err)

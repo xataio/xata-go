@@ -56,7 +56,7 @@ func (c ColumnType) String() string {
 	case ColumnTypeFile:
 		return "file"
 	case ColumnTypeFileMap:
-		return "fileMap"
+		return "file[]"
 	case ColumnTypeJson:
 		return "json"
 	}
