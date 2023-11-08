@@ -1,8 +1,8 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="./assets/logo_dark.svg">
-    <source media="(prefers-color-scheme: light)" srcset="./assets/logo_light.svg">
-    <img width="400" alt="Xata" src="./assets/logo_dark.svg">
+    <source media="(prefers-color-scheme: dark)" srcset="./internal/assets/logo_dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="./internal/assets/logo_light.svg">
+    <img width="400" alt="Xata" src="./internal/assets/logo_dark.svg">
   </picture>
 </p>
 
