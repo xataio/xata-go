@@ -8,7 +8,7 @@
 
 # Golang SDK for Xata
 
-Simple Golang client for xata.io databases. Currently work in progress.
+Simple Golang client for xata.io databases.
 
 Xata is a Serverless Database that is as easy to use as a spreadsheet, has the
 data integrity of PostgresSQL, and the search and analytics functionality of
@@ -64,6 +64,7 @@ To learn more about Xata, visit [xata.io](https://xata.io).
 - Go 1.21.0+
 - Docker
 - Make
+- [fern](https://docs.buildwithfern.com/overview/cli/cli) (only if auto code generation is needed)
 
 ### Tests
 
@@ -79,17 +80,4 @@ make integration-test
 
 ```shell
 make lint
-```
-
-## Code generation with [Fern](https://github.com/fern-api/fern)
-```shell
-cd xata/internal
-mkdir fern-sql
-cd fern-sql
-fern fern init --openapi https://xata.io/api/openapi\?scope\=sql
-fern add fern-go-sdk
-# delete typescript from fern/api/generators.yaml
-# update the import path for go in fern/api/generators.yaml
-# importPath: github.com/github-user/xata-go/xata/internal/fern-sql/generated/go
-fern generate --log-level debug --local
 ```

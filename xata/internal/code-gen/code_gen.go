@@ -155,11 +155,13 @@ func generateFernCode(scope scope, newPath, originalPath, apiSPECS, generatorsYA
 		}
 	case workspace:
 		newPathGenGo := newPath + "/generated/go/"
+		// messed up auto-gen code
 		err = copySelfFromUtils("value_booster_value.go", newPathGenGo)
 		if err != nil {
 			return fmt.Errorf("unable to copy self: %v", err)
 		}
 
+		// https://github.com/xataio/xata-go/issues/30
 		err = copySelfFromUtils("insert_record_response.go", newPathGenGo)
 		if err != nil {
 			return fmt.Errorf("unable to copy self: %v", err)
@@ -210,11 +212,13 @@ func generateFernCode(scope scope, newPath, originalPath, apiSPECS, generatorsYA
 			return fmt.Errorf("unable to copy self: %v", err)
 		}
 
+		// https://github.com/xataio/xata-go/issues/31
 		err = copySelfFromUtils("column_type.go", newPathGenGo)
 		if err != nil {
 			return fmt.Errorf("unable to copy self: %v", err)
 		}
 
+		// https://github.com/xataio/xata-go/issues/22
 		err = copySelfFromUtils("core.go", newPath+"/generated/go/core/")
 		if err != nil {
 			return fmt.Errorf("unable to copy self: %v", err)
@@ -277,24 +281,25 @@ func updateWorkspaceAPISpecs(filePath string) error {
 	// Read the OpenAPI YAML file
 	openAPIData, err := os.ReadFile(filePath)
 	if err != nil {
-		fmt.Println("error reading OpenAPI file:", err)
-		return err
+		return fmt.Errorf("unable to read OpenAPI file: %v", err)
 	}
 
 	// Unmarshal the OpenAPI data into a struct
 	var openAPI OpenAPI
 
 	if err = json.Unmarshal(openAPIData, &openAPI); err != nil {
-		fmt.Println("error unmarshaling OpenAPI data:", err)
+		log.Println("error unmarshaling OpenAPI data:", err)
 		return err
 	}
 
 	log.Println("removing deprecated path definitions")
+	// https://github.com/xataio/xata-go/issues/29
 	delete(openAPI.Paths, "/db/{db_branch_name}/migrations")
 	delete(openAPI.Paths, "/db/{db_branch_name}/migrations/execute")
 	delete(openAPI.Paths, "/db/{db_branch_name}/migrations/plan")
 
 	log.Println("updating file[] as fileMap")
+	// https://github.com/xataio/xata-go/issues/31
 	columnEnums := openAPI.Components["schemas"].(map[string]any)["Column"].(map[string]any)["properties"].(map[string]any)["type"].(map[string]any)["enum"].([]any)
 	var newColumnEnums []string
 	for _, e := range columnEnums {
@@ -314,8 +319,8 @@ func updateWorkspaceAPISpecs(filePath string) error {
 		}
 	}
 
-	// TODO: Add issue link => https://github.com/omerdemirok/xata-go/issues/17
 	log.Println("removing reference of ProjectionConfig from QueryColumnsProjection")
+	// https://github.com/xataio/xata-go/issues/27
 	var newOneOf []any
 	for _, o := range openAPI.Components["schemas"].(map[string]any)["QueryColumnsProjection"].(map[string]any)["items"].(map[string]any)["oneOf"].([]any) {
 		if o.(map[string]any)["$ref"] != nil && o.(map[string]any)["$ref"] == "#/components/schemas/ProjectionConfig" {
@@ -327,6 +332,7 @@ func updateWorkspaceAPISpecs(filePath string) error {
 	openAPI.Components["schemas"].(map[string]any)["QueryColumnsProjection"].(map[string]any)["items"].(map[string]any)["oneOf"] = newOneOf
 
 	log.Println("remove object value")
+	// https://github.com/xataio/xata-go/issues/27
 	delete(openAPI.Components["schemas"].(map[string]any), "ObjectValue")
 
 	log.Println("removing reference for object value")
@@ -342,15 +348,13 @@ func updateWorkspaceAPISpecs(filePath string) error {
 
 	updatedOpenAPIData, err := json.Marshal(&openAPI)
 	if err != nil {
-		fmt.Println("Error marshaling updated OpenAPI data:", err)
-		return err
+		return fmt.Errorf("unable to marshal updated OpenAPI data: %v", err)
 	}
 
 	// Save the updated OpenAPI data to a new file
 	err = os.WriteFile(filePath, updatedOpenAPIData, 0o644)
 	if err != nil {
-		fmt.Println("Error saving updated OpenAPI file:", err)
-		return err
+		return fmt.Errorf("unable to save updated OpenAPI file: %v", err)
 	}
 
 	log.Print("OpenAPI file updated and saved as", filePath)
