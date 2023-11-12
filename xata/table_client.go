@@ -77,16 +77,16 @@ const (
 )
 
 type Column struct {
-	Name         string        `json:"name"`
-	Type         ColumnType    `json:"type,omitempty"`
-	Link         *ColumnLink   `json:"link,omitempty"`
-	Vector       *ColumnVector `json:"vector,omitempty"`
-	File         *ColumnFile   `json:"file,omitempty"`
-	FileMap      *ColumnFile   `json:"fileMap,omitempty"`
-	NotNull      *bool         `json:"notNull,omitempty"`
-	DefaultValue *string       `json:"defaultValue,omitempty"`
-	Unique       *bool         `json:"unique,omitempty"`
-	Columns      *[]*Column    `json:"columns,omitempty"`
+	Name         string
+	Type         ColumnType
+	Link         *ColumnLink
+	Vector       *ColumnVector
+	File         *ColumnFile
+	FileMap      *ColumnFile
+	NotNull      *bool
+	DefaultValue *string
+	Unique       *bool
+	Columns      *[]*Column
 }
 
 type AddColumnRequest struct {
