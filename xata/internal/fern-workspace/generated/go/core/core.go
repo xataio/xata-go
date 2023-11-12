@@ -15,26 +15,18 @@ const (
 	contentType       = "application/json"
 	contentTypeHeader = "Content-Type"
 
-	// fernLanguage specifies the value of the X-Fern-Language header.
-	fernLanguage       = "go"
-	fernLanguageHeader = "X-Fern-Language"
-
-	// fernSDKName specifies the name of this Fern SDK.
-	fernSDKName       = "fern-go-sdk"
-	fernSDKNameHeader = "X-Fern-SDK-Name"
-
-	// fernSDKVersion specifies the version of this Fern SDK.
-	fernSDKVersion       = "0.0.1"
-	fernSDKVersionHeader = "X-Fern-SDK-Version"
+	xataAgentHeader = "x-xata-agent"
+	userAgentHeader = "user-agent"
+	sdkVERSION      = "0.0.1"
 )
 
 // fernHeaders specifies all of the standard Fern headers in
 // a set so that they're easier to access and reference.
-var fernHeaders = map[string]string{
-	contentTypeHeader:    contentType,
-	fernLanguageHeader:   fernLanguage,
-	fernSDKNameHeader:    fernSDKName,
-	fernSDKVersionHeader: fernSDKVersion,
+var fernHeaders = []map[string]string{
+	{contentTypeHeader: contentType},
+	{xataAgentHeader: "client=GO_SDK"},
+	{xataAgentHeader: fmt.Sprintf("version=%v", sdkVERSION)},
+	{userAgentHeader: fmt.Sprintf("xataio/xata-go:%v", sdkVERSION)},
 }
 
 // HTTPClient is an interface for a subset of the *http.Client.
@@ -188,8 +180,10 @@ func newRequest(
 		return nil, err
 	}
 	req = req.WithContext(ctx)
-	for name, value := range fernHeaders {
-		req.Header.Set(name, value)
+	for _, headers := range fernHeaders {
+		for k, v := range headers {
+			req.Header.Add(k, v)
+		}
 	}
 	for name, values := range endpointHeaders {
 		req.Header[name] = values

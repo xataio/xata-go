@@ -83,7 +83,7 @@ func generateFernCode(scope scope, newPath, originalPath, apiSPECS, generatorsYA
 	}
 
 	log.Println("creating new folder")
-	err = os.Mkdir(newPath, 0755)
+	err = os.Mkdir(newPath, 0o755)
 	if err != nil {
 		return fmt.Errorf("unable to create %v: %v", newPath, err)
 	}
@@ -149,64 +149,73 @@ func generateFernCode(scope scope, newPath, originalPath, apiSPECS, generatorsYA
 	log.Println("updating auto gen code")
 	switch scope {
 	case core:
-		log.Println("no action needed for core")
+		err = copySelfFromUtils("core.go", newPath+"/generated/go/core/")
+		if err != nil {
+			return fmt.Errorf("unable to copy self: %v", err)
+		}
 	case workspace:
-		err = copySelfFromUtils("value_booster_value.go", newPath)
+		newPathGenGo := newPath + "/generated/go/"
+		err = copySelfFromUtils("value_booster_value.go", newPathGenGo)
 		if err != nil {
 			return fmt.Errorf("unable to copy self: %v", err)
 		}
 
-		err = copySelfFromUtils("insert_record_response.go", newPath)
+		err = copySelfFromUtils("insert_record_response.go", newPathGenGo)
 		if err != nil {
 			return fmt.Errorf("unable to copy self: %v", err)
 		}
 
-		err = copySelfFromUtils("bulk_insert_table_records_response.go", newPath)
+		err = copySelfFromUtils("bulk_insert_table_records_response.go", newPathGenGo)
 		if err != nil {
 			return fmt.Errorf("unable to copy self: %v", err)
 		}
 
-		err = copySelfFromUtils("update_record_with_id_response.go", newPath)
+		err = copySelfFromUtils("update_record_with_id_response.go", newPathGenGo)
 		if err != nil {
 			return fmt.Errorf("unable to copy self: %v", err)
 		}
 
-		err = copySelfFromUtils("insert_record_with_id_response.go", newPath)
+		err = copySelfFromUtils("insert_record_with_id_response.go", newPathGenGo)
 		if err != nil {
 			return fmt.Errorf("unable to copy self: %v", err)
 		}
 
-		err = copySelfFromUtils("upsert_record_with_id_response.go", newPath)
+		err = copySelfFromUtils("upsert_record_with_id_response.go", newPathGenGo)
 		if err != nil {
 			return fmt.Errorf("unable to copy self: %v", err)
 		}
 
-		err = copySelfFromUtils("record.go", newPath)
+		err = copySelfFromUtils("record.go", newPathGenGo)
 		if err != nil {
 			return fmt.Errorf("unable to copy self: %v", err)
 		}
 
-		err = copySelfFromUtils("files_client.go", newPath)
+		err = copySelfFromUtils("files_client.go", newPathGenGo)
 		if err != nil {
 			return fmt.Errorf("unable to copy self: %v", err)
 		}
 
-		err = copySelfFromUtils("records_client.go", newPath)
+		err = copySelfFromUtils("records_client.go", newPathGenGo)
 		if err != nil {
 			return fmt.Errorf("unable to copy self: %v", err)
 		}
 
-		err = copySelfFromUtils("get_file_response.go", newPath)
+		err = copySelfFromUtils("get_file_response.go", newPathGenGo)
 		if err != nil {
 			return fmt.Errorf("unable to copy self: %v", err)
 		}
 
-		err = copySelfFromUtils("transaction_success_results_item.go", newPath)
+		err = copySelfFromUtils("transaction_success_results_item.go", newPathGenGo)
 		if err != nil {
 			return fmt.Errorf("unable to copy self: %v", err)
 		}
 
-		err = copySelfFromUtils("column_type.go", newPath)
+		err = copySelfFromUtils("column_type.go", newPathGenGo)
+		if err != nil {
+			return fmt.Errorf("unable to copy self: %v", err)
+		}
+
+		err = copySelfFromUtils("core.go", newPath+"/generated/go/core/")
 		if err != nil {
 			return fmt.Errorf("unable to copy self: %v", err)
 		}
@@ -240,9 +249,7 @@ func executeOSCmd(cmd string) (string, error) {
 
 func copySelfFromUtils(fileName, newPath string) error {
 	suffix := "_"
-	genPath := "/generated/go/"
-	return copyFile(codeGenPath+"/go-files/"+fileName+suffix, newPath+genPath+fileName)
-
+	return copyFile(codeGenPath+"/go-files/"+fileName+suffix, newPath+fileName)
 }
 
 func copyFile(srcPath, destPath string) error {
@@ -305,7 +312,6 @@ func updateWorkspaceAPISpecs(filePath string) error {
 			openAPI.Components["schemas"].(map[string]any)["Column"].(map[string]any)["properties"].(map[string]any)["fileMap"] = v
 			delete(openAPI.Components["schemas"].(map[string]any)["Column"].(map[string]any)["properties"].(map[string]any), "file[]")
 		}
-
 	}
 
 	// TODO: Add issue link => https://github.com/omerdemirok/xata-go/issues/17
@@ -341,7 +347,7 @@ func updateWorkspaceAPISpecs(filePath string) error {
 	}
 
 	// Save the updated OpenAPI data to a new file
-	err = os.WriteFile(filePath, updatedOpenAPIData, 0644)
+	err = os.WriteFile(filePath, updatedOpenAPIData, 0o644)
 	if err != nil {
 		fmt.Println("Error saving updated OpenAPI file:", err)
 		return err

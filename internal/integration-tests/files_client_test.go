@@ -70,7 +70,7 @@ func Test_filesClient(t *testing.T) {
 				DatabaseName: xata.String(cfg.databaseName),
 			},
 			TableName:  cfg.tableName,
-			RecordId:   record.Id,
+			RecordID:   record.Id,
 			ColumnName: fileColumn,
 		})
 		assert.NoError(t, err)
@@ -89,7 +89,7 @@ func Test_filesClient(t *testing.T) {
 				DatabaseName: xata.String(cfg.databaseName),
 			},
 			TableName:   cfg.tableName,
-			RecordId:    record.Id,
+			RecordID:    record.Id,
 			ColumnName:  fileColumn,
 			ContentType: xata.String("application/octet-stream"),
 			Data:        []byte(`new content`),
@@ -112,7 +112,7 @@ func Test_filesClient(t *testing.T) {
 				DatabaseName: xata.String(cfg.databaseName),
 			},
 			TableName:  cfg.tableName,
-			RecordId:   record.Id,
+			RecordID:   record.Id,
 			ColumnName: fileColumn,
 		})
 		assert.NoError(t, err)
@@ -131,7 +131,7 @@ func Test_filesClient(t *testing.T) {
 				DatabaseName: xata.String(cfg.databaseName),
 			},
 			TableName:  cfg.tableName,
-			RecordId:   record.Id,
+			RecordID:   record.Id,
 			ColumnName: fileArrayColumn,
 			FileID:     record.Data[fileArrayColumn].([]interface{})[0].(map[string]any)["id"].(string),
 		})
@@ -151,7 +151,7 @@ func Test_filesClient(t *testing.T) {
 				DatabaseName: xata.String(cfg.databaseName),
 			},
 			TableName:   cfg.tableName,
-			RecordId:    record.Id,
+			RecordID:    record.Id,
 			ColumnName:  fileArrayColumn,
 			FileID:      record.Data[fileArrayColumn].([]interface{})[0].(map[string]any)["id"].(string),
 			ContentType: xata.String("text/plain"),
@@ -175,7 +175,7 @@ func Test_filesClient(t *testing.T) {
 				DatabaseName: xata.String(cfg.databaseName),
 			},
 			TableName:  cfg.tableName,
-			RecordId:   record.Id,
+			RecordID:   record.Id,
 			ColumnName: fileArrayColumn,
 			FileID:     record.Data[fileArrayColumn].([]interface{})[0].(map[string]any)["id"].(string),
 		})
