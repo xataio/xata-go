@@ -1,21 +1,22 @@
-This SDK is a wrapper around an auto generated Go code from the OpenAPI specs.
-[Fern](https://github.com/fern-api/fern) is used for code generation.
+# Generating from OpenAPI spec
+
+This SDK is a wrapper around auto generated Go code from Xata [OpenAPI specs](https://xata.io/docs/rest-api/contexts#openapi-specifications). [Fern](https://github.com/fern-api/fern) is used for code generation.
 
 The process is automated with the following Make targets:
 
-Download the latest API specs
+Download the latest server OpenAPI specs
 ```shell
 make download-openapi-specs
 ```
 
-Generate code for CORE scope
+Generate code for `core` scope
 ```shell
-make generate-core-cod
+make generate-core-code
 ```
 
-Generate code for WORKSPACE scope
+Generate code for `workspace` scope
 ```shell
-make generate-workspace-cod
+make generate-workspace-code
 ```
 
 Code generation requires some updates in the API specs and auto-generated code for various reasons.

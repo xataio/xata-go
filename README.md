@@ -81,3 +81,7 @@ make integration-test
 ```shell
 make lint
 ```
+
+### Codegen
+
+Please consult the pages about [code generation](code-generation.md) and [how to add a new client](add-new-feature.md) to learn more about the architecture of the SDK.
