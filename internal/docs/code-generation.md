@@ -9,6 +9,11 @@ Download the latest server OpenAPI specs
 make download-openapi-specs
 ```
 
+Before running following commands, ensure that you are logged in to fern:
+```shell
+make fern-login
+```
+
 Generate code for `core` scope
 ```shell
 make generate-core-code
