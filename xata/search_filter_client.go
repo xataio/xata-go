@@ -71,11 +71,11 @@ func (s searchAndFilterCli) Query(ctx context.Context, request QueryTableRequest
 	}
 
 	return s.generated.QueryTable(ctx, dbBranchName, request.TableName, &xatagenworkspace.QueryTableRequest{
-		Filter:      (*xatagenworkspace.FilterExpression)(request.Payload.Filter),
-		Sort:        request.Payload.Sort,
-		Page:        (*xatagenworkspace.PageConfig)(request.Payload.Page),
-		Columns:     &request.Payload.Columns,
-		Consistency: (*xatagenworkspace.QueryTableRequestConsistency)(&request.Payload.Consistency),
+		Filter:  (*xatagenworkspace.FilterExpression)(request.Payload.Filter),
+		Sort:    request.Payload.Sort,
+		Page:    (*xatagenworkspace.PageConfig)(request.Payload.Page),
+		Columns: &request.Payload.Columns,
+		//Consistency: (*xatagenworkspace.QueryTableRequestConsistency)(&request.Payload.Consistency),
 	})
 }
 
