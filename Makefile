@@ -17,6 +17,7 @@ test: ## run unit tests
 integration-test: ## run integration tests
 	@echo "Running integration test"
 	@go test -v -count=1 -cover -race ./internal/integration-tests
+	$(MAKE) clean-workspaces
 
 download-openapi-specs:
 	@echo "Downloading openapi specs"
