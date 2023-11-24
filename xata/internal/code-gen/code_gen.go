@@ -118,14 +118,14 @@ func generateFernCode(scope scope, newPath, originalPath, apiSPECS, generatorsYA
 	case core:
 		log.Println("no action needed for core")
 	case workspace:
-		err = updateWorkspaceAPISpecs(newWorkspacePath + "/fern/api/openapi/workspace-openapi.json")
+		err = updateWorkspaceAPISpecs(newWorkspacePath + "/fern/openapi/workspace-openapi.json")
 		if err != nil {
 			return fmt.Errorf("unable to update workspace API specs: %v", err)
 		}
 	}
 
 	log.Println("updating the generators file")
-	err = copyFile(generatorsYAML, newPath+"/fern/api/generators.yml")
+	err = copyFile(generatorsYAML, newPath+"/fern/generators.yml")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -151,12 +151,12 @@ func generateFernCode(scope scope, newPath, originalPath, apiSPECS, generatorsYA
 	log.Println("updating auto gen code")
 	switch scope {
 	case core:
-		err = copySelfFromUtils("core.go", newPath+"/generated/go/core/")
+		err = copySelfFromUtils("core.go", newPath+"/../generated/go/core/")
 		if err != nil {
 			return fmt.Errorf("unable to copy self: %v", err)
 		}
 	case workspace:
-		newPathGenGo := newPath + "/generated/go/"
+		newPathGenGo := newPath + "/../generated/go/"
 		// messed up auto-gen code
 		err = copySelfFromUtils("value_booster_value.go", newPathGenGo)
 		if err != nil {
@@ -221,7 +221,7 @@ func generateFernCode(scope scope, newPath, originalPath, apiSPECS, generatorsYA
 		}
 
 		// https://github.com/xataio/xata-go/issues/22
-		err = copySelfFromUtils("core.go", newPath+"/generated/go/core/")
+		err = copySelfFromUtils("core.go", newPath+"/../generated/go/core/")
 		if err != nil {
 			return fmt.Errorf("unable to copy self: %v", err)
 		}
@@ -359,6 +359,6 @@ func updateWorkspaceAPISpecs(filePath string) error {
 		return fmt.Errorf("unable to save updated OpenAPI file: %v", err)
 	}
 
-	log.Print("OpenAPI file updated and saved as", filePath)
+	log.Print("OpenAPI file updated and saved as ", filePath)
 	return nil
 }
