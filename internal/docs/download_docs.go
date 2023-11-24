@@ -12,7 +12,7 @@ import (
 
 func main() {
 	// Example HTTP URL
-	scopes := []string{"core", "workspace", "sql"}
+	scopes := []string{"core", "workspace"}
 	for _, scope := range scopes {
 		url := fmt.Sprintf("https://xata.io/api/openapi?scope=%s", scope)
 
