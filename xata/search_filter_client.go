@@ -327,7 +327,7 @@ func (s searchAndFilterCli) Summarize(ctx context.Context, request SummarizeTabl
 		Summaries:       &sumExpList,
 		Sort:            request.Payload.Sort,
 		SummariesFilter: (*xatagenworkspace.FilterExpression)(request.Payload.SummariesFilter),
-		Consistency:     (*xatagenworkspace.SummarizeTableRequestConsistency)(request.Payload.Consistency),
+		//Consistency:     (*xatagenworkspace.SummarizeTableRequestConsistency)(request.Payload.Consistency),
 		Page: &xatagenworkspace.SummarizeTableRequestPage{
 			Size: request.Payload.NumberOfPage,
 		},
