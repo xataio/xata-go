@@ -26,3 +26,8 @@ make generate-workspace-code
 
 Code generation requires some updates in the API specs and auto-generated code for various reasons.
 For more information, see [this PR](https://github.com/xataio/xata-go/pull/26#issue-1989477775) and the issues it resolves.
+
+Add the license headers in case a new file was created:
+```shell
+make check-license-header
+```
