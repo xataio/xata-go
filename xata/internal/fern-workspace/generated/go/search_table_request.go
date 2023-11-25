@@ -6,13 +6,13 @@ package api
 
 // SearchTableRequest is an in-lined request used by the SearchTable endpoint.
 type SearchTableRequest struct {
-	// The query string. <span style="white-space: nowrap">`non-empty`</span>
-	Query     string                `json:"query"`
-	Fuzziness *FuzzinessExpression  `json:"fuzziness,omitempty"`
-	Target    *TargetExpression     `json:"target,omitempty"`
-	Prefix    *PrefixExpression     `json:"prefix,omitempty"`
-	Filter    *FilterExpression     `json:"filter,omitempty"`
-	Highlight *HighlightExpression  `json:"highlight,omitempty"`
 	Boosters  *[]*BoosterExpression `json:"boosters,omitempty"`
+	Filter    *FilterExpression     `json:"filter,omitempty"`
+	Fuzziness *FuzzinessExpression  `json:"fuzziness,omitempty"`
+	Highlight *HighlightExpression  `json:"highlight,omitempty"`
 	Page      *SearchPageConfig     `json:"page,omitempty"`
+	Prefix    *PrefixExpression     `json:"prefix,omitempty"`
+	// The query string.
+	Query  string            `json:"query"`
+	Target *TargetExpression `json:"target,omitempty"`
 }

@@ -5,5 +5,5 @@
 package api
 
 type AggResponseValues struct {
-	Values []*AggResponseValuesValuesItem `json:"values,omitempty"`
+	Values *AggResponseValuesValues `json:"values,omitempty"`
 }

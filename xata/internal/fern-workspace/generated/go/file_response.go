@@ -6,10 +6,10 @@ package api
 
 // File metadata
 type FileResponse struct {
+	Attributes *map[string]any `json:"attributes,omitempty"`
 	Id         *FileItemId     `json:"id,omitempty"`
-	Name       FileName        `json:"name"`
 	MediaType  MediaType       `json:"mediaType"`
+	Name       FileName        `json:"name"`
 	Size       int             `json:"size"`
 	Version    int             `json:"version"`
-	Attributes *map[string]any `json:"attributes,omitempty"`
 }

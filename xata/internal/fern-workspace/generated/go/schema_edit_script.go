@@ -5,7 +5,7 @@
 package api
 
 type SchemaEditScript struct {
+	Operations        []*MigrationOp `json:"operations,omitempty"`
 	SourceMigrationId *string        `json:"sourceMigrationID,omitempty"`
 	TargetMigrationId *string        `json:"targetMigrationID,omitempty"`
-	Operations        []*MigrationOp `json:"operations,omitempty"`
 }

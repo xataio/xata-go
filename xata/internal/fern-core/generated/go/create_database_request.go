@@ -6,10 +6,8 @@ package api
 
 // CreateDatabaseRequest is an in-lined request used by the CreateDatabase endpoint.
 type CreateDatabaseRequest struct {
-	// <span style="white-space: nowrap">`non-empty`</span>
-	BranchName *string `json:"branchName,omitempty"`
-	// <span style="white-space: nowrap">`non-empty`</span>
-	Region   string                   `json:"region"`
-	Ui       *CreateDatabaseRequestUi `json:"ui,omitempty"`
-	Metadata *BranchMetadata          `json:"metadata,omitempty"`
+	BranchName *string                  `json:"branchName,omitempty"`
+	Region     string                   `json:"region"`
+	Ui         *CreateDatabaseRequestUi `json:"ui,omitempty"`
+	Metadata   *BranchMetadata          `json:"metadata,omitempty"`
 }

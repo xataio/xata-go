@@ -4,5 +4,5 @@
 
 package api
 
-// File name <span style="white-space: nowrap">`<= 1024 characters`</span>
+// File name
 type FileName = string

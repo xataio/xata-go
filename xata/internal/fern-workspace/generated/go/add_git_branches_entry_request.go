@@ -7,6 +7,7 @@ package api
 // AddGitBranchesEntryRequest is an in-lined request used by the AddGitBranchesEntry endpoint.
 type AddGitBranchesEntryRequest struct {
 	// The name of the Git branch.
-	GitBranch  string     `json:"gitBranch"`
+	GitBranch string `json:"gitBranch"`
+	// The name of the Xata branch.
 	XataBranch BranchName `json:"xataBranch"`
 }

@@ -6,6 +6,7 @@ package api
 
 // Split data into buckets by dynamic numeric ranges. Accepts sub-aggregations for each bucket.
 type NumericHistogramAgg struct {
+	Aggs *AggExpressionMap `json:"aggs,omitempty"`
 	// The column to use for bucketing. Must be of numeric type.
 	Column string `json:"column"`
 	// The numeric interval to use for bucketing. The resulting buckets will be ranges
@@ -15,6 +16,5 @@ type NumericHistogramAgg struct {
 	// boundaries can be shifted by using the offset option. For example, if the `interval` is 100,
 	// but you prefer the bucket boundaries to be `[50, 150), [150, 250), etc.`, you can set `offset`
 	// to 50.
-	Offset *float64          `json:"offset,omitempty"`
-	Aggs   *AggExpressionMap `json:"aggs,omitempty"`
+	Offset *float64 `json:"offset,omitempty"`
 }

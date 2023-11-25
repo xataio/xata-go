@@ -5,7 +5,7 @@
 package api
 
 type UpsertRecordWithIdResponseIdXata struct {
-	Version   int    `json:"version"`
 	CreatedAt string `json:"createdAt"`
 	UpdatedAt string `json:"updatedAt"`
+	Version   int    `json:"version"`
 }

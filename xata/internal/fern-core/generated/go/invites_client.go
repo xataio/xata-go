@@ -10,16 +10,15 @@ import (
 	json "encoding/json"
 	errors "errors"
 	fmt "fmt"
+	core "github.com/xataio/xata-go/xata/internal/fern-core/generated/go/core"
 	io "io"
 	http "net/http"
-
-	core "github.com/xataio/xata-go/xata/internal/fern-core/generated/go/core"
 )
 
 type InvitesClient interface {
 	InviteWorkspaceMember(ctx context.Context, workspaceId WorkspaceId, request *InviteWorkspaceMemberRequest) (*WorkspaceInvite, error)
-	UpdateWorkspaceMemberInvite(ctx context.Context, workspaceId WorkspaceId, inviteId InviteId, request *UpdateWorkspaceMemberInviteRequest) (*WorkspaceInvite, error)
 	CancelWorkspaceMemberInvite(ctx context.Context, workspaceId WorkspaceId, inviteId InviteId) error
+	UpdateWorkspaceMemberInvite(ctx context.Context, workspaceId WorkspaceId, inviteId InviteId, request *UpdateWorkspaceMemberInviteRequest) (*WorkspaceInvite, error)
 	AcceptWorkspaceMemberInvite(ctx context.Context, workspaceId WorkspaceId, inviteKey InviteKey) error
 	ResendWorkspaceMemberInvite(ctx context.Context, workspaceId WorkspaceId, inviteId InviteId) error
 }
@@ -116,6 +115,73 @@ func (i *invitesClient) InviteWorkspaceMember(ctx context.Context, workspaceId W
 	return response, nil
 }
 
+// This operation provides a way to cancel invites by deleting them. Already accepted invites cannot be deleted.
+//
+// Workspace ID
+// Invite identifier
+func (i *invitesClient) CancelWorkspaceMemberInvite(ctx context.Context, workspaceId WorkspaceId, inviteId InviteId) error {
+	baseURL := "/"
+	if i.baseURL != "" {
+		baseURL = i.baseURL
+	}
+	endpointURL := fmt.Sprintf(baseURL+"/"+"workspaces/%v/invites/%v", workspaceId, inviteId)
+
+	errorDecoder := func(statusCode int, body io.Reader) error {
+		raw, err := io.ReadAll(body)
+		if err != nil {
+			return err
+		}
+		apiError := core.NewAPIError(statusCode, errors.New(string(raw)))
+		decoder := json.NewDecoder(bytes.NewReader(raw))
+		switch statusCode {
+		case 400:
+			value := new(BadRequestError)
+			value.APIError = apiError
+			if err := decoder.Decode(value); err != nil {
+				return err
+			}
+			return value
+		case 401:
+			value := new(UnauthorizedError)
+			value.APIError = apiError
+			if err := decoder.Decode(value); err != nil {
+				return err
+			}
+			return value
+		case 403:
+			value := new(ForbiddenError)
+			value.APIError = apiError
+			if err := decoder.Decode(value); err != nil {
+				return err
+			}
+			return value
+		case 404:
+			value := new(NotFoundError)
+			value.APIError = apiError
+			if err := decoder.Decode(value); err != nil {
+				return err
+			}
+			return value
+		}
+		return apiError
+	}
+
+	if err := core.DoRequest(
+		ctx,
+		i.httpClient,
+		endpointURL,
+		http.MethodDelete,
+		nil,
+		nil,
+		false,
+		i.header,
+		errorDecoder,
+	); err != nil {
+		return err
+	}
+	return nil
+}
+
 // This operation provides a way to update an existing invite. Updates are performed in-place; they do not change the invite link, the expiry time, nor do they re-notify the recipient of the invite.
 //
 // Workspace ID
@@ -189,73 +255,6 @@ func (i *invitesClient) UpdateWorkspaceMemberInvite(ctx context.Context, workspa
 		return response, err
 	}
 	return response, nil
-}
-
-// This operation provides a way to cancel invites by deleting them. Already accepted invites cannot be deleted.
-//
-// Workspace ID
-// Invite identifier
-func (i *invitesClient) CancelWorkspaceMemberInvite(ctx context.Context, workspaceId WorkspaceId, inviteId InviteId) error {
-	baseURL := "/"
-	if i.baseURL != "" {
-		baseURL = i.baseURL
-	}
-	endpointURL := fmt.Sprintf(baseURL+"/"+"workspaces/%v/invites/%v", workspaceId, inviteId)
-
-	errorDecoder := func(statusCode int, body io.Reader) error {
-		raw, err := io.ReadAll(body)
-		if err != nil {
-			return err
-		}
-		apiError := core.NewAPIError(statusCode, errors.New(string(raw)))
-		decoder := json.NewDecoder(bytes.NewReader(raw))
-		switch statusCode {
-		case 400:
-			value := new(BadRequestError)
-			value.APIError = apiError
-			if err := decoder.Decode(value); err != nil {
-				return err
-			}
-			return value
-		case 401:
-			value := new(UnauthorizedError)
-			value.APIError = apiError
-			if err := decoder.Decode(value); err != nil {
-				return err
-			}
-			return value
-		case 403:
-			value := new(ForbiddenError)
-			value.APIError = apiError
-			if err := decoder.Decode(value); err != nil {
-				return err
-			}
-			return value
-		case 404:
-			value := new(NotFoundError)
-			value.APIError = apiError
-			if err := decoder.Decode(value); err != nil {
-				return err
-			}
-			return value
-		}
-		return apiError
-	}
-
-	if err := core.DoRequest(
-		ctx,
-		i.httpClient,
-		endpointURL,
-		http.MethodDelete,
-		nil,
-		nil,
-		false,
-		i.header,
-		errorDecoder,
-	); err != nil {
-		return err
-	}
-	return nil
 }
 
 // Accept the invitation to join a workspace. If the operation succeeds the user will be a member of the workspace

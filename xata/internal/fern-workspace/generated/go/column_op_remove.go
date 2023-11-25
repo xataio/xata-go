@@ -5,6 +5,6 @@
 package api
 
 type ColumnOpRemove struct {
-	Table  string `json:"table"`
 	Column string `json:"column"`
+	Table  string `json:"table"`
 }

@@ -6,6 +6,6 @@ package api
 
 type BranchWithCopyId struct {
 	BranchName BranchName `json:"branchName"`
-	DbBranchId string     `json:"dbBranchID"`
 	CopyId     string     `json:"copyID"`
+	DbBranchId string     `json:"dbBranchID"`
 }

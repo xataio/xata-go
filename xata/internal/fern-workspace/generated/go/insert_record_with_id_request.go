@@ -10,11 +10,11 @@ import (
 
 // InsertRecordWithIdRequest is an in-lined request used by the InsertRecordWithId endpoint.
 type InsertRecordWithIdRequest struct {
-	CreateOnly *bool `json:"-"`
-	IfVersion  *int  `json:"-"`
 	// Column filters
-	Columns []*string                        `json:"-"`
-	Body    map[string]*DataInputRecordValue `json:"-"`
+	Columns    []*string                        `json:"-"`
+	CreateOnly *bool                            `json:"-"`
+	IfVersion  *int                             `json:"-"`
+	Body       map[string]*DataInputRecordValue `json:"-"`
 }
 
 func (i *InsertRecordWithIdRequest) UnmarshalJSON(data []byte) error {

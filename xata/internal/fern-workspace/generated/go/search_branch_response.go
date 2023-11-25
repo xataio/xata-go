@@ -6,7 +6,7 @@ package api
 
 type SearchBranchResponse struct {
 	Records []*Record `json:"records,omitempty"`
-	Warning *string   `json:"warning,omitempty"`
 	// The total count of records matched. It will be accurately returned up to 10000 records.
-	TotalCount int `json:"totalCount"`
+	TotalCount int     `json:"totalCount"`
+	Warning    *string `json:"warning,omitempty"`
 }

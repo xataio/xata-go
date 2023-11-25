@@ -6,6 +6,5 @@ package api
 
 // RenameDatabaseRequest is an in-lined request used by the RenameDatabase endpoint.
 type RenameDatabaseRequest struct {
-	// <span style="white-space: nowrap">`non-empty`</span>
 	NewName string `json:"newName"`
 }

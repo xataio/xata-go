@@ -4,5 +4,5 @@
 
 package api
 
-// File identifier in access URLs <span style="white-space: nowrap">`<= 296 characters`</span>
+// File identifier in access URLs
 type FileAccessId = string

@@ -15,9 +15,11 @@ type BranchRequest struct {
 	BranchName   string
 }
 
+type BranchMetadataWS xatagenworkspace.BranchMetadata
+
 type CreateBranchRequestPayload struct {
 	CreateBranchRequestFrom *string
-	Metadata                *BranchMetadata
+	Metadata                *BranchMetadataWS
 }
 
 type CreateBranchRequest struct {

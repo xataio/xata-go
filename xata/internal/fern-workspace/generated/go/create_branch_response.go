@@ -5,8 +5,7 @@
 package api
 
 type CreateBranchResponse struct {
-	// <span style="white-space: nowrap">`non-empty`</span>
-	DatabaseName string          `json:"databaseName"`
 	BranchName   string          `json:"branchName"`
+	DatabaseName string          `json:"databaseName"`
 	Status       MigrationStatus `json:"status,omitempty"`
 }

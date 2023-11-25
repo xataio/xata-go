@@ -16,13 +16,13 @@ import (
 )
 
 type MigrationsClient interface {
-	GetBranchSchemaHistory(ctx context.Context, dbBranchName DbBranchName, request *GetBranchSchemaHistoryRequest) (*GetBranchSchemaHistoryResponse, error)
+	ApplyBranchSchemaEdit(ctx context.Context, dbBranchName DbBranchName, request *ApplyBranchSchemaEditRequest) (*ApplyBranchSchemaEditResponse, error)
 	CompareBranchWithUserSchema(ctx context.Context, dbBranchName DbBranchName, request *CompareBranchWithUserSchemaRequest) (*CompareBranchWithUserSchemaResponse, error)
 	CompareBranchSchemas(ctx context.Context, dbBranchName DbBranchName, branchName BranchName, request *CompareBranchSchemasRequest) (*CompareBranchSchemasResponse, error)
-	UpdateBranchSchema(ctx context.Context, dbBranchName DbBranchName, request *Migration) (*UpdateBranchSchemaResponse, error)
+	GetBranchSchemaHistory(ctx context.Context, dbBranchName DbBranchName, request *GetBranchSchemaHistoryRequest) (*GetBranchSchemaHistoryResponse, error)
 	PreviewBranchSchemaEdit(ctx context.Context, dbBranchName DbBranchName, request *PreviewBranchSchemaEditRequest) (*PreviewBranchSchemaEditResponse, error)
-	ApplyBranchSchemaEdit(ctx context.Context, dbBranchName DbBranchName, request *ApplyBranchSchemaEditRequest) (*ApplyBranchSchemaEditResponse, error)
 	PushBranchMigrations(ctx context.Context, dbBranchName DbBranchName, request *PushBranchMigrationsRequest) (*PushBranchMigrationsResponse, error)
+	UpdateBranchSchema(ctx context.Context, dbBranchName DbBranchName, request *Migration) (*UpdateBranchSchemaResponse, error)
 }
 
 func NewMigrationsClient(opts ...core.ClientOption) MigrationsClient {
@@ -44,12 +44,12 @@ type migrationsClient struct {
 }
 
 // The DBBranchName matches the pattern `{db_name}:{branch_name}`.
-func (m *migrationsClient) GetBranchSchemaHistory(ctx context.Context, dbBranchName DbBranchName, request *GetBranchSchemaHistoryRequest) (*GetBranchSchemaHistoryResponse, error) {
+func (m *migrationsClient) ApplyBranchSchemaEdit(ctx context.Context, dbBranchName DbBranchName, request *ApplyBranchSchemaEditRequest) (*ApplyBranchSchemaEditResponse, error) {
 	baseURL := "/"
 	if m.baseURL != "" {
 		baseURL = m.baseURL
 	}
-	endpointURL := fmt.Sprintf(baseURL+"/"+"db/%v/schema/history", dbBranchName)
+	endpointURL := fmt.Sprintf(baseURL+"/"+"db/%v/schema/apply", dbBranchName)
 
 	errorDecoder := func(statusCode int, body io.Reader) error {
 		raw, err := io.ReadAll(body)
@@ -84,7 +84,7 @@ func (m *migrationsClient) GetBranchSchemaHistory(ctx context.Context, dbBranchN
 		return apiError
 	}
 
-	var response *GetBranchSchemaHistoryResponse
+	var response *ApplyBranchSchemaEditResponse
 	if err := core.DoRequest(
 		ctx,
 		m.httpClient,
@@ -220,12 +220,12 @@ func (m *migrationsClient) CompareBranchSchemas(ctx context.Context, dbBranchNam
 }
 
 // The DBBranchName matches the pattern `{db_name}:{branch_name}`.
-func (m *migrationsClient) UpdateBranchSchema(ctx context.Context, dbBranchName DbBranchName, request *Migration) (*UpdateBranchSchemaResponse, error) {
+func (m *migrationsClient) GetBranchSchemaHistory(ctx context.Context, dbBranchName DbBranchName, request *GetBranchSchemaHistoryRequest) (*GetBranchSchemaHistoryResponse, error) {
 	baseURL := "/"
 	if m.baseURL != "" {
 		baseURL = m.baseURL
 	}
-	endpointURL := fmt.Sprintf(baseURL+"/"+"db/%v/schema/update", dbBranchName)
+	endpointURL := fmt.Sprintf(baseURL+"/"+"db/%v/schema/history", dbBranchName)
 
 	errorDecoder := func(statusCode int, body io.Reader) error {
 		raw, err := io.ReadAll(body)
@@ -260,7 +260,7 @@ func (m *migrationsClient) UpdateBranchSchema(ctx context.Context, dbBranchName 
 		return apiError
 	}
 
-	var response *UpdateBranchSchemaResponse
+	var response *GetBranchSchemaHistoryResponse
 	if err := core.DoRequest(
 		ctx,
 		m.httpClient,
@@ -335,64 +335,6 @@ func (m *migrationsClient) PreviewBranchSchemaEdit(ctx context.Context, dbBranch
 	return response, nil
 }
 
-// The DBBranchName matches the pattern `{db_name}:{branch_name}`.
-func (m *migrationsClient) ApplyBranchSchemaEdit(ctx context.Context, dbBranchName DbBranchName, request *ApplyBranchSchemaEditRequest) (*ApplyBranchSchemaEditResponse, error) {
-	baseURL := "/"
-	if m.baseURL != "" {
-		baseURL = m.baseURL
-	}
-	endpointURL := fmt.Sprintf(baseURL+"/"+"db/%v/schema/apply", dbBranchName)
-
-	errorDecoder := func(statusCode int, body io.Reader) error {
-		raw, err := io.ReadAll(body)
-		if err != nil {
-			return err
-		}
-		apiError := core.NewAPIError(statusCode, errors.New(string(raw)))
-		decoder := json.NewDecoder(bytes.NewReader(raw))
-		switch statusCode {
-		case 400:
-			value := new(BadRequestError)
-			value.APIError = apiError
-			if err := decoder.Decode(value); err != nil {
-				return err
-			}
-			return value
-		case 401:
-			value := new(UnauthorizedError)
-			value.APIError = apiError
-			if err := decoder.Decode(value); err != nil {
-				return err
-			}
-			return value
-		case 404:
-			value := new(NotFoundError)
-			value.APIError = apiError
-			if err := decoder.Decode(value); err != nil {
-				return err
-			}
-			return value
-		}
-		return apiError
-	}
-
-	var response *ApplyBranchSchemaEditResponse
-	if err := core.DoRequest(
-		ctx,
-		m.httpClient,
-		endpointURL,
-		http.MethodPost,
-		request,
-		&response,
-		false,
-		m.header,
-		errorDecoder,
-	); err != nil {
-		return response, err
-	}
-	return response, nil
-}
-
 // The `schema/push` API accepts a list of migrations to be applied to the
 // current branch. A list of applicable migrations can be fetched using
 // the `schema/history` API from another branch or database.
@@ -446,6 +388,64 @@ func (m *migrationsClient) PushBranchMigrations(ctx context.Context, dbBranchNam
 	}
 
 	var response *PushBranchMigrationsResponse
+	if err := core.DoRequest(
+		ctx,
+		m.httpClient,
+		endpointURL,
+		http.MethodPost,
+		request,
+		&response,
+		false,
+		m.header,
+		errorDecoder,
+	); err != nil {
+		return response, err
+	}
+	return response, nil
+}
+
+// The DBBranchName matches the pattern `{db_name}:{branch_name}`.
+func (m *migrationsClient) UpdateBranchSchema(ctx context.Context, dbBranchName DbBranchName, request *Migration) (*UpdateBranchSchemaResponse, error) {
+	baseURL := "/"
+	if m.baseURL != "" {
+		baseURL = m.baseURL
+	}
+	endpointURL := fmt.Sprintf(baseURL+"/"+"db/%v/schema/update", dbBranchName)
+
+	errorDecoder := func(statusCode int, body io.Reader) error {
+		raw, err := io.ReadAll(body)
+		if err != nil {
+			return err
+		}
+		apiError := core.NewAPIError(statusCode, errors.New(string(raw)))
+		decoder := json.NewDecoder(bytes.NewReader(raw))
+		switch statusCode {
+		case 400:
+			value := new(BadRequestError)
+			value.APIError = apiError
+			if err := decoder.Decode(value); err != nil {
+				return err
+			}
+			return value
+		case 401:
+			value := new(UnauthorizedError)
+			value.APIError = apiError
+			if err := decoder.Decode(value); err != nil {
+				return err
+			}
+			return value
+		case 404:
+			value := new(NotFoundError)
+			value.APIError = apiError
+			if err := decoder.Decode(value); err != nil {
+				return err
+			}
+			return value
+		}
+		return apiError
+	}
+
+	var response *UpdateBranchSchemaResponse
 	if err := core.DoRequest(
 		ctx,
 		m.httpClient,

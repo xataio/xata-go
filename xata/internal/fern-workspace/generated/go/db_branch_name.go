@@ -5,6 +5,4 @@
 package api
 
 // The DBBranchName matches the pattern `{db_name}:{branch_name}`.
-//
-//	<span style="white-space: nowrap">`non-empty`</span> <span style="white-space: nowrap">`<= 511 characters`</span>
 type DbBranchName = string

@@ -46,7 +46,7 @@ func (f filesClient) dbBranchName(request BranchRequestOptional) (string, error)
 type DeleteFileRequest struct {
 	BranchRequestOptional
 	TableName  string
-	RecordId   string
+	RecordID   string
 	ColumnName string
 }
 
@@ -56,14 +56,14 @@ func (f filesClient) Delete(ctx context.Context, request DeleteFileRequest) (*xa
 		return nil, err
 	}
 
-	return f.generated.DeleteFile(ctx, dbBranchName, request.TableName, request.RecordId, request.ColumnName)
+	return f.generated.DeleteFile(ctx, dbBranchName, request.TableName, request.RecordID, request.ColumnName)
 }
 
 type PutFileRequest struct {
 	BranchRequestOptional
 	ContentType *string
 	TableName   string
-	RecordId    string
+	RecordID    string
 	ColumnName  string
 	Data        []byte
 }
@@ -81,13 +81,13 @@ func (f filesClient) Put(ctx context.Context, request PutFileRequest) (*xatagenw
 
 	f.generated.SetContentTypeHeader(contentType)
 
-	return f.generated.PutFile(ctx, dbBranchName, request.TableName, request.RecordId, request.ColumnName, request.Data)
+	return f.generated.PutFile(ctx, dbBranchName, request.TableName, request.RecordID, request.ColumnName, request.Data)
 }
 
 type GetFileRequest struct {
 	BranchRequestOptional
 	TableName  string
-	RecordId   string
+	RecordID   string
 	ColumnName string
 }
 
@@ -97,13 +97,13 @@ func (f filesClient) Get(ctx context.Context, request GetFileRequest) (*xatagenw
 		return nil, err
 	}
 
-	return f.generated.GetFile(ctx, dbBranchName, request.TableName, request.RecordId, request.ColumnName)
+	return f.generated.GetFile(ctx, dbBranchName, request.TableName, request.RecordID, request.ColumnName)
 }
 
 type GetFileItemRequest struct {
 	BranchRequestOptional
 	TableName  string
-	RecordId   string
+	RecordID   string
 	ColumnName string
 	FileID     string
 }
@@ -114,14 +114,14 @@ func (f filesClient) GetItem(ctx context.Context, request GetFileItemRequest) (*
 		return nil, err
 	}
 
-	return f.generated.GetFileItem(ctx, dbBranchName, request.TableName, request.RecordId, request.ColumnName, request.FileID)
+	return f.generated.GetFileItem(ctx, dbBranchName, request.TableName, request.RecordID, request.ColumnName, request.FileID)
 }
 
 type PutFileItemRequest struct {
 	BranchRequestOptional
 	ContentType *string
 	TableName   string
-	RecordId    string
+	RecordID    string
 	ColumnName  string
 	FileID      string
 	Data        []byte
@@ -140,13 +140,13 @@ func (f filesClient) PutItem(ctx context.Context, request PutFileItemRequest) (*
 
 	f.generated.SetContentTypeHeader(contentType)
 
-	return f.generated.PutFileItem(ctx, dbBranchName, request.TableName, request.RecordId, request.ColumnName, request.FileID, request.Data)
+	return f.generated.PutFileItem(ctx, dbBranchName, request.TableName, request.RecordID, request.ColumnName, request.FileID, request.Data)
 }
 
 type DeleteFileItemRequest struct {
 	BranchRequestOptional
 	TableName  string
-	RecordId   string
+	RecordID   string
 	ColumnName string
 	FileID     string
 }
@@ -157,7 +157,7 @@ func (f filesClient) DeleteItem(ctx context.Context, request DeleteFileItemReque
 		return nil, err
 	}
 
-	return f.generated.DeleteFileItem(ctx, dbBranchName, request.TableName, request.RecordId, request.ColumnName, request.FileID)
+	return f.generated.DeleteFileItem(ctx, dbBranchName, request.TableName, request.RecordID, request.ColumnName, request.FileID)
 }
 
 func NewFilesClient(opts ...ClientOption) (FilesClient, error) {

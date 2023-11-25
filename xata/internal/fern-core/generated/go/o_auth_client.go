@@ -10,18 +10,17 @@ import (
 	json "encoding/json"
 	errors "errors"
 	fmt "fmt"
+	core "github.com/xataio/xata-go/xata/internal/fern-core/generated/go/core"
 	io "io"
 	http "net/http"
-
-	core "github.com/xataio/xata-go/xata/internal/fern-core/generated/go/core"
 )
 
 type OAuthClient interface {
 	GetUserOAuthClients(ctx context.Context) (*GetUserOAuthClientsResponse, error)
 	DeleteUserOAuthClient(ctx context.Context, clientId OAuthClientId) error
 	GetUserOAuthAccessTokens(ctx context.Context) (*GetUserOAuthAccessTokensResponse, error)
-	UpdateOAuthAccessToken(ctx context.Context, token AccessToken, request *UpdateOAuthAccessTokenRequest) (*OAuthAccessToken, error)
 	DeleteOAuthAccessToken(ctx context.Context, token AccessToken) error
+	UpdateOAuthAccessToken(ctx context.Context, token AccessToken, request *UpdateOAuthAccessTokenRequest) (*OAuthAccessToken, error)
 }
 
 func NewOAuthClient(opts ...core.ClientOption) OAuthClient {
@@ -215,6 +214,70 @@ func (o *oAuthClient) GetUserOAuthAccessTokens(ctx context.Context) (*GetUserOAu
 	return response, nil
 }
 
+// Expires the access token for a third party app
+func (o *oAuthClient) DeleteOAuthAccessToken(ctx context.Context, token AccessToken) error {
+	baseURL := "/"
+	if o.baseURL != "" {
+		baseURL = o.baseURL
+	}
+	endpointURL := fmt.Sprintf(baseURL+"/"+"user/oauth/tokens/%v", token)
+
+	errorDecoder := func(statusCode int, body io.Reader) error {
+		raw, err := io.ReadAll(body)
+		if err != nil {
+			return err
+		}
+		apiError := core.NewAPIError(statusCode, errors.New(string(raw)))
+		decoder := json.NewDecoder(bytes.NewReader(raw))
+		switch statusCode {
+		case 400:
+			value := new(BadRequestError)
+			value.APIError = apiError
+			if err := decoder.Decode(value); err != nil {
+				return err
+			}
+			return value
+		case 401:
+			value := new(UnauthorizedError)
+			value.APIError = apiError
+			if err := decoder.Decode(value); err != nil {
+				return err
+			}
+			return value
+		case 404:
+			value := new(NotFoundError)
+			value.APIError = apiError
+			if err := decoder.Decode(value); err != nil {
+				return err
+			}
+			return value
+		case 409:
+			value := new(ConflictError)
+			value.APIError = apiError
+			if err := decoder.Decode(value); err != nil {
+				return err
+			}
+			return value
+		}
+		return apiError
+	}
+
+	if err := core.DoRequest(
+		ctx,
+		o.httpClient,
+		endpointURL,
+		http.MethodDelete,
+		nil,
+		nil,
+		false,
+		o.header,
+		errorDecoder,
+	); err != nil {
+		return err
+	}
+	return nil
+}
+
 // Updates partially the access token for a third party app
 func (o *oAuthClient) UpdateOAuthAccessToken(ctx context.Context, token AccessToken, request *UpdateOAuthAccessTokenRequest) (*OAuthAccessToken, error) {
 	baseURL := "/"
@@ -278,68 +341,4 @@ func (o *oAuthClient) UpdateOAuthAccessToken(ctx context.Context, token AccessTo
 		return response, err
 	}
 	return response, nil
-}
-
-// Expires the access token for a third party app
-func (o *oAuthClient) DeleteOAuthAccessToken(ctx context.Context, token AccessToken) error {
-	baseURL := "/"
-	if o.baseURL != "" {
-		baseURL = o.baseURL
-	}
-	endpointURL := fmt.Sprintf(baseURL+"/"+"user/oauth/tokens/%v", token)
-
-	errorDecoder := func(statusCode int, body io.Reader) error {
-		raw, err := io.ReadAll(body)
-		if err != nil {
-			return err
-		}
-		apiError := core.NewAPIError(statusCode, errors.New(string(raw)))
-		decoder := json.NewDecoder(bytes.NewReader(raw))
-		switch statusCode {
-		case 400:
-			value := new(BadRequestError)
-			value.APIError = apiError
-			if err := decoder.Decode(value); err != nil {
-				return err
-			}
-			return value
-		case 401:
-			value := new(UnauthorizedError)
-			value.APIError = apiError
-			if err := decoder.Decode(value); err != nil {
-				return err
-			}
-			return value
-		case 404:
-			value := new(NotFoundError)
-			value.APIError = apiError
-			if err := decoder.Decode(value); err != nil {
-				return err
-			}
-			return value
-		case 409:
-			value := new(ConflictError)
-			value.APIError = apiError
-			if err := decoder.Decode(value); err != nil {
-				return err
-			}
-			return value
-		}
-		return apiError
-	}
-
-	if err := core.DoRequest(
-		ctx,
-		o.httpClient,
-		endpointURL,
-		http.MethodDelete,
-		nil,
-		nil,
-		false,
-		o.header,
-		errorDecoder,
-	); err != nil {
-		return err
-	}
-	return nil
 }

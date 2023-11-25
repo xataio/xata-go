@@ -5,6 +5,6 @@
 package api
 
 type ColumnMigration struct {
-	Old *Column `json:"old,omitempty"`
 	New *Column `json:"new,omitempty"`
+	Old *Column `json:"old,omitempty"`
 }

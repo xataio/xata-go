@@ -5,18 +5,22 @@
 package api
 
 type MigrationRequest struct {
-	Number     *MigrationRequestNumber `json:"number,omitempty"`
-	CreatedAt  *DateTime               `json:"createdAt,omitempty"`
-	ModifiedAt *DateTime               `json:"modifiedAt,omitempty"`
-	ClosedAt   *DateTime               `json:"closedAt,omitempty"`
-	MergedAt   *DateTime               `json:"mergedAt,omitempty"`
-	Status     *MigrationRequestStatus `json:"status,omitempty"`
-	// The migration request title.
-	Title *string `json:"title,omitempty"`
 	// The migration request body with detailed description.
 	Body *string `json:"body,omitempty"`
+	// Timestamp when the migration request was closed.
+	ClosedAt *DateTime `json:"closedAt,omitempty"`
+	// Migration request creation timestamp.
+	CreatedAt *DateTime `json:"createdAt,omitempty"`
+	// Timestamp when the migration request was merged.
+	MergedAt *DateTime `json:"mergedAt,omitempty"`
+	// Last modified timestamp.
+	ModifiedAt *DateTime               `json:"modifiedAt,omitempty"`
+	Number     *MigrationRequestNumber `json:"number,omitempty"`
 	// Name of the source branch.
-	Source *string `json:"source,omitempty"`
+	Source *string                 `json:"source,omitempty"`
+	Status *MigrationRequestStatus `json:"status,omitempty"`
 	// Name of the target branch.
 	Target *string `json:"target,omitempty"`
+	// The migration request title.
+	Title *string `json:"title,omitempty"`
 }

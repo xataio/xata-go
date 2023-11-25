@@ -5,8 +5,8 @@
 package api
 
 type FilterPredicateRangeOp struct {
-	Lt *FilterRangeValue `json:"$lt,omitempty"`
-	Le *FilterRangeValue `json:"$le,omitempty"`
-	Gt *FilterRangeValue `json:"$gt,omitempty"`
 	Ge *FilterRangeValue `json:"$ge,omitempty"`
+	Gt *FilterRangeValue `json:"$gt,omitempty"`
+	Le *FilterRangeValue `json:"$le,omitempty"`
+	Lt *FilterRangeValue `json:"$lt,omitempty"`
 }

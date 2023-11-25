@@ -6,8 +6,8 @@ package api
 
 // An array of errors, with indices, from the transaction.
 type TransactionFailure struct {
-	// The request ID.
-	Id string `json:"id"`
 	// An array of errors from the submitted operations.
 	Errors []*TransactionError `json:"errors,omitempty"`
+	// The request ID.
+	Id string `json:"id"`
 }

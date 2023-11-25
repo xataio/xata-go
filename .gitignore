@@ -25,6 +25,7 @@ go.work
 .env
 .idea
 **/.xatarc
+**/fern.config.json
 
 # ignore license header checker
 bin/license-header-checker

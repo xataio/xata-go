@@ -5,7 +5,6 @@
 package api
 
 type PushBranchMigrationsResponse struct {
-	// <span style="white-space: nowrap">`non-empty`</span>
 	MigrationId       string          `json:"migrationID"`
 	ParentMigrationId string          `json:"parentMigrationID"`
 	Status            MigrationStatus `json:"status,omitempty"`

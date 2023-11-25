@@ -10,10 +10,10 @@ import (
 
 // UpsertRecordWithIdRequest is an in-lined request used by the UpsertRecordWithId endpoint.
 type UpsertRecordWithIdRequest struct {
-	IfVersion *int `json:"-"`
 	// Column filters
-	Columns []*string                        `json:"-"`
-	Body    map[string]*DataInputRecordValue `json:"-"`
+	Columns   []*string                        `json:"-"`
+	IfVersion *int                             `json:"-"`
+	Body      map[string]*DataInputRecordValue `json:"-"`
 }
 
 func (u *UpsertRecordWithIdRequest) UnmarshalJSON(data []byte) error {

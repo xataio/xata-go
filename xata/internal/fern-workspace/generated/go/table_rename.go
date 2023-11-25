@@ -5,8 +5,6 @@
 package api
 
 type TableRename struct {
-	// <span style="white-space: nowrap">`non-empty`</span>
 	NewName string `json:"newName"`
-	// <span style="white-space: nowrap">`non-empty`</span>
 	OldName string `json:"oldName"`
 }

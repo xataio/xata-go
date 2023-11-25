@@ -5,12 +5,12 @@
 package api
 
 type Commit struct {
-	Title         *string        `json:"title,omitempty"`
-	Message       *string        `json:"message,omitempty"`
-	Id            string         `json:"id"`
-	ParentId      *string        `json:"parentID,omitempty"`
 	Checksum      string         `json:"checksum"`
-	MergeParentId *string        `json:"mergeParentID,omitempty"`
 	CreatedAt     DateTime       `json:"createdAt"`
+	Id            string         `json:"id"`
+	MergeParentId *string        `json:"mergeParentID,omitempty"`
+	Message       *string        `json:"message,omitempty"`
 	Operations    []*MigrationOp `json:"operations,omitempty"`
+	ParentId      *string        `json:"parentID,omitempty"`
+	Title         *string        `json:"title,omitempty"`
 }

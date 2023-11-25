@@ -5,6 +5,6 @@
 package api
 
 type GetBranchSchemaHistoryResponse struct {
-	Meta *GetBranchSchemaHistoryResponseMeta `json:"meta,omitempty"`
 	Logs []*Commit                           `json:"logs,omitempty"`
+	Meta *GetBranchSchemaHistoryResponseMeta `json:"meta,omitempty"`
 }

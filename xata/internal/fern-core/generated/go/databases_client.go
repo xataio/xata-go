@@ -10,18 +10,17 @@ import (
 	json "encoding/json"
 	errors "errors"
 	fmt "fmt"
+	core "github.com/xataio/xata-go/xata/internal/fern-core/generated/go/core"
 	io "io"
 	http "net/http"
-
-	core "github.com/xataio/xata-go/xata/internal/fern-core/generated/go/core"
 )
 
 type DatabasesClient interface {
 	GetDatabaseList(ctx context.Context, workspaceId WorkspaceId) (*ListDatabasesResponse, error)
 	GetDatabaseMetadata(ctx context.Context, workspaceId WorkspaceId, dbName DbName) (*DatabaseMetadata, error)
 	CreateDatabase(ctx context.Context, workspaceId WorkspaceId, dbName DbName, request *CreateDatabaseRequest) (*CreateDatabaseResponse, error)
-	UpdateDatabaseMetadata(ctx context.Context, workspaceId WorkspaceId, dbName DbName, request *UpdateDatabaseMetadataRequest) (*DatabaseMetadata, error)
 	DeleteDatabase(ctx context.Context, workspaceId WorkspaceId, dbName DbName) (*DeleteDatabaseResponse, error)
+	UpdateDatabaseMetadata(ctx context.Context, workspaceId WorkspaceId, dbName DbName, request *UpdateDatabaseMetadataRequest) (*DatabaseMetadata, error)
 	RenameDatabase(ctx context.Context, workspaceId WorkspaceId, dbName DbName, request *RenameDatabaseRequest) (*DatabaseMetadata, error)
 	ListRegions(ctx context.Context, workspaceId WorkspaceId) (*ListRegionsResponse, error)
 }
@@ -219,67 +218,6 @@ func (d *databasesClient) CreateDatabase(ctx context.Context, workspaceId Worksp
 	return response, nil
 }
 
-// Update the color of the selected database
-//
-// Workspace ID
-// The Database Name
-func (d *databasesClient) UpdateDatabaseMetadata(ctx context.Context, workspaceId WorkspaceId, dbName DbName, request *UpdateDatabaseMetadataRequest) (*DatabaseMetadata, error) {
-	baseURL := "/"
-	if d.baseURL != "" {
-		baseURL = d.baseURL
-	}
-	endpointURL := fmt.Sprintf(baseURL+"/"+"workspaces/%v/dbs/%v", workspaceId, dbName)
-
-	errorDecoder := func(statusCode int, body io.Reader) error {
-		raw, err := io.ReadAll(body)
-		if err != nil {
-			return err
-		}
-		apiError := core.NewAPIError(statusCode, errors.New(string(raw)))
-		decoder := json.NewDecoder(bytes.NewReader(raw))
-		switch statusCode {
-		case 400:
-			value := new(BadRequestError)
-			value.APIError = apiError
-			if err := decoder.Decode(value); err != nil {
-				return err
-			}
-			return value
-		case 401:
-			value := new(UnauthorizedError)
-			value.APIError = apiError
-			if err := decoder.Decode(value); err != nil {
-				return err
-			}
-			return value
-		case 404:
-			value := new(NotFoundError)
-			value.APIError = apiError
-			if err := decoder.Decode(value); err != nil {
-				return err
-			}
-			return value
-		}
-		return apiError
-	}
-
-	var response *DatabaseMetadata
-	if err := core.DoRequest(
-		ctx,
-		d.httpClient,
-		endpointURL,
-		http.MethodPatch,
-		request,
-		&response,
-		false,
-		d.header,
-		errorDecoder,
-	); err != nil {
-		return response, err
-	}
-	return response, nil
-}
-
 // Delete a database and all of its branches and tables permanently.
 //
 // Workspace ID
@@ -331,6 +269,67 @@ func (d *databasesClient) DeleteDatabase(ctx context.Context, workspaceId Worksp
 		endpointURL,
 		http.MethodDelete,
 		nil,
+		&response,
+		false,
+		d.header,
+		errorDecoder,
+	); err != nil {
+		return response, err
+	}
+	return response, nil
+}
+
+// Update the color of the selected database
+//
+// Workspace ID
+// The Database Name
+func (d *databasesClient) UpdateDatabaseMetadata(ctx context.Context, workspaceId WorkspaceId, dbName DbName, request *UpdateDatabaseMetadataRequest) (*DatabaseMetadata, error) {
+	baseURL := "/"
+	if d.baseURL != "" {
+		baseURL = d.baseURL
+	}
+	endpointURL := fmt.Sprintf(baseURL+"/"+"workspaces/%v/dbs/%v", workspaceId, dbName)
+
+	errorDecoder := func(statusCode int, body io.Reader) error {
+		raw, err := io.ReadAll(body)
+		if err != nil {
+			return err
+		}
+		apiError := core.NewAPIError(statusCode, errors.New(string(raw)))
+		decoder := json.NewDecoder(bytes.NewReader(raw))
+		switch statusCode {
+		case 400:
+			value := new(BadRequestError)
+			value.APIError = apiError
+			if err := decoder.Decode(value); err != nil {
+				return err
+			}
+			return value
+		case 401:
+			value := new(UnauthorizedError)
+			value.APIError = apiError
+			if err := decoder.Decode(value); err != nil {
+				return err
+			}
+			return value
+		case 404:
+			value := new(NotFoundError)
+			value.APIError = apiError
+			if err := decoder.Decode(value); err != nil {
+				return err
+			}
+			return value
+		}
+		return apiError
+	}
+
+	var response *DatabaseMetadata
+	if err := core.DoRequest(
+		ctx,
+		d.httpClient,
+		endpointURL,
+		http.MethodPatch,
+		request,
 		&response,
 		false,
 		d.header,

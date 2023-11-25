@@ -6,9 +6,9 @@ package api
 
 // Get by id operation.
 type TransactionGetOp struct {
-	// The table name
-	Table string   `json:"table"`
-	Id    RecordId `json:"id"`
 	// If set, the call will return the requested fields as part of the response.
 	Columns *[]string `json:"columns,omitempty"`
+	Id      RecordId  `json:"id"`
+	// The table name
+	Table string `json:"table"`
 }

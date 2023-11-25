@@ -5,8 +5,8 @@
 package api
 
 type TableMigration struct {
-	NewColumns      *map[string]*Column `json:"newColumns,omitempty"`
-	RemovedColumns  *[]string           `json:"removedColumns,omitempty"`
 	ModifiedColumns *[]*ColumnMigration `json:"modifiedColumns,omitempty"`
 	NewColumnOrder  []string            `json:"newColumnOrder,omitempty"`
+	NewColumns      *map[string]*Column `json:"newColumns,omitempty"`
+	RemovedColumns  *[]string           `json:"removedColumns,omitempty"`
 }

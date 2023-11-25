@@ -6,7 +6,7 @@ package api
 
 type FilterColumnIncludes struct {
 	Includes     *FilterPredicate `json:"$includes,omitempty"`
-	IncludesAny  *FilterPredicate `json:"$includesAny,omitempty"`
 	IncludesAll  *FilterPredicate `json:"$includesAll,omitempty"`
+	IncludesAny  *FilterPredicate `json:"$includesAny,omitempty"`
 	IncludesNone *FilterPredicate `json:"$includesNone,omitempty"`
 }

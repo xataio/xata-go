@@ -5,7 +5,7 @@
 package api
 
 type CompareBranchSchemasResponse struct {
+	Edits  *SchemaEditScript `json:"edits,omitempty"`
 	Source *Schema           `json:"source,omitempty"`
 	Target *Schema           `json:"target,omitempty"`
-	Edits  *SchemaEditScript `json:"edits,omitempty"`
 }

@@ -10,6 +10,8 @@ type NumericBooster struct {
 	Column string `json:"column"`
 	// The factor with which to multiply the value of the column before adding it to the item score.
 	Factor float64 `json:"factor"`
+	// Only apply this booster to the records for which the provided filter matches.
+	IfMatchesFilter *FilterExpression `json:"ifMatchesFilter,omitempty"`
 	// Modifier to be applied to the column value, before being multiplied with the factor. The possible values are:
 	//   - none (default).
 	//   - log: common logarithm (base 10)
@@ -21,6 +23,5 @@ type NumericBooster struct {
 	//   - square: raise the value to the power of two.
 	//   - sqrt: take the square root of the value.
 	//   - reciprocal: reciprocate the value (if the value is `x`, the reciprocal is `1/x`).
-	Modifier        *NumericBoosterModifier `json:"modifier,omitempty"`
-	IfMatchesFilter *FilterExpression       `json:"ifMatchesFilter,omitempty"`
+	Modifier *NumericBoosterModifier `json:"modifier,omitempty"`
 }

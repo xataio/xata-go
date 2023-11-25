@@ -5,8 +5,9 @@
 package api
 
 type GetWorkspacesListResponseWorkspacesItem struct {
-	Id   WorkspaceId `json:"id"`
-	Name string      `json:"name"`
-	Slug string      `json:"slug"`
-	Role Role        `json:"role,omitempty"`
+	Id   WorkspaceId   `json:"id"`
+	Name string        `json:"name"`
+	Slug string        `json:"slug"`
+	Role Role          `json:"role,omitempty"`
+	Plan WorkspacePlan `json:"plan,omitempty"`
 }

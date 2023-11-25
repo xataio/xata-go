@@ -5,9 +5,9 @@
 package api
 
 type AskTableRequestSearch struct {
-	Fuzziness *FuzzinessExpression  `json:"fuzziness,omitempty"`
-	Target    *TargetExpression     `json:"target,omitempty"`
-	Prefix    *PrefixExpression     `json:"prefix,omitempty"`
-	Filter    *FilterExpression     `json:"filter,omitempty"`
 	Boosters  *[]*BoosterExpression `json:"boosters,omitempty"`
+	Filter    *FilterExpression     `json:"filter,omitempty"`
+	Fuzziness *FuzzinessExpression  `json:"fuzziness,omitempty"`
+	Prefix    *PrefixExpression     `json:"prefix,omitempty"`
+	Target    *TargetExpression     `json:"target,omitempty"`
 }

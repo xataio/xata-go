@@ -5,6 +5,6 @@
 package api
 
 type AggResponseValuesValuesItem struct {
-	Key   *AggResponseValuesValuesItemKey `json:"$key,omitempty"`
 	Count int                             `json:"$count"`
+	Key   *AggResponseValuesValuesItemKey `json:"$key,omitempty"`
 }

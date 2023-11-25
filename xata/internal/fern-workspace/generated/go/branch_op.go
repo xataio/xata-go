@@ -5,12 +5,12 @@
 package api
 
 type BranchOp struct {
-	Id         string          `json:"id"`
-	ParentId   *string         `json:"parentID,omitempty"`
-	Title      *string         `json:"title,omitempty"`
-	Message    *string         `json:"message,omitempty"`
-	Status     MigrationStatus `json:"status,omitempty"`
 	CreatedAt  DateTime        `json:"createdAt"`
-	ModifiedAt *DateTime       `json:"modifiedAt,omitempty"`
+	Id         string          `json:"id"`
+	Message    *string         `json:"message,omitempty"`
 	Migration  *Commit         `json:"migration,omitempty"`
+	ModifiedAt *DateTime       `json:"modifiedAt,omitempty"`
+	ParentId   *string         `json:"parentID,omitempty"`
+	Status     MigrationStatus `json:"status,omitempty"`
+	Title      *string         `json:"title,omitempty"`
 }

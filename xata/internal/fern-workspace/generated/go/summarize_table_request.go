@@ -6,12 +6,12 @@ package api
 
 // SummarizeTableRequest is an in-lined request used by the SummarizeTable endpoint.
 type SummarizeTableRequest struct {
-	Filter          *FilterExpression      `json:"filter,omitempty"`
-	Columns         *ColumnsProjection     `json:"columns,omitempty"`
-	Summaries       *SummaryExpressionList `json:"summaries,omitempty"`
-	Sort            *SortExpression        `json:"sort,omitempty"`
-	SummariesFilter *FilterExpression      `json:"summariesFilter,omitempty"`
+	Columns *ColumnsProjection `json:"columns,omitempty"`
 	// The consistency level for this request.
-	Consistency *SummarizeTableRequestConsistency `json:"consistency,omitempty"`
-	Page        *SummarizeTableRequestPage        `json:"page,omitempty"`
+	Consistency     *SummarizeTableRequestConsistency `json:"consistency,omitempty"`
+	Filter          *FilterExpression                 `json:"filter,omitempty"`
+	Page            *SummarizeTableRequestPage        `json:"page,omitempty"`
+	Sort            *SortExpression                   `json:"sort,omitempty"`
+	Summaries       *SummaryExpressionList            `json:"summaries,omitempty"`
+	SummariesFilter *FilterExpression                 `json:"summariesFilter,omitempty"`
 }

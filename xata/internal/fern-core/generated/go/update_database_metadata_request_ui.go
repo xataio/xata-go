@@ -5,6 +5,5 @@
 package api
 
 type UpdateDatabaseMetadataRequestUi struct {
-	// <span style="white-space: nowrap">`non-empty`</span>
 	Color *string `json:"color,omitempty"`
 }

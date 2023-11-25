@@ -4,5 +4,5 @@
 
 package api
 
-// Unique file identifier <span style="white-space: nowrap">`non-empty`</span> <span style="white-space: nowrap">`<= 255 characters`</span>
+// Unique file identifier
 type FileItemId = string

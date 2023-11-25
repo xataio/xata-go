@@ -5,6 +5,6 @@
 package api
 
 type RevLink struct {
-	Table  string `json:"table"`
 	Column string `json:"column"`
+	Table  string `json:"table"`
 }

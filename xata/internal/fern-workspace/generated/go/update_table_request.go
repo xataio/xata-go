@@ -6,6 +6,5 @@ package api
 
 // UpdateTableRequest is an in-lined request used by the UpdateTable endpoint.
 type UpdateTableRequest struct {
-	// <span style="white-space: nowrap">`non-empty`</span>
 	Name string `json:"name"`
 }

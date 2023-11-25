@@ -6,13 +6,13 @@ package api
 
 // Object representing a file in an array
 type InputFileEntry struct {
-	Id        *FileItemId `json:"id,omitempty"`
-	Name      *FileName   `json:"name,omitempty"`
-	MediaType *MediaType  `json:"mediaType,omitempty"`
-	// Base64 encoded content <span style="white-space: nowrap">`<= 20971520 characters`</span>
+	// Base64 encoded content
 	Base64Content *string `json:"base64Content,omitempty"`
 	// Enable public access to the file
-	EnablePublicUrl *bool `json:"enablePublicUrl,omitempty"`
+	EnablePublicUrl *bool       `json:"enablePublicUrl,omitempty"`
+	Id              *FileItemId `json:"id,omitempty"`
+	MediaType       *MediaType  `json:"mediaType,omitempty"`
+	Name            *FileName   `json:"name,omitempty"`
 	// Time to live for signed URLs
 	SignedUrlTimeout *int `json:"signedUrlTimeout,omitempty"`
 }

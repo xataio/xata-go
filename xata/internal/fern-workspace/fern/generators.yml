@@ -6,6 +6,6 @@ groups:
         version: 0.0.14
         output:
           location: local-file-system
-          path: ../../generated/go
+          path: ../generated/go
         config:
-          importPath: github.com/xataio/xata-go/xata/internal/fern-core/generated/go
+          importPath: github.com/xataio/xata-go/xata/internal/fern-workspace/generated/go

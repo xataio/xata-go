@@ -11,14 +11,15 @@ package api
 type DateBooster struct {
 	// The column in which to look for the value.
 	Column string `json:"column"`
+	// The decay factor to expect at "scale" distance from the "origin".
+	Decay float64 `json:"decay"`
+	// The factor with which to multiply the added boost.
+	Factor *float64 `json:"factor,omitempty"`
+	// Only apply this booster to the records for which the provided filter matches.
+	IfMatchesFilter *FilterExpression `json:"ifMatchesFilter,omitempty"`
 	// The datetime (formatted as RFC3339) from where to apply the score decay function. The maximum boost will be applied for records with values at this time.
 	// If it is not specified, the current date and time is used.
 	Origin *string `json:"origin,omitempty"`
 	// The duration at which distance from origin the score is decayed with factor, using an exponential function. It is formatted as number + units, for example: `5d`, `20m`, `10s`.
 	Scale string `json:"scale"`
-	// The decay factor to expect at "scale" distance from the "origin".
-	Decay float64 `json:"decay"`
-	// The factor with which to multiply the added boost.
-	Factor          *float64          `json:"factor,omitempty"`
-	IfMatchesFilter *FilterExpression `json:"ifMatchesFilter,omitempty"`
 }

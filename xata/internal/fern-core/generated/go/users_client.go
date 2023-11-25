@@ -9,10 +9,9 @@ import (
 	context "context"
 	json "encoding/json"
 	errors "errors"
+	core "github.com/xataio/xata-go/xata/internal/fern-core/generated/go/core"
 	io "io"
 	http "net/http"
-
-	core "github.com/xataio/xata-go/xata/internal/fern-core/generated/go/core"
 )
 
 type UsersClient interface {

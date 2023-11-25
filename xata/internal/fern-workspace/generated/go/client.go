@@ -12,10 +12,11 @@ import (
 type Client interface {
 	Branch() BranchClient
 	Migrations() MigrationsClient
+	SearchAndFilter() SearchAndFilterClient
+	Sql() SqlClient
 	Table() TableClient
 	Records() RecordsClient
 	Files() FilesClient
-	SearchAndFilter() SearchAndFilterClient
 }
 
 func NewClient(opts ...core.ClientOption) Client {
@@ -29,10 +30,11 @@ func NewClient(opts ...core.ClientOption) Client {
 		header:                options.ToHeader(),
 		branchClient:          NewBranchClient(opts...),
 		migrationsClient:      NewMigrationsClient(opts...),
+		searchAndFilterClient: NewSearchAndFilterClient(opts...),
+		sqlClient:             NewSqlClient(opts...),
 		tableClient:           NewTableClient(opts...),
 		recordsClient:         NewRecordsClient(opts...),
 		filesClient:           NewFilesClient(opts...),
-		searchAndFilterClient: NewSearchAndFilterClient(opts...),
 	}
 }
 
@@ -42,10 +44,11 @@ type client struct {
 	header                http.Header
 	branchClient          BranchClient
 	migrationsClient      MigrationsClient
+	searchAndFilterClient SearchAndFilterClient
+	sqlClient             SqlClient
 	tableClient           TableClient
 	recordsClient         RecordsClient
 	filesClient           FilesClient
-	searchAndFilterClient SearchAndFilterClient
 }
 
 func (c *client) Branch() BranchClient {
@@ -54,6 +57,14 @@ func (c *client) Branch() BranchClient {
 
 func (c *client) Migrations() MigrationsClient {
 	return c.migrationsClient
+}
+
+func (c *client) SearchAndFilter() SearchAndFilterClient {
+	return c.searchAndFilterClient
+}
+
+func (c *client) Sql() SqlClient {
+	return c.sqlClient
 }
 
 func (c *client) Table() TableClient {
@@ -66,8 +77,4 @@ func (c *client) Records() RecordsClient {
 
 func (c *client) Files() FilesClient {
 	return c.filesClient
-}
-
-func (c *client) SearchAndFilter() SearchAndFilterClient {
-	return c.searchAndFilterClient
 }

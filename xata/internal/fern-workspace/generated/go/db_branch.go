@@ -5,13 +5,13 @@
 package api
 
 type DbBranch struct {
-	DatabaseName    DbName               `json:"databaseName"`
 	BranchName      BranchName           `json:"branchName"`
 	CreatedAt       DateTime             `json:"createdAt"`
+	DatabaseName    DbName               `json:"databaseName"`
 	Id              string               `json:"id"`
-	Version         float64              `json:"version"`
 	LastMigrationId string               `json:"lastMigrationID"`
 	Metadata        *BranchMetadata      `json:"metadata,omitempty"`
-	StartedFrom     *StartedFromMetadata `json:"startedFrom,omitempty"`
 	Schema          *Schema              `json:"schema,omitempty"`
+	StartedFrom     *StartedFromMetadata `json:"startedFrom,omitempty"`
+	Version         float64              `json:"version"`
 }

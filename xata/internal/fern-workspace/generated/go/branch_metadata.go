@@ -5,10 +5,8 @@
 package api
 
 type BranchMetadata struct {
-	// <span style="white-space: nowrap">`non-empty`</span>
-	Repository *string     `json:"repository,omitempty"`
 	Branch     *BranchName `json:"branch,omitempty"`
-	// <span style="white-space: nowrap">`non-empty`</span>
-	Stage  *string   `json:"stage,omitempty"`
-	Labels *[]string `json:"labels,omitempty"`
+	Labels     *[]string   `json:"labels,omitempty"`
+	Repository *string     `json:"repository,omitempty"`
+	Stage      *string     `json:"stage,omitempty"`
 }

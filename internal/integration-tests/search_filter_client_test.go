@@ -563,7 +563,7 @@ func Test_searchAndFilterClient(t *testing.T) {
 			assert.NoError(t, err)
 			if (*aggTableRes.Aggs)["histogram"] != nil &&
 				(*aggTableRes.Aggs)["histogram"].AggResponseValues != nil {
-				return len((*aggTableRes.Aggs)["histogram"].AggResponseValues.Values) > 0
+				return len((*aggTableRes.Aggs)["histogram"].AggResponseValues.Values.AggResponseValuesValuesItemList) > 0
 			}
 			return false
 		}, time.Second*10, time.Second)
@@ -589,7 +589,7 @@ func Test_searchAndFilterClient(t *testing.T) {
 			})
 			assert.NoError(t, err)
 			if (*aggTableRes.Aggs)["histogram"] != nil && (*aggTableRes.Aggs)["histogram"].AggResponseValues != nil {
-				return len((*aggTableRes.Aggs)["histogram"].AggResponseValues.Values) > 0
+				return len((*aggTableRes.Aggs)["histogram"].AggResponseValues.Values.AggResponseValuesValuesItemList) > 0
 			}
 			return false
 		}, time.Second*10, time.Second)
@@ -613,7 +613,7 @@ func Test_searchAndFilterClient(t *testing.T) {
 			})
 			assert.NoError(t, err)
 			if (*aggTableRes.Aggs)["top_values"] != nil && (*aggTableRes.Aggs)["top_values"].AggResponseValues != nil {
-				return len((*aggTableRes.Aggs)["top_values"].AggResponseValues.Values) > 0
+				return len((*aggTableRes.Aggs)["top_values"].AggResponseValues.Values.AggResponseValuesValuesItemList) > 0
 			}
 			return false
 		}, time.Second*10, time.Second)
@@ -638,7 +638,7 @@ func Test_searchAndFilterClient(t *testing.T) {
 			})
 			assert.NoError(t, err)
 			if (*aggTableRes.Aggs)["num_histogram"] != nil && (*aggTableRes.Aggs)["num_histogram"].AggResponseValues != nil {
-				return len((*aggTableRes.Aggs)["num_histogram"].AggResponseValues.Values) > 0
+				return len((*aggTableRes.Aggs)["num_histogram"].AggResponseValues.Values.AggResponseValuesValuesItemList) > 0
 			}
 			return false
 		}, time.Second*10, time.Second)

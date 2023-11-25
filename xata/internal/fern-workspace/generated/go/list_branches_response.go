@@ -5,6 +5,6 @@
 package api
 
 type ListBranchesResponse struct {
-	DatabaseName string    `json:"databaseName"`
 	Branches     []*Branch `json:"branches,omitempty"`
+	DatabaseName string    `json:"databaseName"`
 }

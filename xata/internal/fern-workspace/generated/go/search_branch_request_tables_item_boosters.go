@@ -5,9 +5,9 @@
 package api
 
 type SearchBranchRequestTablesItemBoosters struct {
-	// The name of the table.
-	Table    string                `json:"table"`
-	Filter   *FilterExpression     `json:"filter,omitempty"`
-	Target   *TargetExpression     `json:"target,omitempty"`
 	Boosters *[]*BoosterExpression `json:"boosters,omitempty"`
+	Filter   *FilterExpression     `json:"filter,omitempty"`
+	// The name of the table.
+	Table  string            `json:"table"`
+	Target *TargetExpression `json:"target,omitempty"`
 }

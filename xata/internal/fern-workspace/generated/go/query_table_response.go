@@ -5,6 +5,6 @@
 package api
 
 type QueryTableResponse struct {
-	Records []*Record        `json:"records,omitempty"`
 	Meta    *RecordsMetadata `json:"meta,omitempty"`
+	Records []*Record        `json:"records,omitempty"`
 }

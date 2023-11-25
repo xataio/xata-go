@@ -8,9 +8,10 @@ package api
 type ValueBooster struct {
 	// The column in which to look for the value.
 	Column string `json:"column"`
+	// The factor with which to multiply the added boost.
+	Factor float64 `json:"factor"`
+	// Only apply this booster to the records for which the provided filter matches.
+	IfMatchesFilter *FilterExpression `json:"ifMatchesFilter,omitempty"`
 	// The exact value to boost.
 	Value *ValueBoosterValue `json:"value,omitempty"`
-	// The factor with which to multiply the added boost.
-	Factor          float64           `json:"factor"`
-	IfMatchesFilter *FilterExpression `json:"ifMatchesFilter,omitempty"`
 }

@@ -6,6 +6,6 @@ package api
 
 // Migration is an in-lined request used by the UpdateBranchSchema endpoint.
 type Migration struct {
-	ParentId   *string        `json:"parentID,omitempty"`
 	Operations []*MigrationOp `json:"operations,omitempty"`
+	ParentId   *string        `json:"parentID,omitempty"`
 }

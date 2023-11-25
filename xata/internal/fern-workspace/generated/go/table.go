@@ -5,8 +5,8 @@
 package api
 
 type Table struct {
+	Columns  []*Column   `json:"columns,omitempty"`
 	Id       *string     `json:"id,omitempty"`
 	Name     TableName   `json:"name"`
-	Columns  []*Column   `json:"columns,omitempty"`
 	RevLinks *[]*RevLink `json:"revLinks,omitempty"`
 }

@@ -5,6 +5,6 @@
 package api
 
 type Branch struct {
-	Name      string   `json:"name"`
 	CreatedAt DateTime `json:"createdAt"`
+	Name      string   `json:"name"`
 }

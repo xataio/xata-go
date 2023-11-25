@@ -6,6 +6,5 @@ package api
 
 // UpdateColumnRequest is an in-lined request used by the UpdateColumn endpoint.
 type UpdateColumnRequest struct {
-	// <span style="white-space: nowrap">`non-empty`</span>
 	Name string `json:"name"`
 }

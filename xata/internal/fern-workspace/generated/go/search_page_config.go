@@ -6,8 +6,8 @@ package api
 
 // Pagination settings for the search endpoints.
 type SearchPageConfig struct {
-	// Set page size.
-	Size *int `json:"size,omitempty"`
 	// Use offset to skip entries. To skip pages set offset to a multiple of size.
 	Offset *int `json:"offset,omitempty"`
+	// Set page size.
+	Size *int `json:"size,omitempty"`
 }

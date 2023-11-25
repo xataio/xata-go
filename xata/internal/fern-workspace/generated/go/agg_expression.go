@@ -19,6 +19,7 @@ type AggExpression struct {
 	AggExpressionMax              *AggExpressionMax
 	AggExpressionMin              *AggExpressionMin
 	AggExpressionAverage          *AggExpressionAverage
+	AggExpressionPercentiles      *AggExpressionPercentiles
 	AggExpressionUniqueCount      *AggExpressionUniqueCount
 	AggExpressionDateHistogram    *AggExpressionDateHistogram
 	AggExpressionTopValues        *AggExpressionTopValues
@@ -43,6 +44,10 @@ func NewAggExpressionFromAggExpressionMin(value *AggExpressionMin) *AggExpressio
 
 func NewAggExpressionFromAggExpressionAverage(value *AggExpressionAverage) *AggExpression {
 	return &AggExpression{typeName: "aggExpressionAverage", AggExpressionAverage: value}
+}
+
+func NewAggExpressionFromAggExpressionPercentiles(value *AggExpressionPercentiles) *AggExpression {
+	return &AggExpression{typeName: "aggExpressionPercentiles", AggExpressionPercentiles: value}
 }
 
 func NewAggExpressionFromAggExpressionUniqueCount(value *AggExpressionUniqueCount) *AggExpression {
@@ -92,6 +97,12 @@ func (a *AggExpression) UnmarshalJSON(data []byte) error {
 		a.AggExpressionAverage = valueAggExpressionAverage
 		return nil
 	}
+	valueAggExpressionPercentiles := new(AggExpressionPercentiles)
+	if err := json.Unmarshal(data, &valueAggExpressionPercentiles); err == nil {
+		a.typeName = "aggExpressionPercentiles"
+		a.AggExpressionPercentiles = valueAggExpressionPercentiles
+		return nil
+	}
 	valueAggExpressionUniqueCount := new(AggExpressionUniqueCount)
 	if err := json.Unmarshal(data, &valueAggExpressionUniqueCount); err == nil {
 		a.typeName = "aggExpressionUniqueCount"
@@ -133,6 +144,8 @@ func (a AggExpression) MarshalJSON() ([]byte, error) {
 		return json.Marshal(a.AggExpressionMin)
 	case "aggExpressionAverage":
 		return json.Marshal(a.AggExpressionAverage)
+	case "aggExpressionPercentiles":
+		return json.Marshal(a.AggExpressionPercentiles)
 	case "aggExpressionUniqueCount":
 		return json.Marshal(a.AggExpressionUniqueCount)
 	case "aggExpressionDateHistogram":
@@ -150,6 +163,7 @@ type AggExpressionVisitor interface {
 	VisitAggExpressionMax(*AggExpressionMax) error
 	VisitAggExpressionMin(*AggExpressionMin) error
 	VisitAggExpressionAverage(*AggExpressionAverage) error
+	VisitAggExpressionPercentiles(*AggExpressionPercentiles) error
 	VisitAggExpressionUniqueCount(*AggExpressionUniqueCount) error
 	VisitAggExpressionDateHistogram(*AggExpressionDateHistogram) error
 	VisitAggExpressionTopValues(*AggExpressionTopValues) error
@@ -170,6 +184,8 @@ func (a *AggExpression) Accept(v AggExpressionVisitor) error {
 		return v.VisitAggExpressionMin(a.AggExpressionMin)
 	case "aggExpressionAverage":
 		return v.VisitAggExpressionAverage(a.AggExpressionAverage)
+	case "aggExpressionPercentiles":
+		return v.VisitAggExpressionPercentiles(a.AggExpressionPercentiles)
 	case "aggExpressionUniqueCount":
 		return v.VisitAggExpressionUniqueCount(a.AggExpressionUniqueCount)
 	case "aggExpressionDateHistogram":

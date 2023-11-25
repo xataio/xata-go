@@ -6,17 +6,17 @@ package api
 
 // Split data into buckets by a datetime column. Accepts sub-aggregations for each bucket.
 type DateHistogramAgg struct {
+	Aggs *AggExpressionMap `json:"aggs,omitempty"`
+	// The calendar-aware interval to use when bucketing. Possible values are: `minute`,
+	// `hour`, `day`, `week`, `month`, `quarter`, `year`.
+	CalendarInterval *DateHistogramAggCalendarInterval `json:"calendarInterval,omitempty"`
 	// The column to use for bucketing. Must be of type datetime.
 	Column string `json:"column"`
 	// The fixed interval to use when bucketing.
 	// It is formatted as number + units, for example: `5d`, `20m`, `10s`.
 	Interval *string `json:"interval,omitempty"`
-	// The calendar-aware interval to use when bucketing. Possible values are: `minute`,
-	// `hour`, `day`, `week`, `month`, `quarter`, `year`.
-	CalendarInterval *DateHistogramAggCalendarInterval `json:"calendarInterval,omitempty"`
 	// The timezone to use for bucketing. By default, UTC is assumed.
 	// The accepted format is as an ISO 8601 UTC offset. For example: `+01:00` or
 	// `-08:00`.
-	Timezone *string           `json:"timezone,omitempty"`
-	Aggs     *AggExpressionMap `json:"aggs,omitempty"`
+	Timezone *string `json:"timezone,omitempty"`
 }

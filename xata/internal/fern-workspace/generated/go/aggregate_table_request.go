@@ -6,6 +6,6 @@ package api
 
 // AggregateTableRequest is an in-lined request used by the AggregateTable endpoint.
 type AggregateTableRequest struct {
-	Filter *FilterExpression `json:"filter,omitempty"`
 	Aggs   *AggExpressionMap `json:"aggs,omitempty"`
+	Filter *FilterExpression `json:"filter,omitempty"`
 }

@@ -5,6 +5,6 @@
 package api
 
 type ColumnOpAdd struct {
-	Table  string  `json:"table"`
 	Column *Column `json:"column,omitempty"`
+	Table  string  `json:"table"`
 }

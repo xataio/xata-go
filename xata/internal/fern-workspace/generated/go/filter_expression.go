@@ -5,10 +5,10 @@
 package api
 
 type FilterExpression struct {
+	All       *FilterList `json:"$all,omitempty"`
+	Any       *FilterList `json:"$any,omitempty"`
 	Exists    *string     `json:"$exists,omitempty"`
 	ExistsNot *string     `json:"$existsNot,omitempty"`
-	Any       *FilterList `json:"$any,omitempty"`
-	All       *FilterList `json:"$all,omitempty"`
 	None      *FilterList `json:"$none,omitempty"`
 	Not       *FilterList `json:"$not,omitempty"`
 }

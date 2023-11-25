@@ -5,6 +5,6 @@
 package api
 
 type TableOpRename struct {
-	OldName string `json:"oldName"`
 	NewName string `json:"newName"`
+	OldName string `json:"oldName"`
 }

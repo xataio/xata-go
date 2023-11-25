@@ -5,14 +5,14 @@
 package api
 
 type Column struct {
-	Name         string        `json:"name"`
-	Type         ColumnType    `json:"type,omitempty"`
-	Link         *ColumnLink   `json:"link,omitempty"`
-	Vector       *ColumnVector `json:"vector,omitempty"`
+	Columns      *[]*Column    `json:"columns,omitempty"`
+	DefaultValue *string       `json:"defaultValue,omitempty"`
 	File         *ColumnFile   `json:"file,omitempty"`
 	FileMap      *ColumnFile   `json:"fileMap,omitempty"`
+	Link         *ColumnLink   `json:"link,omitempty"`
+	Name         string        `json:"name"`
 	NotNull      *bool         `json:"notNull,omitempty"`
-	DefaultValue *string       `json:"defaultValue,omitempty"`
+	Type         ColumnType    `json:"type,omitempty"`
 	Unique       *bool         `json:"unique,omitempty"`
-	Columns      *[]*Column    `json:"columns,omitempty"`
+	Vector       *ColumnVector `json:"vector,omitempty"`
 }

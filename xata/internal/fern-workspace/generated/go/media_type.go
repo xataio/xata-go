@@ -4,5 +4,5 @@
 
 package api
 
-// Media type <span style="white-space: nowrap">`<= 255 characters`</span>
+// Media type
 type MediaType = string

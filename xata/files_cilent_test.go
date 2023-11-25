@@ -66,7 +66,7 @@ func Test_filesClient_Delete(t *testing.T) {
 					DatabaseName: xata.String("my-db"),
 				},
 				TableName:  "my-table",
-				RecordId:   "my-id",
+				RecordID:   "my-id",
 				ColumnName: "file-column",
 			})
 
@@ -127,7 +127,7 @@ func Test_filesClient_Put(t *testing.T) {
 					DatabaseName: xata.String("my-db"),
 				},
 				TableName:  "my-table",
-				RecordId:   "my-id",
+				RecordID:   "my-id",
 				ColumnName: "file-column",
 				Data:       []byte(`hola`),
 			})
@@ -185,7 +185,7 @@ func Test_filesClient_Get(t *testing.T) {
 					DatabaseName: xata.String("my-db"),
 				},
 				TableName:  "my-table",
-				RecordId:   "my-id",
+				RecordID:   "my-id",
 				ColumnName: "file-column",
 			})
 
@@ -242,7 +242,7 @@ func Test_filesClient_GetItem(t *testing.T) {
 					DatabaseName: xata.String("my-db"),
 				},
 				TableName:  "my-table",
-				RecordId:   "my-id",
+				RecordID:   "my-id",
 				ColumnName: "file-column",
 				FileID:     "some-id",
 			})
@@ -304,7 +304,7 @@ func Test_filesClient_PutItem(t *testing.T) {
 					DatabaseName: xata.String("my-db"),
 				},
 				TableName:  "my-table",
-				RecordId:   "my-id",
+				RecordID:   "my-id",
 				ColumnName: "file-column",
 				FileID:     "some-id",
 				Data:       []byte(`hola`),
@@ -367,7 +367,7 @@ func Test_filesClient_DeleteItem(t *testing.T) {
 					DatabaseName: xata.String("my-db"),
 				},
 				TableName:  "my-table",
-				RecordId:   "my-id",
+				RecordID:   "my-id",
 				ColumnName: "file-column",
 				FileID:     "some-id",
 			})

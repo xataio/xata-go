@@ -10,10 +10,10 @@ import (
 
 // UpdateRecordWithIdRequest is an in-lined request used by the UpdateRecordWithId endpoint.
 type UpdateRecordWithIdRequest struct {
-	IfVersion *int `json:"-"`
 	// Column filters
-	Columns []*string                        `json:"-"`
-	Body    map[string]*DataInputRecordValue `json:"-"`
+	Columns   []*string                        `json:"-"`
+	IfVersion *int                             `json:"-"`
+	Body      map[string]*DataInputRecordValue `json:"-"`
 }
 
 func (u *UpdateRecordWithIdRequest) UnmarshalJSON(data []byte) error {
