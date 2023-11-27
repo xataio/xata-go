@@ -25,7 +25,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Print(("# fetch user"))
+	log.Print("# fetch user")
 	user, err := usersClient.Get(ctx)
 	if err != nil {
 		log.Fatal(err)
