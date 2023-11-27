@@ -17,8 +17,14 @@ jobs:
       run: |
         curl -s https://raw.githubusercontent.com/lluissm/license-header-checker/master/install.sh | bash
         ./bin/license-header-checker -a -r .github/license-header.txt . go && [[ -z `git status -s` ]]
+    - name: Generate .xatarc
+      run: echo "${{ secrets.XATARC_FILE }}" > .xatarc
     - name: Unit tests
       run: make test
+      env:
+        XATA_API_KEY: ${{ secrets.XATA_API_KEY }}
+    - name: Smoke test
+      run: make smoke-test
       env:
         XATA_API_KEY: ${{ secrets.XATA_API_KEY }}
     - name: Integration tests
