@@ -17,14 +17,31 @@ func main() {
 
 	httpCli := xata.WithHTTPClient(retryablehttp.NewClient().StandardClient())
 
-	workspacesClient, err := xata.NewWorkspacesClient(
-		// xata.WithAPIKey("wrong token"),
-		httpCli,
-	)
+	//
+	// User
+	//
+	usersClient, err := xata.NewUsersClient(httpCli)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	log.Print(("# fetch user"))
+	user, err := usersClient.Get(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(user)
+
+	//
+	// Workspace
+	//
+	workspacesClient, err := xata.NewWorkspacesClient(httpCli)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Print("# List Workspaces")
 	resp, err := workspacesClient.List(ctx)
 	if err != nil {
 		log.Fatal(err)
@@ -35,8 +52,9 @@ func main() {
 		fmt.Printf("%s\n", ws.Role.String())
 	}
 
+	log.Print("# Create new Workspace")
 	var workSpaceIDToBeDeleted string
-	workspace, err := workspacesClient.Create(ctx, &xata.WorkspaceMeta{Name: "test-ws"})
+	workspace, err := workspacesClient.Create(ctx, &xata.WorkspaceMeta{Name: "xata-go-smoke-test"})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -44,6 +62,7 @@ func main() {
 	workSpaceIDToBeDeleted = workspace.Id
 	fmt.Println("ws id to delete", workSpaceIDToBeDeleted)
 
+	log.Print("# Delete created Workspace")
 	err = workspacesClient.Delete(ctx, workSpaceIDToBeDeleted)
 	if err != nil {
 		log.Fatal(err)
@@ -65,51 +84,42 @@ func main() {
 		log.Println("expected to be deleted but not")
 	}
 
-	recordsCli, err := xata.NewRecordsClient(
-		httpCli,
-	)
+	//
+	// Database
+	//
+	dbClient, err := xata.NewDatabasesClient(httpCli)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	tableName := "first-table"
-	insReq := xata.InsertRecordRequest{
-		RecordRequest: xata.RecordRequest{TableName: tableName},
-		Columns:       []string{"user-name"},
-		Body: map[string]*xata.DataInputRecordValue{
-			"user-name": xata.ValueFromString("test-value-from-SDK-smoke-test"),
-		},
-	}
-	recordResp, err := recordsCli.Insert(ctx, insReq)
+	log.Print("# List all Databases of Workspace")
+	databases, err := dbClient.List(ctx)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	if recordResp.Data["user-name"] != "test-value-from-SDK-smoke-test" {
-		log.Fatal("unexpected response")
-	}
+	fmt.Println(databases.Databases[0].Name)
 
-	record, err := recordsCli.Get(ctx, xata.GetRecordRequest{
-		RecordRequest: xata.RecordRequest{TableName: tableName},
-		RecordID:      recordResp.Id,
-	})
+	log.Print("# Create new Database")
+	// TODO
+
+	log.Print("# Rename Database")
+	// TODO
+
+	log.Print("# Delete Database")
+	// TODO
+
+	//
+	// Table
+	//
+	tableClient, err := xata.NewTableClient(httpCli)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	if record.Id != recordResp.Id {
-		log.Fatal("unexpected ID")
-	}
-
-	tableCli, err := xata.NewTableClient(
-		httpCli,
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
-
+	log.Print("# Create new Table")
 	testTableName := "my-test-table-smoke-test"
-	createTableResponse, err := tableCli.Create(ctx, xata.TableRequest{
+	createTableResponse, err := tableClient.Create(ctx, xata.TableRequest{
 		TableName: testTableName,
 	})
 	if err != nil {
@@ -124,8 +134,9 @@ func main() {
 		log.Fatalf("unexpected table name: %v", createTableResponse.TableName)
 	}
 
+	log.Print("# Add column to table")
 	columnName := "test-column"
-	_, err = tableCli.AddColumn(ctx, xata.AddColumnRequest{
+	_, err = tableClient.AddColumn(ctx, xata.AddColumnRequest{
 		TableRequest: xata.TableRequest{TableName: testTableName},
 		Column: &xata.Column{
 			Name:         columnName,
@@ -139,7 +150,14 @@ func main() {
 		log.Fatal(err)
 	}
 
-	_, err = tableCli.DeleteColumn(ctx, xata.DeleteColumnRequest{
+	log.Print("# Get Columns")
+	// TODO
+
+	log.Print("# Get Schema")
+	// TODO
+
+	log.Print("# Delete new column")
+	_, err = tableClient.DeleteColumn(ctx, xata.DeleteColumnRequest{
 		TableRequest: xata.TableRequest{TableName: testTableName},
 		ColumnName:   columnName,
 	})
@@ -147,7 +165,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	delTableResponse, err := tableCli.Delete(ctx, xata.TableRequest{
+	log.Print("# Delete table")
+	delTableResponse, err := tableClient.Delete(ctx, xata.TableRequest{
 		TableName: testTableName,
 	})
 	if err != nil {
@@ -156,45 +175,86 @@ func main() {
 
 	fmt.Println("table status", delTableResponse.Status.String())
 
-	usersCli, err := xata.NewUsersClient(httpCli)
+	//
+	// Records
+	//
+	recordsClient, err := xata.NewRecordsClient(httpCli)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	user, err := usersCli.Get(ctx)
+	log.Print("# Insert new Record")
+	tableName := "first-table"
+	insReq := xata.InsertRecordRequest{
+		RecordRequest: xata.RecordRequest{TableName: tableName},
+		Columns:       []string{"user-name"},
+		Body: map[string]*xata.DataInputRecordValue{
+			"user-name": xata.ValueFromString("test-value-from-SDK-smoke-test"),
+		},
+	}
+	recordResp, err := recordsClient.Insert(ctx, insReq)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println(user)
+	if recordResp.Data["user-name"] != "test-value-from-SDK-smoke-test" {
+		log.Fatal("unexpected response")
+	}
 
-	dbCli, err := xata.NewDatabasesClient(httpCli)
+	log.Print("# Get the new Record")
+	record, err := recordsClient.Get(ctx, xata.GetRecordRequest{
+		RecordRequest: xata.RecordRequest{TableName: tableName},
+		RecordID:      recordResp.Id,
+	})
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	databases, err := dbCli.List(ctx)
+	if record.Id != recordResp.Id {
+		log.Fatal("unexpected ID")
+	}
+
+	log.Print("# Delete the Record")
+	err = recordsClient.Delete(ctx, xata.DeleteRecordRequest{
+		RecordRequest: xata.RecordRequest{TableName: tableName},
+		RecordID:      recordResp.Id,
+	})
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println(databases.Databases[0].Name)
+	//
+	// Files
+	//
 
-	branchCli, err := xata.NewBranchClient(httpCli)
+	log.Print("# Add a File")
+	// TODO
+
+	log.Print("# Get the File")
+	// TODO
+
+	log.Print("# Delete the File")
+	// TODO
+
+	//
+	// Branch
+	//
+	branchClient, err := xata.NewBranchClient(httpCli)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	branches, err := branchCli.List(ctx, databases.Databases[0].Name)
+	log.Print("# List all Branches")
+	branches, err := branchClient.List(ctx, databases.Databases[0].Name)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	fmt.Printf("%#v\n", branches.Branches[0].Name)
 
+	log.Print("# Create new Branch of main branch")
 	newBranchName := "new-branch-from-smoke-test-3"
-
-	createBranchRes, err := branchCli.Create(ctx, xata.CreateBranchRequest{
+	createBranchRes, err := branchClient.Create(ctx, xata.CreateBranchRequest{
 		BranchName: newBranchName,
 	})
 	if err != nil {
@@ -205,8 +265,9 @@ func main() {
 	fmt.Println(createBranchRes.DatabaseName)
 	fmt.Println(createBranchRes.Status)
 
+	log.Print("# Create new Branch of specific branch")
 	newBranchName2 := "new-branch-from-smoke-test-4"
-	_, err = branchCli.Create(ctx, xata.CreateBranchRequest{
+	_, err = branchClient.Create(ctx, xata.CreateBranchRequest{
 		BranchName: newBranchName2,
 		From:       xata.String(newBranchName),
 	})
@@ -214,8 +275,9 @@ func main() {
 		log.Fatal(err)
 	}
 
+	log.Print("# Create new Branch with branch name in payload")
 	newBranchName3 := "new-branch-from-smoke-test-5"
-	_, err = branchCli.Create(ctx, xata.CreateBranchRequest{
+	_, err = branchClient.Create(ctx, xata.CreateBranchRequest{
 		BranchName: newBranchName3,
 		Payload: &xata.CreateBranchRequestPayload{
 			CreateBranchRequestFrom: xata.String(newBranchName2),
@@ -225,7 +287,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	delBranchRes, err := branchCli.Delete(ctx, xata.BranchRequest{
+	log.Print("# Delete branch 1")
+	delBranchRes, err := branchClient.Delete(ctx, xata.BranchRequest{
 		BranchName: newBranchName,
 	})
 	if err != nil {
@@ -234,7 +297,8 @@ func main() {
 
 	fmt.Println(delBranchRes.Status)
 
-	delBranchRes, err = branchCli.Delete(ctx, xata.BranchRequest{
+	log.Print("# Delete branch 2")
+	delBranchRes, err = branchClient.Delete(ctx, xata.BranchRequest{
 		BranchName: newBranchName2,
 	})
 	if err != nil {
@@ -243,7 +307,8 @@ func main() {
 
 	fmt.Println(delBranchRes.Status)
 
-	branchDetails, err := branchCli.GetDetails(ctx, xata.BranchRequest{
+	log.Print("# List branch 3")
+	branchDetails, err := branchClient.GetDetails(ctx, xata.BranchRequest{
 		BranchName: newBranchName3,
 	})
 	if err != nil {
@@ -257,7 +322,8 @@ func main() {
 	fmt.Println(branchDetails.StartedFrom)
 	fmt.Println(branchDetails.Schema)
 
-	delBranchRes, err = branchCli.Delete(ctx, xata.BranchRequest{
+	log.Print("# Delete branch 3")
+	delBranchRes, err = branchClient.Delete(ctx, xata.BranchRequest{
 		BranchName: newBranchName3,
 	})
 	if err != nil {
