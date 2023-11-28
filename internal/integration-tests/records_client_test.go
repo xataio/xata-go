@@ -358,6 +358,48 @@ func Test_recordsClient_Insert_Get(t *testing.T) {
 		assert.Equal(t, 1, transactionResUpdate.Results[0].Rows)
 	})
 
+	t.Run("should increment numeric record with update transaction", func(t *testing.T) {
+		// insert a record first
+		initialValue := 10
+		transactionRes, err := recordsCli.Transaction(ctx, xata.TransactionRequest{
+			RecordRequest: xata.RecordRequest{
+				DatabaseName: xata.String(databaseName),
+				TableName:    tableName,
+			},
+			Operations: []xata.TransactionOperation{
+				xata.NewInsertTransaction(xata.TransactionInsertOp{
+					Table:  tableName,
+					Record: map[string]any{integerColumn: initialValue},
+				}),
+			},
+		})
+		assert.NoError(t, err)
+		assert.NotNil(t, transactionRes)
+
+		// then update it
+		incrementValue := 10
+		columns := []string{integerColumn}
+		transactionResUpdate, err := recordsCli.Transaction(ctx, xata.TransactionRequest{
+			RecordRequest: xata.RecordRequest{
+				DatabaseName: xata.String(databaseName),
+				TableName:    tableName,
+			},
+			Operations: []xata.TransactionOperation{
+				xata.NewUpdateTransaction(xata.TransactionUpdateOp{
+					Table:   tableName,
+					Id:      transactionRes.Results[0].Id,
+					Fields:  map[string]any{integerColumn: map[string]int{"$increment": incrementValue}},
+					Columns: &columns,
+				}),
+			},
+		})
+		assert.NoError(t, err)
+		assert.NotNil(t, transactionResUpdate)
+		assert.Equal(t, float64(initialValue+incrementValue), (*transactionResUpdate.Results[0].Columns)[integerColumn])
+		assert.Equal(t, transactionRes.Results[0].Id, transactionResUpdate.Results[0].Id)
+		assert.Equal(t, 1, transactionResUpdate.Results[0].Rows)
+	})
+
 	t.Run("should delete a record with delete transaction", func(t *testing.T) {
 		// insert a record first
 		stringVal := "test-from-insert-transaction"
