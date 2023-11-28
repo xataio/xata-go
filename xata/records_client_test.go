@@ -495,6 +495,19 @@ func Test_recordsClient_Transaction(t *testing.T) {
 						Table: "test-table",
 						Id:    "some-id",
 					}),
+					xata.NewGetTransaction(xata.TransactionGetOp{
+						Table: "test-table",
+						Id:    "some-id",
+					}),
+					xata.NewUpdateTransaction(xata.TransactionUpdateOp{
+						Table:  "test-table",
+						Id:     "some-id",
+						Fields: map[string]any{"test": "value"},
+					}),
+					xata.NewInsertTransaction(xata.TransactionInsertOp{
+						Table:  "test-table",
+						Record: map[string]any{"test": "value"},
+					}),
 				},
 			})
 

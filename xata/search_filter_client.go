@@ -75,7 +75,7 @@ func (s searchAndFilterCli) Query(ctx context.Context, request QueryTableRequest
 		Sort:    request.Payload.Sort,
 		Page:    (*xatagenworkspace.PageConfig)(request.Payload.Page),
 		Columns: &request.Payload.Columns,
-		//Consistency: (*xatagenworkspace.QueryTableRequestConsistency)(&request.Payload.Consistency),
+		// Consistency: (*xatagenworkspace.QueryTableRequestConsistency)(&request.Payload.Consistency),
 	})
 }
 
@@ -291,7 +291,7 @@ type SummarizeTableRequestPayload struct {
 	Sort            *xatagenworkspace.SortExpression
 	SummariesFilter *FilterExpression
 	// The consistency level for this request.
-	//Consistency  *SummarizeTableRequestConsistency // https://github.com/xataio/xata-go/pull/37#issue-2009859238
+	// Consistency  *SummarizeTableRequestConsistency // https://github.com/xataio/xata-go/pull/37#issue-2009859238
 	NumberOfPage *int
 }
 
@@ -327,7 +327,7 @@ func (s searchAndFilterCli) Summarize(ctx context.Context, request SummarizeTabl
 		Summaries:       &sumExpList,
 		Sort:            request.Payload.Sort,
 		SummariesFilter: (*xatagenworkspace.FilterExpression)(request.Payload.SummariesFilter),
-		//Consistency:     (*xatagenworkspace.SummarizeTableRequestConsistency)(request.Payload.Consistency),
+		// Consistency:     (*xatagenworkspace.SummarizeTableRequestConsistency)(request.Payload.Consistency),
 		Page: &xatagenworkspace.SummarizeTableRequestPage{
 			Size: request.Payload.NumberOfPage,
 		},
