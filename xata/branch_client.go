@@ -57,10 +57,14 @@ func (b branchCli) dbBranchName(dbName *string, branchName string) (string, erro
 	return fmt.Sprintf("%s:%s", *dbName, branchName), nil
 }
 
+// List lists all available branches.
+// https://xata.io/docs/api-reference/dbs/db_name#list-branches
 func (b branchCli) List(ctx context.Context, dbName string) (*xatagenworkspace.ListBranchesResponse, error) {
 	return b.generated.GetBranchList(ctx, dbName)
 }
 
+// GetDetails gets branch schema and metadata.
+// https://xata.io/docs/api-reference/db/db_branch_name#get-branch-schema-and-metadata
 func (b branchCli) GetDetails(ctx context.Context, request BranchRequest) (*xatagenworkspace.DbBranch, error) {
 	dbBranchName, err := b.dbBranchName(request.DatabaseName, request.BranchName)
 	if err != nil {
@@ -70,6 +74,8 @@ func (b branchCli) GetDetails(ctx context.Context, request BranchRequest) (*xata
 	return b.generated.GetBranchDetails(ctx, dbBranchName)
 }
 
+// Create creates a database branch.
+// https://xata.io/docs/api-reference/db/db_branch_name#create-database-branch
 func (b branchCli) Create(ctx context.Context, request CreateBranchRequest) (*xatagenworkspace.CreateBranchResponse, error) {
 	dbBranchName, err := b.dbBranchName(request.DatabaseName, request.BranchName)
 	if err != nil {
@@ -94,6 +100,8 @@ func (b branchCli) Create(ctx context.Context, request CreateBranchRequest) (*xa
 	return b.generated.CreateBranch(ctx, dbBranchName, req)
 }
 
+// Delete deletes a database branch.
+// https://xata.io/docs/api-reference/db/db_branch_name#delete-database-branch
 func (b branchCli) Delete(ctx context.Context, request BranchRequest) (*xatagenworkspace.DeleteBranchResponse, error) {
 	dbBranchName, err := b.dbBranchName(request.DatabaseName, request.BranchName)
 	if err != nil {
@@ -103,6 +111,7 @@ func (b branchCli) Delete(ctx context.Context, request BranchRequest) (*xatagenw
 	return b.generated.DeleteBranch(ctx, dbBranchName)
 }
 
+// NewBranchClient constructs a new client to interact with database branches.
 func NewBranchClient(opts ...ClientOption) (BranchClient, error) {
 	cliOpts, dbCfg, err := consolidateClientOptionsForWorkspace(opts...)
 	if err != nil {

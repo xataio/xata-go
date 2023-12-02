@@ -13,6 +13,8 @@ Before running following commands, ensure that you are logged in to fern:
 ```shell
 make fern-login
 ```
+Note that the code generation automation supports fern version [0.15.10](https://github.com/fern-api/fern/releases/tag/0.15.10).
+If there is an issue with code generation, ensure that the installed fern is in the supported version.
 
 Generate code for `core` scope
 ```shell
