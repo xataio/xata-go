@@ -94,6 +94,8 @@ type AddColumnRequest struct {
 	Column *Column
 }
 
+// AddColumn creates a new column.
+// https://xata.io/docs/api-reference/db/db_branch_name/tables/table_name/columns#create-new-column
 func (t tableClient) AddColumn(ctx context.Context, request AddColumnRequest) (*xatagenworkspace.AddTableColumnResponse, error) {
 	return t.generated.AddTableColumn(ctx, t.dbBranchName(request.TableRequest), request.TableName, copyColumn(*request.Column))
 }
@@ -118,18 +120,25 @@ type DeleteColumnRequest struct {
 	ColumnName string
 }
 
+// DeleteColumn deletes a column.
+// https://xata.io/docs/api-reference/db/db_branch_name/tables/table_name/columns/column_name#delete-column
 func (t tableClient) DeleteColumn(ctx context.Context, request DeleteColumnRequest) (*xatagenworkspace.DeleteColumnResponse, error) {
 	return t.generated.DeleteColumn(ctx, t.dbBranchName(request.TableRequest), request.TableName, request.ColumnName)
 }
 
+// GetSchema gets the schema of a table.
+// https://xata.io/docs/api-reference/db/db_branch_name/tables/table_name/schema#get-table-schema
 func (t tableClient) GetSchema(ctx context.Context, request TableRequest) (*xatagenworkspace.GetTableSchemaResponse, error) {
 	return t.generated.GetTableSchema(ctx, t.dbBranchName(request), request.TableName)
 }
 
+// GetColumns retrieves the list of table columns and their definition.
+// https://xata.io/docs/api-reference/db/db_branch_name/tables/table_name/columns#list-table-columns
 func (t tableClient) GetColumns(ctx context.Context, request TableRequest) (*xatagenworkspace.GetTableColumnsResponse, error) {
 	return t.generated.GetTableColumns(ctx, t.dbBranchName(request), request.TableName)
 }
 
+// NewTableClient constructs a client for interacting tables.
 func NewTableClient(opts ...ClientOption) (TableClient, error) {
 	cliOpts, dbCfg, err := consolidateClientOptionsForWorkspace(opts...)
 	if err != nil {

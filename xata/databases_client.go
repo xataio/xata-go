@@ -51,6 +51,8 @@ type databaseCli struct {
 	Region      string
 }
 
+// Create creates a database.
+// https://xata.io/docs/api-reference/workspaces/workspace_id/dbs/db_name#create-database
 func (d databaseCli) Create(ctx context.Context, request CreateDatabaseRequest) (*xatagencore.CreateDatabaseResponse, error) {
 	var workspaceID string
 	if request.WorkspaceID == nil {
@@ -81,6 +83,8 @@ func (d databaseCli) Create(ctx context.Context, request CreateDatabaseRequest) 
 	})
 }
 
+// Delete deletes a database.
+// https://xata.io/docs/api-reference/workspaces/workspace_id/dbs/db_name#delete-database
 func (d databaseCli) Delete(ctx context.Context, request DeleteDatabaseRequest) (*xatagencore.DeleteDatabaseResponse, error) {
 	var workspaceID string
 	if request.WorkspaceID == nil {
@@ -92,22 +96,32 @@ func (d databaseCli) Delete(ctx context.Context, request DeleteDatabaseRequest) 
 	return d.generated.DeleteDatabase(ctx, workspaceID, request.DatabaseName)
 }
 
+// GetRegions lists available regions.
+// https://xata.io/docs/api-reference/workspaces/workspace_id/regions#list-available-regions
 func (d databaseCli) GetRegions(ctx context.Context) (*xatagencore.ListRegionsResponse, error) {
 	return d.generated.ListRegions(ctx, d.WorkspaceID)
 }
 
+// GetRegionsWithWorkspaceID lists available regions for a given workspace ID.
+// https://xata.io/docs/api-reference/workspaces/workspace_id/regions#list-available-regions
 func (d databaseCli) GetRegionsWithWorkspaceID(ctx context.Context, workspaceID string) (*xatagencore.ListRegionsResponse, error) {
 	return d.generated.ListRegions(ctx, workspaceID)
 }
 
+// List lists databases for the default workspace.
+// https://xata.io/docs/api-reference/workspaces/workspace_id/dbs#list-databases
 func (d databaseCli) List(ctx context.Context) (*xatagencore.ListDatabasesResponse, error) {
 	return d.generated.GetDatabaseList(ctx, d.WorkspaceID)
 }
 
+// ListWithWorkspaceID lists databases for a given workspace ID.
+// https://xata.io/docs/api-reference/workspaces/workspace_id/dbs#list-databases
 func (d databaseCli) ListWithWorkspaceID(ctx context.Context, workspaceID string) (*xatagencore.ListDatabasesResponse, error) {
 	return d.generated.GetDatabaseList(ctx, workspaceID)
 }
 
+// Rename renames a database.
+// https://xata.io/docs/api-reference/workspaces/workspace_id/dbs/db_name/rename#rename-database
 func (d databaseCli) Rename(ctx context.Context, request RenameDatabaseRequest) (*xatagencore.DatabaseMetadata, error) {
 	wsID := d.WorkspaceID
 	if request.WorkspaceID != nil && *request.WorkspaceID != "" {
@@ -122,6 +136,7 @@ func (d databaseCli) Rename(ctx context.Context, request RenameDatabaseRequest) 
 	)
 }
 
+// NewDatabasesClient constructs a client for interacting databases.
 func NewDatabasesClient(opts ...ClientOption) (DatabasesClient, error) {
 	cliOpts, err := consolidateClientOptionsForCore(opts...)
 	if err != nil {

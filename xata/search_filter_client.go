@@ -64,6 +64,8 @@ type QueryTableRequest struct {
 	Payload   QueryTableRequestPayload
 }
 
+// Query queries a table.
+// https://xata.io/docs/api-reference/db/db_branch_name/tables/table_name/query#query-table
 func (s searchAndFilterCli) Query(ctx context.Context, request QueryTableRequest) (*xatagenworkspace.QueryTableResponse, error) {
 	dbBranchName, err := s.dbBranchName(request.BranchRequestOptional)
 	if err != nil {
@@ -93,6 +95,8 @@ type SearchBranchRequest struct {
 	Payload SearchBranchRequestPayload
 }
 
+// SearchBranch runs a free text search operation across the database branch.
+// https://xata.io/docs/api-reference/db/db_branch_name/search#free-text-search
 func (s searchAndFilterCli) SearchBranch(ctx context.Context, request SearchBranchRequest) (*xatagenworkspace.SearchBranchResponse, error) {
 	dbBranchName, err := s.dbBranchName(request.BranchRequestOptional)
 	if err != nil {
@@ -133,6 +137,8 @@ type SearchTableRequest struct {
 	Payload   SearchTableRequestPayload
 }
 
+// SearchTable runs a free text search in a table.
+// https://xata.io/docs/api-reference/db/db_branch_name/tables/table_name/search#free-text-search-in-a-table
 func (s searchAndFilterCli) SearchTable(ctx context.Context, request SearchTableRequest) (*xatagenworkspace.SearchTableResponse, error) {
 	dbBranchName, err := s.dbBranchName(request.BranchRequestOptional)
 	if err != nil {
@@ -179,6 +185,8 @@ type VectorSearchTableRequest struct {
 	Payload   VectorSearchTableRequestPayload
 }
 
+// VectorSearch performs vector-based similarity searches in a table.
+// https://xata.io/docs/api-reference/db/db_branch_name/tables/table_name/vectorSearch#vector-similarity-search-in-a-table
 func (s searchAndFilterCli) VectorSearch(ctx context.Context, request VectorSearchTableRequest) (*xatagenworkspace.VectorSearchTableResponse, error) {
 	dbBranchName, err := s.dbBranchName(request.BranchRequestOptional)
 	if err != nil {
@@ -223,6 +231,8 @@ type AskTableRequest struct {
 	Payload   AskTableRequestPayload
 }
 
+// Ask asks your table a question.
+// https://xata.io/docs/api-reference/db/db_branch_name/tables/table_name/ask#ask-your-table-a-question
 func (s searchAndFilterCli) Ask(ctx context.Context, request AskTableRequest) (*xatagenworkspace.AskTableResponse, error) {
 	dbBranchName, err := s.dbBranchName(request.BranchRequestOptional)
 	if err != nil {
@@ -269,6 +279,8 @@ type AskFollowUpRequest struct {
 	Question  string
 }
 
+// AskFollowUp enables asking a follow-up question.
+// https://xata.io/docs/api-reference/db/db_branch_name/tables/table_name/ask/session_id#continue-a-conversation-with-your-data
 func (s searchAndFilterCli) AskFollowUp(ctx context.Context, request AskFollowUpRequest) (*xatagenworkspace.AskTableSessionResponse, error) {
 	dbBranchName, err := s.dbBranchName(request.BranchRequestOptional)
 	if err != nil {
@@ -301,6 +313,8 @@ type SummarizeTableRequest struct {
 	Payload   SummarizeTableRequestPayload
 }
 
+// Summarize summarizes a table for the given parameters.
+// https://xata.io/docs/api-reference/db/db_branch_name/tables/table_name/summarize#summarize-table
 func (s searchAndFilterCli) Summarize(ctx context.Context, request SummarizeTableRequest) (*xatagenworkspace.SummarizeTableResponse, error) {
 	dbBranchName, err := s.dbBranchName(request.BranchRequestOptional)
 	if err != nil {
@@ -345,6 +359,8 @@ type AggregateTableRequest struct {
 	Payload   AggregateTableRequestPayload
 }
 
+// Aggregate runs aggregations (analytics) on the data from one table.
+// https://xata.io/docs/api-reference/db/db_branch_name/tables/table_name/aggregate#run-aggregations-over-a-table
 func (s searchAndFilterCli) Aggregate(ctx context.Context, request AggregateTableRequest) (*xatagenworkspace.AggregateTableResponse, error) {
 	dbBranchName, err := s.dbBranchName(request.BranchRequestOptional)
 	if err != nil {
@@ -365,6 +381,7 @@ func (s searchAndFilterCli) Aggregate(ctx context.Context, request AggregateTabl
 	})
 }
 
+// NewSearchAndFilterClient constructs a new search and filter client.
 func NewSearchAndFilterClient(opts ...ClientOption) (SearchAndFilterClient, error) {
 	cliOpts, dbCfg, err := consolidateClientOptionsForWorkspace(opts...)
 	if err != nil {

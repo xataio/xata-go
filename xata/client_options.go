@@ -99,6 +99,7 @@ func WithHTTPClient(client httpClient) func(options *ClientOptions) {
 	}
 }
 
+// WithBaseURL enables passing the base URL.
 func WithBaseURL(baseURL string) func(options *ClientOptions) {
 	return func(options *ClientOptions) {
 		options.BaseURL = baseURL

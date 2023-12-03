@@ -147,6 +147,8 @@ type recordsClient struct {
 	branchName string
 }
 
+// Insert inserts a record.
+// https://xata.io/docs/api-reference/db/db_branch_name/tables/table_name/data#insert-record
 func (r recordsClient) Insert(ctx context.Context, request InsertRecordRequest) (*Record, error) {
 	recGen := &xatagenworkspace.InsertRecordRequest{
 		Columns: constructColumns(request.Columns),
@@ -175,6 +177,8 @@ func (r recordsClient) Insert(ctx context.Context, request InsertRecordRequest) 
 	return respRec, nil
 }
 
+// BulkInsert bulk inserts records.
+// https://xata.io/docs/api-reference/db/db_branch_name/tables/table_name/bulk#bulk-insert-records
 func (r recordsClient) BulkInsert(ctx context.Context, request BulkInsertRecordRequest) ([]*Record, error) {
 	recGen := &xatagenworkspace.BulkInsertTableRecordsRequest{
 		Columns: constructColumns(request.Columns),
@@ -201,6 +205,8 @@ func (r recordsClient) BulkInsert(ctx context.Context, request BulkInsertRecordR
 	return constructBulkRecords(*records)
 }
 
+// InsertWithID inserts a record with ID.
+// https://xata.io/docs/api-reference/db/db_branch_name/tables/table_name/data/record_id#insert-record-with-id
 func (r recordsClient) InsertWithID(ctx context.Context, request InsertRecordWithIDRequest) (*Record, error) {
 	recGen := &xatagenworkspace.InsertRecordWithIdRequest{
 		CreateOnly: request.CreateOnly,
@@ -231,6 +237,8 @@ func (r recordsClient) InsertWithID(ctx context.Context, request InsertRecordWit
 	return respRec, nil
 }
 
+// Update updates a record.
+// https://xata.io/docs/api-reference/db/db_branch_name/tables/table_name/data/record_id#update-record-with-id
 func (r recordsClient) Update(ctx context.Context, request UpdateRecordRequest) (*Record, error) {
 	recGen := &xatagenworkspace.UpdateRecordWithIdRequest{
 		IfVersion: request.IfVersion,
@@ -260,6 +268,8 @@ func (r recordsClient) Update(ctx context.Context, request UpdateRecordRequest) 
 	return respRec, nil
 }
 
+// Upsert inserts or updates a record.
+// https://xata.io/docs/api-reference/db/db_branch_name/tables/table_name/data/record_id#upsert-record-with-id
 func (r recordsClient) Upsert(ctx context.Context, request UpsertRecordRequest) (*Record, error) {
 	recGen := &xatagenworkspace.UpdateRecordWithIdRequest{
 		IfVersion: request.IfVersion,
@@ -289,6 +299,8 @@ func (r recordsClient) Upsert(ctx context.Context, request UpsertRecordRequest) 
 	return respRec, nil
 }
 
+// Get gets a record by its ID.
+// https://xata.io/docs/api-reference/db/db_branch_name/tables/table_name/data/record_id#get-record-by-id
 func (r recordsClient) Get(ctx context.Context, request GetRecordRequest) (*Record, error) {
 	getRecReq := &xatagenworkspace.GetRecordRequest{
 		Columns: constructColumns(request.Columns),
@@ -352,6 +364,8 @@ func NewDeleteTransaction(value TransactionDeleteOp) TransactionOperation {
 	})
 }
 
+// Transaction executes a transaction on a branch.
+// https://xata.io/docs/api-reference/db/db_branch_name/transaction#execute-a-transaction-on-a-branch
 func (r recordsClient) Transaction(ctx context.Context, request TransactionRequest) (*xatagenworkspace.TransactionSuccess, error) {
 	dbBranchName, err := r.dbBranchName(request.RecordRequest)
 	if err != nil {
@@ -368,6 +382,8 @@ func (r recordsClient) Transaction(ctx context.Context, request TransactionReque
 	})
 }
 
+// Delete deletes a record from a table.
+// https://xata.io/docs/api-reference/db/db_branch_name/tables/table_name/data/record_id#delete-record-from-table
 func (r recordsClient) Delete(ctx context.Context, request DeleteRecordRequest) error {
 	dbBranchName, err := r.dbBranchName(request.RecordRequest)
 	if err != nil {
@@ -451,6 +467,7 @@ func constructRecord(in map[string]interface{}) (*Record, error) {
 	return &record, nil
 }
 
+// NewRecordsClient constructs a clint for interacting with records.
 func NewRecordsClient(opts ...ClientOption) (RecordsClient, error) {
 	cliOpts, dbCfg, err := consolidateClientOptionsForWorkspace(opts...)
 	if err != nil {

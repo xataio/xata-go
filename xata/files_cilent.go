@@ -50,6 +50,8 @@ type DeleteFileRequest struct {
 	ColumnName string
 }
 
+// Delete removes the content from a file column.
+// https://xata.io/docs/api-reference/db/db_branch_name/tables/table_name/data/record_id/column/column_name/file#remove-the-content-from-a-file-column
 func (f filesClient) Delete(ctx context.Context, request DeleteFileRequest) (*xatagenworkspace.FileResponse, error) {
 	dbBranchName, err := f.dbBranchName(request.BranchRequestOptional)
 	if err != nil {
@@ -68,6 +70,8 @@ type PutFileRequest struct {
 	Data        []byte
 }
 
+// Put uploads content to a file column.
+// https://xata.io/docs/api-reference/db/db_branch_name/tables/table_name/data/record_id/column/column_name/file#upload-content-to-a-file-column
 func (f filesClient) Put(ctx context.Context, request PutFileRequest) (*xatagenworkspace.FileResponse, error) {
 	dbBranchName, err := f.dbBranchName(request.BranchRequestOptional)
 	if err != nil {
@@ -91,6 +95,8 @@ type GetFileRequest struct {
 	ColumnName string
 }
 
+// Get downloads content from a file column.
+// https://xata.io/docs/api-reference/db/db_branch_name/tables/table_name/data/record_id/column/column_name/file#download-content-from-a-file-column
 func (f filesClient) Get(ctx context.Context, request GetFileRequest) (*xatagenworkspace.GetFileResponse, error) {
 	dbBranchName, err := f.dbBranchName(request.BranchRequestOptional)
 	if err != nil {
@@ -108,6 +114,8 @@ type GetFileItemRequest struct {
 	FileID     string
 }
 
+// GetItem downloads content from a file item in a file array column.
+// https://xata.io/docs/api-reference/db/db_branch_name/tables/table_name/data/record_id/column/column_name/file/file_id#download-content-from-a-file-item-in-a-file-array-column
 func (f filesClient) GetItem(ctx context.Context, request GetFileItemRequest) (*xatagenworkspace.GetFileResponse, error) {
 	dbBranchName, err := f.dbBranchName(request.BranchRequestOptional)
 	if err != nil {
@@ -127,6 +135,8 @@ type PutFileItemRequest struct {
 	Data        []byte
 }
 
+// PutItem uploads or updates the content of a file item in a file array column.
+// https://xata.io/docs/api-reference/db/db_branch_name/tables/table_name/data/record_id/column/column_name/file/file_id#upload-or-update-the-content-of-a-file-item-in-a-file-array-column
 func (f filesClient) PutItem(ctx context.Context, request PutFileItemRequest) (*xatagenworkspace.FileResponse, error) {
 	dbBranchName, err := f.dbBranchName(request.BranchRequestOptional)
 	if err != nil {
@@ -151,6 +161,8 @@ type DeleteFileItemRequest struct {
 	FileID     string
 }
 
+// DeleteItem deletes an item from a file array.
+// https://xata.io/docs/api-reference/db/db_branch_name/tables/table_name/data/record_id/column/column_name/file/file_id#delete-an-item-from-a-file-array
 func (f filesClient) DeleteItem(ctx context.Context, request DeleteFileItemRequest) (*xatagenworkspace.FileResponse, error) {
 	dbBranchName, err := f.dbBranchName(request.BranchRequestOptional)
 	if err != nil {
@@ -160,6 +172,7 @@ func (f filesClient) DeleteItem(ctx context.Context, request DeleteFileItemReque
 	return f.generated.DeleteFileItem(ctx, dbBranchName, request.TableName, request.RecordID, request.ColumnName, request.FileID)
 }
 
+// NewFilesClient constructs a client for interacting files.
 func NewFilesClient(opts ...ClientOption) (FilesClient, error) {
 	cliOpts, dbCfg, err := consolidateClientOptionsForWorkspace(opts...)
 	if err != nil {
