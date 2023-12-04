@@ -20,14 +20,15 @@ const (
 	xataAgentHeader = "x-xata-agent"
 	userAgentHeader = "user-agent"
 	sdkVERSION      = "0.0.1"
+
+	xataAgentSDKName = "GO_SDK"
 )
 
 // fernHeaders specifies all of the standard Fern headers in
 // a set so that they're easier to access and reference.
 var fernHeaders = []map[string]string{
 	{contentTypeHeader: contentType},
-	{xataAgentHeader: "client=GO_SDK"},
-	{xataAgentHeader: fmt.Sprintf("version=%v", sdkVERSION)},
+	{xataAgentHeader: fmt.Sprintf("client=%s; version=%s", xataAgentSDKName, sdkVERSION)},
 	{userAgentHeader: fmt.Sprintf("xataio/xata-go:%v", sdkVERSION)},
 }
 
