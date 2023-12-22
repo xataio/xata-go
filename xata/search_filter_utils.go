@@ -333,10 +333,7 @@ type TopValuesAgg struct {
 	// The maximum number of unique values to return.
 	Size *int
 	// Sub Aggregations
-	//Aggs *xatagenworkspace.AggExpressionMap `json:"aggs,omitempty"`
 	Aggs *NestedAggsMap `json:"aggs,omitempty"`
-	//Aggs *AggExpressionMap `json:"aggs,omitempty"`
-	//Aggs map[string]AggExpression
 }
 
 func NewTopValuesAggExpression(value TopValuesAgg) *xatagenworkspace.AggExpression {
