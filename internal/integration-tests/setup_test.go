@@ -5,10 +5,11 @@ package integrationtests
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"os"
-	"strings"
-	"time"
+
+	//"strings"
 
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/xataio/xata-go/xata"
@@ -68,12 +69,11 @@ func setupDatabase() (*config, error) {
 	)
 
 	db, err := databaseCli.Create(ctx, xata.CreateDatabaseRequest{
-		DatabaseName: "db" + cfg.testID,
+		DatabaseName: "sdk-integration-test-go-" + cfg.testID,
 		WorkspaceID:  xata.String(cfg.wsID),
 		Region:       &cfg.region,
-		UI:           &xata.UI{Color: xata.String("RED")},
 		BranchMetaData: &xata.BranchMetadata{
-			Repository: xata.String("github.com/my/repository"),
+			Repository: xata.String("github.com/xataio/xata-go"),
 			Branch:     xata.String("feature-branch"),
 			Stage:      xata.String("testing"),
 			Labels:     &[]string{"development"},
@@ -354,64 +354,15 @@ func cleanup(cfg *config) error {
 			return err
 		}
 	}
-	if cfg.wsID != "" {
-		workspaceCli, err := xata.NewWorkspacesClient(
-			xata.WithAPIKey(cfg.apiKey),
-			xata.WithHTTPClient(cfg.httpCli),
-		)
-		if err != nil {
-			return err
-		}
-
-		err = workspaceCli.Delete(ctx, cfg.wsID)
-		if err != nil {
-			return err
-		}
-	}
 
 	return nil
 }
 
 func testIdentifier() string {
-	currentTime := time.Now()
-
-	// Print the time
-	return fmt.Sprintf(
-		"integration-test_%d-%d-%d_%d_%d_%d",
-		currentTime.Year(),
-		currentTime.Month(),
-		currentTime.Day(),
-		currentTime.Hour(),
-		currentTime.Minute(),
-		currentTime.Second(),
-	)
-}
-
-func cleanAllWorkspaces() error {
-	ctx := context.Background()
-	apiKey, found := os.LookupEnv("XATA_API_KEY")
-	if !found {
-		return fmt.Errorf("%s not found in env vars", "XATA_API_KEY")
+	const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234566789"
+	b := make([]byte, 8)
+	for i := range b {
+		b[i] = letters[rand.Intn(len(letters))]
 	}
-
-	workspaceCli, err := xata.NewWorkspacesClient(xata.WithAPIKey(apiKey), xata.WithHTTPClient(retryablehttp.NewClient().StandardClient()))
-	if err != nil {
-		return err
-	}
-
-	listResponse, err := workspaceCli.List(ctx)
-	if err != nil {
-		return err
-	}
-
-	for _, ws := range listResponse.Workspaces {
-		if strings.Contains(ws.Name, "integration-test") {
-			err = workspaceCli.Delete(ctx, ws.Id)
-			if err != nil {
-				return err
-			}
-		}
-	}
-
-	return nil
+	return string(b)
 }

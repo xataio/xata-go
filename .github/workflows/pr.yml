@@ -4,7 +4,8 @@ on: [push]
 
 jobs:
   build:
-    runs-on: [self-hosted, default]
+    #runs-on: [self-hosted, default]
+    runs-on: default
     steps:
     - uses: actions/checkout@v3
     - name: Set up Go
