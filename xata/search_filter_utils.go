@@ -300,6 +300,8 @@ const (
 
 // Split data into buckets by a datetime column. Accepts sub-aggregations for each bucket.
 type DateHistogramAgg struct {
+	// Nested Aggregations
+	Aggs *NestedAggsMap `json:"aggs,omitempty"`
 	// The column to use for bucketing. Must be of type datetime.
 	Column string
 	// The fixed interval to use when bucketing.
@@ -317,6 +319,7 @@ type DateHistogramAgg struct {
 func NewDateHistogramAggExpression(value DateHistogramAgg) *xatagenworkspace.AggExpression {
 	return xatagenworkspace.NewAggExpressionFromAggExpressionDateHistogram(&xatagenworkspace.AggExpressionDateHistogram{
 		DateHistogram: &xatagenworkspace.DateHistogramAgg{
+			Aggs:             value.Aggs,
 			Column:           value.Column,
 			Interval:         value.Interval,
 			CalendarInterval: (*xatagenworkspace.DateHistogramAggCalendarInterval)(value.CalendarInterval),
