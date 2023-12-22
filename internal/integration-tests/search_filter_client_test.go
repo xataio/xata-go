@@ -619,6 +619,34 @@ func Test_searchAndFilterClient(t *testing.T) {
 		}, time.Second*10, time.Second)
 	})
 
+	t.Run("aggregate table top values with nested aggs", func(t *testing.T) {
+		assert.Eventually(t, func() bool {
+			aggTableRes, err := searchFilterCli.Aggregate(ctx, xata.AggregateTableRequest{
+				BranchRequestOptional: xata.BranchRequestOptional{
+					DatabaseName: xata.String(cfg.databaseName),
+				},
+				TableName: cfg.tableName,
+				Payload: xata.AggregateTableRequestPayload{
+					Aggregations: xata.AggExpressionMap{
+						"top_values": xata.NewTopValuesAggExpression(xata.TopValuesAgg{
+							Column: stringColumn,
+							Size:   nil,
+							Aggs: &xata.NestedAggsMap{
+								"max": xata.NewMaxAggExpression(integerColumn),
+								"avg": xata.NewAverageAggExpression(integerColumn),
+							},
+						}),
+					},
+				},
+			})
+			assert.NoError(t, err)
+			if (*aggTableRes.Aggs)["top_values"] != nil && (*aggTableRes.Aggs)["top_values"].AggResponseValues != nil {
+				return len((*aggTableRes.Aggs)["top_values"].AggResponseValues.Values.AggResponseValuesValuesItemList) > 0
+			}
+			return false
+		}, time.Second*10, time.Second)
+	})
+
 	t.Run("aggregate table numeric histogram", func(t *testing.T) {
 		assert.Eventually(t, func() bool {
 			aggTableRes, err := searchFilterCli.Aggregate(ctx, xata.AggregateTableRequest{
