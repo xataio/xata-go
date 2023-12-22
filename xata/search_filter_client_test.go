@@ -703,7 +703,8 @@ func Test_searchAndFilterCli_Summarize(t *testing.T) {
 	}
 }
 
-func Test_searchAndFilterCli_Aggregate(t *testing.T) {
+// Agg: Date Histogram
+func Test_searchAndFilterCli_Aggregate_DateHistogram(t *testing.T) {
 	assert := assert.New(t)
 
 	type tc struct {
