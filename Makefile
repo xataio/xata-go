@@ -11,12 +11,10 @@ smoke-test: ## smoke tests
 	@cd internal/smoke-tests && go run . && cd ../..
 
 test: ## run unit tests
-	@echo "Running unit tests"
-	@go test -v -count=1 -cover -race ./xata
+	TEST_DIRECTORY=./xata go run gotest.tools/gotestsum@latest --format testname
 
 integration-test: ## run integration tests
-	@echo "Running integration test"
-	@go test -v -count=1 -cover -race ./internal/integration-tests
+	TEST_DIRECTORY=./internal/integration-tests go run gotest.tools/gotestsum@latest --format testname
 	$(MAKE) clean-workspaces
 
 download-openapi-specs: ## download openapi specs

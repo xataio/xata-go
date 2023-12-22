@@ -595,6 +595,36 @@ func Test_searchAndFilterClient(t *testing.T) {
 		}, time.Second*10, time.Second)
 	})
 
+	t.Run("aggregate table date histogram with nested aggregations", func(t *testing.T) {
+		assert.Eventually(t, func() bool {
+			aggTableRes, err := searchFilterCli.Aggregate(ctx, xata.AggregateTableRequest{
+				BranchRequestOptional: xata.BranchRequestOptional{
+					DatabaseName: xata.String(cfg.databaseName),
+				},
+				TableName: cfg.tableName,
+				Payload: xata.AggregateTableRequestPayload{
+					Aggregations: xata.AggExpressionMap{
+						"histogram": xata.NewDateHistogramAggExpression(xata.DateHistogramAgg{
+							Column:           dateTimeColumn,
+							Interval:         xata.String("1d"),
+							CalendarInterval: nil,
+							Timezone:         nil,
+							Aggs: &xata.NestedAggsMap{
+								"max": xata.NewMaxAggExpression(integerColumn),
+								"avg": xata.NewAverageAggExpression(integerColumn),
+							},
+						}),
+					},
+				},
+			})
+			assert.NoError(t, err)
+			if (*aggTableRes.Aggs)["histogram"] != nil && (*aggTableRes.Aggs)["histogram"].AggResponseValues != nil {
+				return len((*aggTableRes.Aggs)["histogram"].AggResponseValues.Values.AggResponseValuesValuesItemList) > 0
+			}
+			return false
+		}, time.Second*10, time.Second)
+	})
+
 	t.Run("aggregate table top values", func(t *testing.T) {
 		assert.Eventually(t, func() bool {
 			aggTableRes, err := searchFilterCli.Aggregate(ctx, xata.AggregateTableRequest{
@@ -607,6 +637,34 @@ func Test_searchAndFilterClient(t *testing.T) {
 						"top_values": xata.NewTopValuesAggExpression(xata.TopValuesAgg{
 							Column: stringColumn,
 							Size:   nil,
+						}),
+					},
+				},
+			})
+			assert.NoError(t, err)
+			if (*aggTableRes.Aggs)["top_values"] != nil && (*aggTableRes.Aggs)["top_values"].AggResponseValues != nil {
+				return len((*aggTableRes.Aggs)["top_values"].AggResponseValues.Values.AggResponseValuesValuesItemList) > 0
+			}
+			return false
+		}, time.Second*10, time.Second)
+	})
+
+	t.Run("aggregate table top values with nested aggs", func(t *testing.T) {
+		assert.Eventually(t, func() bool {
+			aggTableRes, err := searchFilterCli.Aggregate(ctx, xata.AggregateTableRequest{
+				BranchRequestOptional: xata.BranchRequestOptional{
+					DatabaseName: xata.String(cfg.databaseName),
+				},
+				TableName: cfg.tableName,
+				Payload: xata.AggregateTableRequestPayload{
+					Aggregations: xata.AggExpressionMap{
+						"top_values": xata.NewTopValuesAggExpression(xata.TopValuesAgg{
+							Column: stringColumn,
+							Size:   nil,
+							Aggs: &xata.NestedAggsMap{
+								"max": xata.NewMaxAggExpression(integerColumn),
+								"avg": xata.NewAverageAggExpression(integerColumn),
+							},
 						}),
 					},
 				},
@@ -632,6 +690,38 @@ func Test_searchAndFilterClient(t *testing.T) {
 							Column:   integerColumn,
 							Interval: 1.0,
 							Offset:   nil,
+						}),
+					},
+				},
+			})
+			assert.NoError(t, err)
+			if (*aggTableRes.Aggs)["num_histogram"] != nil && (*aggTableRes.Aggs)["num_histogram"].AggResponseValues != nil {
+				return len((*aggTableRes.Aggs)["num_histogram"].AggResponseValues.Values.AggResponseValuesValuesItemList) > 0
+			}
+			return false
+		}, time.Second*10, time.Second)
+	})
+
+	t.Run("aggregate table numeric histogram with nested aggregations", func(t *testing.T) {
+		assert.Eventually(t, func() bool {
+			aggTableRes, err := searchFilterCli.Aggregate(ctx, xata.AggregateTableRequest{
+				BranchRequestOptional: xata.BranchRequestOptional{
+					DatabaseName: xata.String(cfg.databaseName),
+				},
+				TableName: cfg.tableName,
+				Payload: xata.AggregateTableRequestPayload{
+					Aggregations: xata.AggExpressionMap{
+						"num_histogram": xata.NewNumericHistogramAggExpression(xata.NumericHistogramAgg{
+							Column:   integerColumn,
+							Interval: 1.0,
+							Offset:   nil,
+							Aggs: &xata.NestedAggsMap{
+								"max": xata.NewMaxAggExpression(integerColumn),
+								"top_values": xata.NewTopValuesAggExpression(xata.TopValuesAgg{
+									Column: stringColumn,
+									Size:   nil,
+								}),
+							},
 						}),
 					},
 				},

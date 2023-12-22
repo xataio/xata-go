@@ -31,29 +31,20 @@ func setupDatabase() (*config, error) {
 	if !found {
 		return nil, fmt.Errorf("%s not found in env vars", "XATA_API_KEY")
 	}
+	// require workspace ID to come from the env var
+	// instead of creating new workspace on each client
+	wsID, found := os.LookupEnv("XATA_WORKSPACE_ID")
+	if !found {
+		return nil, fmt.Errorf("%s not found in env vars", "XATA_WORKSPACE_ID")
+	}
 
 	testID := testIdentifier()
-
 	cfg := &config{
 		apiKey:  apiKey,
 		testID:  testID,
+		wsID:    wsID,
 		httpCli: retryablehttp.NewClient().StandardClient(),
 	}
-
-	workspaceCli, err := xata.NewWorkspacesClient(
-		xata.WithAPIKey(cfg.apiKey),
-		xata.WithHTTPClient(cfg.httpCli),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	ws, err := workspaceCli.Create(ctx, &xata.WorkspaceMeta{Name: "ws" + testID})
-	if err != nil {
-		return nil, err
-	}
-
-	cfg.wsID = ws.Id
 
 	databaseCli, err := xata.NewDatabasesClient(
 		xata.WithAPIKey(cfg.apiKey),
@@ -63,7 +54,7 @@ func setupDatabase() (*config, error) {
 		return nil, err
 	}
 
-	listRegionsResponse, err := databaseCli.GetRegionsWithWorkspaceID(ctx, ws.Id)
+	listRegionsResponse, err := databaseCli.GetRegionsWithWorkspaceID(ctx, cfg.wsID)
 	if err != nil {
 		return nil, err
 	}
@@ -77,8 +68,8 @@ func setupDatabase() (*config, error) {
 	)
 
 	db, err := databaseCli.Create(ctx, xata.CreateDatabaseRequest{
-		DatabaseName: "db" + testID,
-		WorkspaceID:  xata.String(ws.Id),
+		DatabaseName: "db" + cfg.testID,
+		WorkspaceID:  xata.String(cfg.wsID),
 		Region:       &cfg.region,
 		UI:           &xata.UI{Color: xata.String("RED")},
 		BranchMetaData: &xata.BranchMetadata{

@@ -226,6 +226,8 @@ type AggExpression *xatagenworkspace.AggExpression
 
 type AggExpressionMap = map[string]AggExpression
 
+type NestedAggsMap = map[string]*xatagenworkspace.AggExpression
+
 type AggExpressionCount xatagenworkspace.AggExpressionCount
 
 type CountAggFilter struct {
@@ -298,6 +300,8 @@ const (
 
 // Split data into buckets by a datetime column. Accepts sub-aggregations for each bucket.
 type DateHistogramAgg struct {
+	// Nested Aggregations
+	Aggs *NestedAggsMap `json:"aggs,omitempty"`
 	// The column to use for bucketing. Must be of type datetime.
 	Column string
 	// The fixed interval to use when bucketing.
@@ -315,6 +319,7 @@ type DateHistogramAgg struct {
 func NewDateHistogramAggExpression(value DateHistogramAgg) *xatagenworkspace.AggExpression {
 	return xatagenworkspace.NewAggExpressionFromAggExpressionDateHistogram(&xatagenworkspace.AggExpressionDateHistogram{
 		DateHistogram: &xatagenworkspace.DateHistogramAgg{
+			Aggs:             value.Aggs,
 			Column:           value.Column,
 			Interval:         value.Interval,
 			CalendarInterval: (*xatagenworkspace.DateHistogramAggCalendarInterval)(value.CalendarInterval),
@@ -326,6 +331,8 @@ func NewDateHistogramAggExpression(value DateHistogramAgg) *xatagenworkspace.Agg
 // Split data into buckets by the unique values in a column. Accepts sub-aggregations for each bucket.
 // The top values as ordered by the number of records (`$count`) are returned.
 type TopValuesAgg struct {
+	// Nested Aggregations
+	Aggs *NestedAggsMap `json:"aggs,omitempty"`
 	// The column to use for bucketing. Accepted types are `string`, `email`, `int`, `float`, or `bool`.
 	Column string
 	// The maximum number of unique values to return.
@@ -337,12 +344,15 @@ func NewTopValuesAggExpression(value TopValuesAgg) *xatagenworkspace.AggExpressi
 		TopValues: &xatagenworkspace.TopValuesAgg{
 			Column: value.Column,
 			Size:   value.Size,
+			Aggs:   value.Aggs,
 		},
 	})
 }
 
 // Split data into buckets by dynamic numeric ranges. Accepts sub-aggregations for each bucket.
 type NumericHistogramAgg struct {
+	// Nested Aggregations
+	Aggs *NestedAggsMap `json:"aggs,omitempty"`
 	// The column to use for bucketing. Must be of numeric type.
 	Column string
 	// The numeric interval to use for bucketing. The resulting buckets will be ranges
@@ -357,6 +367,7 @@ type NumericHistogramAgg struct {
 
 func NewNumericHistogramAggExpression(value NumericHistogramAgg) *xatagenworkspace.AggExpression {
 	return xatagenworkspace.NewAggExpressionFromAggExpressionNumericHistogram(&xatagenworkspace.AggExpressionNumericHistogram{NumericHistogram: &xatagenworkspace.NumericHistogramAgg{
+		Aggs:     value.Aggs,
 		Column:   value.Column,
 		Offset:   value.Offset,
 		Interval: value.Interval,
