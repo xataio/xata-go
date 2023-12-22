@@ -15,7 +15,6 @@ test: ## run unit tests
 
 integration-test: ## run integration tests
 	TEST_DIRECTORY=./internal/integration-tests go run gotest.tools/gotestsum@latest --format testname
-	$(MAKE) clean-workspaces
 
 download-openapi-specs: ## download openapi specs
 	@echo "Downloading openapi specs"
