@@ -5,10 +5,10 @@ package integrationtests
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/xataio/xata-go/xata"
@@ -68,12 +68,11 @@ func setupDatabase() (*config, error) {
 	)
 
 	db, err := databaseCli.Create(ctx, xata.CreateDatabaseRequest{
-		DatabaseName: "db" + cfg.testID,
+		DatabaseName: "sdk-integration-test-go-" + cfg.testID,
 		WorkspaceID:  xata.String(cfg.wsID),
 		Region:       &cfg.region,
-		UI:           &xata.UI{Color: xata.String("RED")},
 		BranchMetaData: &xata.BranchMetadata{
-			Repository: xata.String("github.com/my/repository"),
+			Repository: xata.String("github.com/xataio/xata-go"),
 			Branch:     xata.String("feature-branch"),
 			Stage:      xata.String("testing"),
 			Labels:     &[]string{"development"},
@@ -373,18 +372,12 @@ func cleanup(cfg *config) error {
 }
 
 func testIdentifier() string {
-	currentTime := time.Now()
-
-	// Print the time
-	return fmt.Sprintf(
-		"integration-test_%d-%d-%d_%d_%d_%d",
-		currentTime.Year(),
-		currentTime.Month(),
-		currentTime.Day(),
-		currentTime.Hour(),
-		currentTime.Minute(),
-		currentTime.Second(),
-	)
+	const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234566789"
+	b := make([]byte, 8)
+	for i := range b {
+		b[i] = letters[rand.Intn(len(letters))]
+	}
+	return string(b)
 }
 
 func cleanAllWorkspaces() error {
