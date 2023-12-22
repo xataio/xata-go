@@ -18,6 +18,7 @@ const (
 	personalAPIKeyLocation    = "~/.config/xata/key"
 	defaultControlPlaneDomain = "api.xata.io"
 	xataAPIKeyEnvVar          = "XATA_API_KEY"
+	xataWsIdEnvVar            = "XATA_WORKSPACE_ID" // TODO: not in use yet
 	dbURLFormat               = "https://{workspace_id}.{region}.xata.sh/db/{db_name}:{branch_name}"
 	defaultBranchName         = "main"
 	configFileName            = ".xatarc"
