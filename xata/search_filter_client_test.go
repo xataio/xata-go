@@ -834,11 +834,12 @@ func Test_searchAndFilterCli_Aggregate_TopValues_With_NestedAggs(t *testing.T) {
 					TableName: "my-table",
 					Payload: xata.AggregateTableRequestPayload{
 						Aggregations: xata.AggExpressionMap{
-							"top_key": xata.NewTopValuesAggExpression(xata.TopValuesAgg{
+							"topKey": xata.NewTopValuesAggExpression(xata.TopValuesAgg{
 								Column: "my-column",
 								Size:   xata.Int(5),
 								Aggs: &xata.NestedAggsMap{
-									"sub_key": xata.NewAverageAggExpression("my-sub-col"),
+									"nestedKeyOne": xata.NewAverageAggExpression("my-sub-col_a"),
+									"nestedKeyTwo": xata.NewMaxAggExpression("my-sub-col_b"),
 								},
 							}),
 						},
