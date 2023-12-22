@@ -226,6 +226,8 @@ type AggExpression *xatagenworkspace.AggExpression
 
 type AggExpressionMap = map[string]AggExpression
 
+type NestedAggsMap = map[string]*xatagenworkspace.AggExpression
+
 type AggExpressionCount xatagenworkspace.AggExpressionCount
 
 type CountAggFilter struct {
@@ -331,7 +333,10 @@ type TopValuesAgg struct {
 	// The maximum number of unique values to return.
 	Size *int
 	// Sub Aggregations
-	Aggs *xatagenworkspace.AggExpressionMap `json:"aggs,omitempty"`
+	//Aggs *xatagenworkspace.AggExpressionMap `json:"aggs,omitempty"`
+	Aggs *NestedAggsMap `json:"aggs,omitempty"`
+	//Aggs *AggExpressionMap `json:"aggs,omitempty"`
+	//Aggs map[string]AggExpression
 }
 
 func NewTopValuesAggExpression(value TopValuesAgg) *xatagenworkspace.AggExpression {
@@ -339,7 +344,7 @@ func NewTopValuesAggExpression(value TopValuesAgg) *xatagenworkspace.AggExpressi
 		TopValues: &xatagenworkspace.TopValuesAgg{
 			Column: value.Column,
 			Size:   value.Size,
-			Aggs:   (*xatagenworkspace.AggExpressionMap)(value.Aggs),
+			Aggs:   value.Aggs,
 		},
 	})
 }

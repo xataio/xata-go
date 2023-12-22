@@ -780,3 +780,84 @@ func Test_searchAndFilterCli_Aggregate_DateHistogram(t *testing.T) {
 		})
 	}
 }
+
+// Agg: TopValues
+// with nested aggregations
+// https://github.com/xataio/xata-go/issues/47
+func Test_searchAndFilterCli_Aggregate_TopValues_With_NestedAggs(t *testing.T) {
+	assert := assert.New(t)
+
+	type tc struct {
+		name       string
+		want       *xatagenworkspace.AggregateTableResponse
+		statusCode int
+		apiErr     *xatagencore.APIError
+	}
+
+	aggRes := map[string]*xatagenworkspace.AggResponse{
+		"test": xatagenworkspace.NewAggResponseFromDoubleOptional(xata.Float64(2)),
+	}
+
+	tests := []tc{
+		{
+			name:       "should aggregate a table with nested aggregation",
+			want:       &xatagenworkspace.AggregateTableResponse{Aggs: &aggRes},
+			statusCode: http.StatusOK,
+		},
+	}
+
+	for _, eTC := range errTestCasesWorkspace {
+		tests = append(tests, tc{
+			name:       eTC.name,
+			statusCode: eTC.statusCode,
+			apiErr:     eTC.apiErr,
+		})
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testSrv := testService(t, http.MethodPost, "/db", tt.statusCode, tt.apiErr != nil, tt.want)
+
+			cli, err := xata.NewSearchAndFilterClient(
+				xata.WithBaseURL(testSrv.URL),
+				xata.WithAPIKey("test-key"),
+			)
+			assert.NoError(err)
+			assert.NotNil(cli)
+
+			got, err := cli.Aggregate(
+				context.TODO(),
+				xata.AggregateTableRequest{
+					BranchRequestOptional: xata.BranchRequestOptional{
+						DatabaseName: xata.String("my-db"),
+					},
+					TableName: "my-table",
+					Payload: xata.AggregateTableRequestPayload{
+						Aggregations: xata.AggExpressionMap{
+							"top_key": xata.NewTopValuesAggExpression(xata.TopValuesAgg{
+								Column: "my-column",
+								Size:   xata.Int(5),
+								Aggs: &xata.NestedAggsMap{
+									"sub_key": xata.NewAverageAggExpression("my-sub-col"),
+								},
+							}),
+						},
+					},
+				},
+			)
+
+			if tt.apiErr != nil {
+				errAPI := tt.apiErr.Unwrap()
+				if errAPI == nil {
+					t.Fatal("expected error but got nil")
+				}
+				assert.ErrorAs(err, &errAPI)
+				assert.Equal(err.Error(), tt.apiErr.Error())
+				assert.Nil(got)
+			} else {
+				assert.Equal(tt.want, got)
+				assert.NoError(err)
+			}
+		})
+	}
+}
