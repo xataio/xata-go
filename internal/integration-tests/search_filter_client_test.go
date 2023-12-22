@@ -671,4 +671,36 @@ func Test_searchAndFilterClient(t *testing.T) {
 			return false
 		}, time.Second*10, time.Second)
 	})
+
+	t.Run("aggregate table numeric histogram with nested aggregations", func(t *testing.T) {
+		assert.Eventually(t, func() bool {
+			aggTableRes, err := searchFilterCli.Aggregate(ctx, xata.AggregateTableRequest{
+				BranchRequestOptional: xata.BranchRequestOptional{
+					DatabaseName: xata.String(cfg.databaseName),
+				},
+				TableName: cfg.tableName,
+				Payload: xata.AggregateTableRequestPayload{
+					Aggregations: xata.AggExpressionMap{
+						"num_histogram": xata.NewNumericHistogramAggExpression(xata.NumericHistogramAgg{
+							Column:   integerColumn,
+							Interval: 1.0,
+							Offset:   nil,
+							Aggs: &xata.NestedAggsMap{
+								"max": xata.NewMaxAggExpression(integerColumn),
+								"top_values": xata.NewTopValuesAggExpression(xata.TopValuesAgg{
+									Column: stringColumn,
+									Size:   nil,
+								}),
+							},
+						}),
+					},
+				},
+			})
+			assert.NoError(t, err)
+			if (*aggTableRes.Aggs)["num_histogram"] != nil && (*aggTableRes.Aggs)["num_histogram"].AggResponseValues != nil {
+				return len((*aggTableRes.Aggs)["num_histogram"].AggResponseValues.Values.AggResponseValuesValuesItemList) > 0
+			}
+			return false
+		}, time.Second*10, time.Second)
+	})
 }

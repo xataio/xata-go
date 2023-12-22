@@ -328,12 +328,12 @@ func NewDateHistogramAggExpression(value DateHistogramAgg) *xatagenworkspace.Agg
 // Split data into buckets by the unique values in a column. Accepts sub-aggregations for each bucket.
 // The top values as ordered by the number of records (`$count`) are returned.
 type TopValuesAgg struct {
+	// Nested Aggregations
+	Aggs *NestedAggsMap `json:"aggs,omitempty"`
 	// The column to use for bucketing. Accepted types are `string`, `email`, `int`, `float`, or `bool`.
 	Column string
 	// The maximum number of unique values to return.
 	Size *int
-	// Sub Aggregations
-	Aggs *NestedAggsMap `json:"aggs,omitempty"`
 }
 
 func NewTopValuesAggExpression(value TopValuesAgg) *xatagenworkspace.AggExpression {
@@ -348,6 +348,8 @@ func NewTopValuesAggExpression(value TopValuesAgg) *xatagenworkspace.AggExpressi
 
 // Split data into buckets by dynamic numeric ranges. Accepts sub-aggregations for each bucket.
 type NumericHistogramAgg struct {
+	// Nested Aggregations
+	Aggs *NestedAggsMap `json:"aggs,omitempty"`
 	// The column to use for bucketing. Must be of numeric type.
 	Column string
 	// The numeric interval to use for bucketing. The resulting buckets will be ranges
@@ -362,6 +364,7 @@ type NumericHistogramAgg struct {
 
 func NewNumericHistogramAggExpression(value NumericHistogramAgg) *xatagenworkspace.AggExpression {
 	return xatagenworkspace.NewAggExpressionFromAggExpressionNumericHistogram(&xatagenworkspace.AggExpressionNumericHistogram{NumericHistogram: &xatagenworkspace.NumericHistogramAgg{
+		Aggs:     value.Aggs,
 		Column:   value.Column,
 		Offset:   value.Offset,
 		Interval: value.Interval,
