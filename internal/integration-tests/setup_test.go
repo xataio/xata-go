@@ -8,7 +8,8 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
-	"strings"
+
+	//"strings"
 
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/xataio/xata-go/xata"
@@ -353,20 +354,6 @@ func cleanup(cfg *config) error {
 			return err
 		}
 	}
-	if cfg.wsID != "" {
-		workspaceCli, err := xata.NewWorkspacesClient(
-			xata.WithAPIKey(cfg.apiKey),
-			xata.WithHTTPClient(cfg.httpCli),
-		)
-		if err != nil {
-			return err
-		}
-
-		err = workspaceCli.Delete(ctx, cfg.wsID)
-		if err != nil {
-			return err
-		}
-	}
 
 	return nil
 }
@@ -378,33 +365,4 @@ func testIdentifier() string {
 		b[i] = letters[rand.Intn(len(letters))]
 	}
 	return string(b)
-}
-
-func cleanAllWorkspaces() error {
-	ctx := context.Background()
-	apiKey, found := os.LookupEnv("XATA_API_KEY")
-	if !found {
-		return fmt.Errorf("%s not found in env vars", "XATA_API_KEY")
-	}
-
-	workspaceCli, err := xata.NewWorkspacesClient(xata.WithAPIKey(apiKey), xata.WithHTTPClient(retryablehttp.NewClient().StandardClient()))
-	if err != nil {
-		return err
-	}
-
-	listResponse, err := workspaceCli.List(ctx)
-	if err != nil {
-		return err
-	}
-
-	for _, ws := range listResponse.Workspaces {
-		if strings.Contains(ws.Name, "integration-test") {
-			err = workspaceCli.Delete(ctx, ws.Id)
-			if err != nil {
-				return err
-			}
-		}
-	}
-
-	return nil
 }
