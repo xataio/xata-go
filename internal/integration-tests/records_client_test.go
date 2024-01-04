@@ -507,13 +507,16 @@ func generateInsertRecordRequest(databaseName, tableName string) xata.InsertReco
 			integerColumn:  xata.ValueFromInteger(10),
 			floatColumn:    xata.ValueFromDouble(10.3),
 			fileColumn: xata.ValueFromInputFile(xata.InputFile{
-				Name:          testFileName,
-				Base64Content: xata.String(base64.StdEncoding.EncodeToString([]byte(fileContent))),
+				Name:            testFileName,
+				Base64Content:   xata.String(base64.StdEncoding.EncodeToString([]byte(fileContent))),
+				EnablePublicUrl: xata.Bool(true),
 			}),
 			fileArrayColumn: xata.ValueFromInputFileArray(xata.InputFileArray{
 				{
-					Name:          xata.String(testFileName),
-					Base64Content: xata.String(base64.StdEncoding.EncodeToString([]byte(fileContent))),
+					Name:             xata.String(testFileName),
+					Base64Content:    xata.String(base64.StdEncoding.EncodeToString([]byte(fileContent))),
+					UploadUrlTimeout: xata.Int(100),
+					SignedUrlTimeout: xata.Int(600),
 				},
 			}),
 			vectorColumn:   xata.ValueFromDoubleList([]float64{10.3, 20.2}),
