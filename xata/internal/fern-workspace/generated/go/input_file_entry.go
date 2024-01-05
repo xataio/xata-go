@@ -15,4 +15,6 @@ type InputFileEntry struct {
 	Name            *FileName   `json:"name,omitempty"`
 	// Time to live for signed URLs
 	SignedUrlTimeout *int `json:"signedUrlTimeout,omitempty"`
+	// Time to live for upload URLs
+	UploadUrlTimeout *int `json:"uploadUrlTimeout,omitempty"`
 }

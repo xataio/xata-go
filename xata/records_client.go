@@ -141,6 +141,20 @@ func ValueFromInputFile(value InputFile) *DataInputRecordValue {
 
 type InputFile xatagenworkspace.InputFile
 
+/*
+	type InputFile struct {
+		// Base64 encoded content
+		Base64Content *string `json:"base64Content,omitempty"`
+		// Enable public access to the file
+		EnablePublicUrl *bool   `json:"enablePublicUrl,omitempty"`
+		MediaType       *string `json:"mediaType,omitempty"`
+		Name            string  `json:"name"`
+		// Time to live for signed URLs
+		SignedUrlTimeout *int `json:"signedUrlTimeout,omitempty"`
+		// Time to live for upload URLs
+		UploadUrlTimeout *int `json:"uploadUrlTimeout,omitempty"`
+	}
+*/
 type recordsClient struct {
 	generated  xatagenworkspace.RecordsClient
 	dbName     string
