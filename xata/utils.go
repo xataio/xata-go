@@ -184,6 +184,15 @@ func getBranchName() string {
 	return defaultBranchName
 }
 
+// Get the region if the corresponding env var `XATA_REGION` is set
+// otherwise return the default region: us-east-1
+func getRegion() string {
+	if region, found := os.LookupEnv("XATA_REGION"); found {
+		return region
+	}
+	return defaultRegion
+}
+
 // loadDatabaseConfig will return config with defaults if the error is not nil.
 func loadDatabaseConfig() (databaseConfig, error) {
 	defaultDBConfig := databaseConfig{
@@ -191,6 +200,19 @@ func loadDatabaseConfig() (databaseConfig, error) {
 		branchName:      defaultBranchName,
 		domainWorkspace: defaultDataPlaneDomain,
 	}
+	// Setup with env var
+	// XATA_WORKSPACE_ID to set the workspace Id
+	if wsID, found := os.LookupEnv("XATA_WORKSPACE_ID"); found {
+		region := getRegion()
+		branch := getBranchName()
+		db := databaseConfig{
+			workspaceID: wsID,
+			region:      region,
+			branchName:  branch,
+		}
+		return db, nil
+	}
+
 	cfg, err := loadConfig(configFileName)
 	if err != nil {
 		return defaultDBConfig, err
