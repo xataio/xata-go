@@ -138,7 +138,7 @@ func (t tableClient) GetColumns(ctx context.Context, request TableRequest) (*xat
 	return t.generated.GetTableColumns(ctx, t.dbBranchName(request), request.TableName)
 }
 
-// NewTableClient constructs a client for interacting tables.
+// NewTableClient constructs a client for interacting with tables.
 func NewTableClient(opts ...ClientOption) (TableClient, error) {
 	cliOpts, dbCfg, err := consolidateClientOptionsForWorkspace(opts...)
 	if err != nil {
