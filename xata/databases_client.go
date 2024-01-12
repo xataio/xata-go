@@ -136,7 +136,7 @@ func (d databaseCli) Rename(ctx context.Context, request RenameDatabaseRequest) 
 	)
 }
 
-// NewDatabasesClient constructs a client for interacting databases.
+// NewDatabasesClient constructs a client for interacting with databases.
 func NewDatabasesClient(opts ...ClientOption) (DatabasesClient, error) {
 	cliOpts, err := consolidateClientOptionsForCore(opts...)
 	if err != nil {

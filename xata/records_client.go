@@ -481,7 +481,7 @@ func constructRecord(in map[string]interface{}) (*Record, error) {
 	return &record, nil
 }
 
-// NewRecordsClient constructs a clint for interacting with records.
+// NewRecordsClient constructs a client for interacting with records.
 func NewRecordsClient(opts ...ClientOption) (RecordsClient, error) {
 	cliOpts, dbCfg, err := consolidateClientOptionsForWorkspace(opts...)
 	if err != nil {
