@@ -26,19 +26,6 @@ func Test_tableClient(t *testing.T) {
 		}
 	})
 
-	databaseCli, err := xata.NewDatabasesClient(
-		xata.WithAPIKey(cfg.apiKey),
-		xata.WithBaseURL(fmt.Sprintf(
-			"https://%s.%s.xata.sh",
-			cfg.wsID,
-			cfg.region,
-		)),
-		xata.WithHTTPClient(retryablehttp.NewClient().StandardClient()),
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	tableCli, err := xata.NewTableClient(
 		xata.WithAPIKey(cfg.apiKey),
 		xata.WithBaseURL(fmt.Sprintf(
@@ -55,26 +42,22 @@ func Test_tableClient(t *testing.T) {
 	ctx := context.Background()
 	t.Run("should create/delete, get schema and columns of a table and add/delete column", func(t *testing.T) {
 		testID := testIdentifier()
-		db, err := databaseCli.Create(ctx, xata.CreateDatabaseRequest{
-			DatabaseName: "db_name_" + testID,
-			WorkspaceID:  xata.String(cfg.wsID),
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
+		dbName := cfg.databaseName
+		tableName := "table_" + testID
 
 		createTableResponse, err := tableCli.Create(ctx, xata.TableRequest{
-			DatabaseName: xata.String(db.DatabaseName),
-			TableName:    "table-integration-test_" + testID,
+			DatabaseName: xata.String(dbName),
+			TableName:    tableName,
 		})
 		if err != nil {
 			t.Fatal(err)
 		}
+		assert.Equal(t, createTableResponse.TableName, tableName)
 
 		_, err = tableCli.AddColumn(ctx, xata.AddColumnRequest{
 			TableRequest: xata.TableRequest{
-				TableName:    createTableResponse.TableName,
-				DatabaseName: xata.String(db.DatabaseName),
+				TableName:    tableName,
+				DatabaseName: xata.String(dbName),
 			},
 			Column: &xata.Column{
 				Name:         stringColumn,
@@ -89,38 +72,28 @@ func Test_tableClient(t *testing.T) {
 		}
 
 		schema, err := tableCli.GetSchema(ctx, xata.TableRequest{
-			TableName:    createTableResponse.TableName,
-			DatabaseName: xata.String(db.DatabaseName),
+			TableName:    tableName,
+			DatabaseName: xata.String(dbName),
 		})
 		assert.NoError(t, err)
 		assert.Equal(t, stringColumn, schema.Columns[0].Name)
 
 		columns, err := tableCli.GetColumns(ctx, xata.TableRequest{
-			TableName:    createTableResponse.TableName,
-			DatabaseName: xata.String(db.DatabaseName),
+			TableName:    tableName,
+			DatabaseName: xata.String(dbName),
 		})
 		assert.NoError(t, err)
 		assert.Equal(t, stringColumn, columns.Columns[0].Name)
 
 		_, err = tableCli.DeleteColumn(ctx, xata.DeleteColumnRequest{
 			TableRequest: xata.TableRequest{
-				TableName:    createTableResponse.TableName,
-				DatabaseName: xata.String(db.DatabaseName),
+				TableName:    tableName,
+				DatabaseName: xata.String(dbName),
 			},
 			ColumnName: stringColumn,
 		})
 		if err != nil {
 			t.Fatal(err)
 		}
-
-		t.Cleanup(func() {
-			_, err = databaseCli.Delete(ctx, xata.DeleteDatabaseRequest{
-				WorkspaceID:  xata.String(cfg.wsID),
-				DatabaseName: db.DatabaseName,
-			})
-			if err != nil {
-				t.Fatal(err)
-			}
-		})
 	})
 }
