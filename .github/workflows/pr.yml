@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
   build:
-    runs-on: [self-hosted, default]
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
     - name: Set up Go
@@ -21,11 +21,14 @@ jobs:
       run: make test
       env:
         XATA_API_KEY: ${{ secrets.XATA_API_KEY }}
+        XATA_WORKSPACE_ID: ${{ secrets.XATA_WORKSPACE_ID }}
     - name: Integration tests
       run: make integration-test
       env:
         XATA_API_KEY: ${{ secrets.XATA_API_KEY }}
+        XATA_WORKSPACE_ID: ${{ secrets.XATA_WORKSPACE_ID }}
     - name: Cleanup
       run: make clean-workspaces
       env:
         XATA_API_KEY: ${{ secrets.XATA_API_KEY }}
+        XATA_WORKSPACE_ID: ${{ secrets.XATA_WORKSPACE_ID }}
