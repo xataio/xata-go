@@ -161,11 +161,11 @@ func loadConfig(fieName string) (config, error) {
 	return cfg, nil
 }
 
-// getBranchName retrieves the branch name.
-// If not found, falls back to defaultBranchName
-func getBranchName() string {
-	if branchName, found := os.LookupEnv(branchNameEnvVar); found {
-		return branchName
+// Get value from env var with fallback to godotenv
+// return default value if not found
+func getEnvVar(name string, defaultValue string) string {
+	if val, found := os.LookupEnv(name); found {
+		return val
 	}
 
 	var myEnv map[string]string
@@ -177,20 +177,22 @@ func getBranchName() string {
 		}
 	}
 
-	if branchName, found := myEnv[branchNameEnvVar]; found {
-		return branchName
+	if val, found := myEnv[name]; found {
+		return val
 	}
+	return defaultValue
+}
 
-	return defaultBranchName
+// getBranchName retrieves the branch name.
+// If not found, falls back to defaultBranchName
+func getBranchName() string {
+	return getEnvVar(branchNameEnvVar, defaultBranchName)
 }
 
 // Get the region if the corresponding env var `XATA_REGION` is set
 // otherwise return the default region: us-east-1
 func getRegion() string {
-	if region, found := os.LookupEnv("XATA_REGION"); found {
-		return region
-	}
-	return defaultRegion
+	return getEnvVar("XATA_REGION", defaultRegion)
 }
 
 // loadDatabaseConfig will return config with defaults if the error is not nil.
@@ -200,9 +202,11 @@ func loadDatabaseConfig() (databaseConfig, error) {
 		branchName:      defaultBranchName,
 		domainWorkspace: defaultDataPlaneDomain,
 	}
+
 	// Setup with env var
 	// XATA_WORKSPACE_ID to set the workspace Id
-	if wsID, found := os.LookupEnv("XATA_WORKSPACE_ID"); found {
+	wsID := getEnvVar("XATA_WORKSPACE_ID", "")
+	if wsID != "" {
 		region := getRegion()
 		branch := getBranchName()
 		db := databaseConfig{
