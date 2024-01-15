@@ -203,26 +203,17 @@ func Test_loadDatabaseConfig_with_envvars(t *testing.T) {
 	}
 
 	// with branch and region env vars
-	t.Run("load config from XATA_WORKSPACE_ID, regionEnvVar and XATA_BRANCH env vars", func(t *testing.T) {
+	t.Run("load config from XATA_WORKSPACE_ID, XATA_REGION and XATA_BRANCH env vars", func(t *testing.T) {
 		dbCfg, err := loadDatabaseConfig()
-		if err != nil {
-			t.Fatalf("Error loading config: %v", err)
-		}
-
-		if dbCfg.workspaceID != setWsId {
-			t.Fatalf("Expected Workspace ID: %s, got: %s", setWsId, dbCfg.workspaceID)
-		}
-		if dbCfg.branchName != setBranch {
-			t.Fatalf("Expected branch name: %s, got: %s", setBranch, dbCfg.branchName)
-		}
-		if dbCfg.region != setRegion {
-			t.Fatalf("Expected region: %s, got: %s", setRegion, dbCfg.region)
-		}
+		assert.NoError(t, err)
+		assert.Equal(t, setWsId, dbCfg.workspaceID)
+		assert.Equal(t, setBranch, dbCfg.branchName)
+		assert.Equal(t, setRegion, dbCfg.region)
 	})
 
 	t.Cleanup(func() {
-		os.Unsetenv(EnvXataWorkspaceID)
-		os.Unsetenv(EnvXataBranch)
-		os.Unsetenv(EnvXataRegion)
+		assert.NoError(t, os.Unsetenv(EnvXataWorkspaceID))
+		assert.NoError(t, os.Unsetenv(EnvXataBranch))
+		assert.NoError(t, os.Unsetenv(EnvXataRegion))
 	})
 }
