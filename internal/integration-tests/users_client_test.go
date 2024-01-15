@@ -14,9 +14,9 @@ import (
 )
 
 func Test_usersClient(t *testing.T) {
-	apiKey, found := os.LookupEnv("XATA_API_KEY")
+	apiKey, found := os.LookupEnv(xata.EnvXataAPIKey)
 	if !found {
-		t.Skipf("%s not found in env vars", "XATA_API_KEY")
+		t.Skipf("%s not found in env vars", xata.EnvXataAPIKey)
 	}
 
 	t.Run("should get the current user", func(t *testing.T) {

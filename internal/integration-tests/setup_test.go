@@ -9,8 +9,6 @@ import (
 	"net/http"
 	"os"
 
-	//"strings"
-
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/xataio/xata-go/xata"
 )
@@ -28,15 +26,15 @@ type config struct {
 
 func setupDatabase() (*config, error) {
 	ctx := context.Background()
-	apiKey, found := os.LookupEnv("XATA_API_KEY")
+	apiKey, found := os.LookupEnv(xata.EnvXataAPIKey)
 	if !found {
-		return nil, fmt.Errorf("%s not found in env vars", "XATA_API_KEY")
+		return nil, fmt.Errorf("%s not found in env vars", xata.EnvXataAPIKey)
 	}
 	// require workspace ID to come from the env var
 	// instead of creating new workspace on each client
-	wsID, found := os.LookupEnv("XATA_WORKSPACE_ID")
+	wsID, found := os.LookupEnv(xata.EnvXataWorkspaceID)
 	if !found {
-		return nil, fmt.Errorf("%s not found in env vars", "XATA_WORKSPACE_ID")
+		return nil, fmt.Errorf("%s not found in env vars", xata.EnvXataWorkspaceID)
 	}
 
 	testID := testIdentifier()

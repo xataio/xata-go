@@ -7,16 +7,15 @@ import (
 	"os"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
 	"github.com/hashicorp/go-retryablehttp"
+	"github.com/stretchr/testify/assert"
 	"github.com/xataio/xata-go/xata"
 )
 
 func Test_databasesClient(t *testing.T) {
-	apiKey, found := os.LookupEnv("XATA_API_KEY")
+	apiKey, found := os.LookupEnv(xata.EnvXataAPIKey)
 	if !found {
-		t.Skipf("%s not found in env vars", "XATA_API_KEY")
+		t.Skipf("%s not found in env vars", xata.EnvXataAPIKey)
 	}
 
 	ctx := context.Background()

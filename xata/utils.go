@@ -14,30 +14,34 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// Environment variables
+const (
+	EnvXataAPIKey      = "XATA_API_KEY"
+	EnvXataWorkspaceID = "XATA_WORKSPACE_ID"
+	EnvXataBranch      = "XATA_BRANCH"
+	EnvXataRegion      = "XATA_REGION"
+)
+
 const (
 	personalAPIKeyLocation    = "~/.config/xata/key"
 	defaultControlPlaneDomain = "api.xata.io"
-	xataAPIKeyEnvVar          = "XATA_API_KEY"
-	xataWsIDEnvVar            = "XATA_WORKSPACE_ID"
 	dbURLFormat               = "https://{workspace_id}.{region}.xata.sh/db/{db_name}:{branch_name}"
 	defaultBranchName         = "main"
 	configFileName            = ".xatarc"
-	branchNameEnvVar          = "XATA_BRANCH"
 	defaultDataPlaneDomain    = "xata.sh"
 	defaultRegion             = "us-east-1"
-	regionEnvVar              = "XATA_REGION"
 )
 
-var errAPIKey = fmt.Errorf("no API key found. Searched in `%s` env, %s, and .env", xataAPIKeyEnvVar, personalAPIKeyLocation)
+var errAPIKey = fmt.Errorf("no API key found. Searched in `%s` env, %s, and .env", EnvXataAPIKey, personalAPIKeyLocation)
 
 // assignAPIkey add the API key to the ClientOptions by going through the following options in order:
-//   - In env vars by the xataAPIKeyEnvVar dbName.
-//   - In .env file with the xataAPIKeyEnvVar dbName.
+//   - In env vars by the EnvXataAPIKey dbName.
+//   - In .env file with the EnvXataAPIKey dbName.
 //   - In .xatarc config file (TODO: not ready!)
 //
 // See: https://xata.io/docs/python-sdk/overview#authorization
 func getAPIKey() (string, error) {
-	if key, found := os.LookupEnv(xataAPIKeyEnvVar); found {
+	if key, found := os.LookupEnv(EnvXataAPIKey); found {
 		return key, nil
 	}
 
@@ -50,7 +54,7 @@ func getAPIKey() (string, error) {
 		}
 	}
 
-	if key, found := myEnv[xataAPIKeyEnvVar]; found {
+	if key, found := myEnv[EnvXataAPIKey]; found {
 		return key, nil
 	}
 
@@ -187,13 +191,13 @@ func getEnvVar(name string, defaultValue string) string {
 // getBranchName retrieves the branch name.
 // If not found, falls back to defaultBranchName
 func getBranchName() string {
-	return getEnvVar(branchNameEnvVar, defaultBranchName)
+	return getEnvVar(EnvXataBranch, defaultBranchName)
 }
 
 // Get the region if the corresponding env var `XATA_REGION` is set
 // otherwise return the default region: us-east-1
 func getRegion() string {
-	return getEnvVar(regionEnvVar, defaultRegion)
+	return getEnvVar(EnvXataRegion, defaultRegion)
 }
 
 // loadDatabaseConfig will return config with defaults if the error is not nil.
@@ -206,7 +210,7 @@ func loadDatabaseConfig() (databaseConfig, error) {
 
 	// Setup with env var
 	// XATA_WORKSPACE_ID to set the workspace Id
-	wsID := getEnvVar(xataWsIDEnvVar, "")
+	wsID := getEnvVar(EnvXataWorkspaceID, "")
 	if wsID != "" {
 		region := getRegion()
 		branch := getBranchName()
