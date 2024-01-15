@@ -26,6 +26,50 @@ func TestClientOptions_getAPIKey(t *testing.T) {
 	})
 }
 
+func Test_getBranchName(t *testing.T) {
+	// default state
+	t.Run("should be default branch name", func(t *testing.T) {
+		gotBranchName := getBranchName()
+		assert.Equal(t, gotBranchName, defaultBranchName)
+	})
+
+	setBranchName := "feature-042"
+	err := os.Setenv(branchNameEnvVar, setBranchName)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// from env var
+	t.Run("should be branch name from env var", func(t *testing.T) {
+		gotBranchName := getBranchName()
+		assert.Equal(t, gotBranchName, setBranchName)
+	})
+
+	t.Cleanup(func() { os.Unsetenv(branchNameEnvVar) })
+}
+
+func Test_getRegion(t *testing.T) {
+	// default state
+	t.Run("should be default region", func(t *testing.T) {
+		gotRegion := getRegion()
+		assert.Equal(t, gotRegion, defaultRegion)
+	})
+
+	setRegion := "eu-west-3"
+	err := os.Setenv(regionEnvVar, setRegion)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// from env var
+	t.Run("should be region from the env var", func(t *testing.T) {
+		gotRegion := getRegion()
+		assert.Equal(t, gotRegion, setRegion)
+	})
+
+	t.Cleanup(func() { os.Unsetenv(regionEnvVar) })
+}
+
 func Test_parseDatabaseURL(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -95,6 +139,7 @@ func Test_parseDatabaseURL(t *testing.T) {
 }
 
 func Test_loadConfig(t *testing.T) {
+	// from .xatarc
 	t.Run("should read database URL", func(t *testing.T) {
 		// Create a temporary JSON file for testing
 		tempFile, err := os.CreateTemp("", "config_test.json")
@@ -126,5 +171,66 @@ func Test_loadConfig(t *testing.T) {
 		if cfg.DatabaseURL != expectedURL {
 			t.Fatalf("Expected database URL: %s, got: %s", expectedURL, cfg.DatabaseURL)
 		}
+	})
+}
+
+func Test_loadDatabaseConfig_with_envvars(t *testing.T) {
+	setWsId := "workspace-0lac00"
+	err := os.Setenv(xataWsIDEnvVar, setWsId)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// test workspace id from env var
+	t.Run("load config from WORKSPACE_ID env var", func(t *testing.T) {
+		dbCfg, err := loadDatabaseConfig()
+		if err != nil {
+			t.Fatalf("Error loading config: %v", err)
+		}
+
+		if dbCfg.workspaceID != setWsId {
+			t.Fatalf("Expected Workspace ID: %s, got: %s", setWsId, dbCfg.workspaceID)
+		}
+		if dbCfg.branchName != defaultBranchName {
+			t.Fatalf("Expected branch name: %s, got: %s", defaultBranchName, dbCfg.branchName)
+		}
+		if dbCfg.region != defaultRegion {
+			t.Fatalf("Expected region: %s, got: %s", defaultRegion, dbCfg.region)
+		}
+	})
+
+	setBranch := "branch123"
+	err2 := os.Setenv(branchNameEnvVar, setBranch)
+	if err2 != nil {
+		t.Fatal(err2)
+	}
+	setRegion := "ap-southeast-16"
+	err3 := os.Setenv(regionEnvVar, setRegion)
+	if err3 != nil {
+		t.Fatal(err3)
+	}
+
+	// with branch and region env vars
+	t.Run("load config from XATA_WORKSPACE_ID, regionEnvVar and XATA_BRANCH env vars", func(t *testing.T) {
+		dbCfg, err := loadDatabaseConfig()
+		if err != nil {
+			t.Fatalf("Error loading config: %v", err)
+		}
+
+		if dbCfg.workspaceID != setWsId {
+			t.Fatalf("Expected Workspace ID: %s, got: %s", setWsId, dbCfg.workspaceID)
+		}
+		if dbCfg.branchName != setBranch {
+			t.Fatalf("Expected branch name: %s, got: %s", setBranch, dbCfg.branchName)
+		}
+		if dbCfg.region != setRegion {
+			t.Fatalf("Expected region: %s, got: %s", setRegion, dbCfg.region)
+		}
+	})
+
+	t.Cleanup(func() {
+		os.Unsetenv(xataWsIDEnvVar)
+		os.Unsetenv(branchNameEnvVar)
+		os.Unsetenv(regionEnvVar)
 	})
 }

@@ -18,13 +18,14 @@ const (
 	personalAPIKeyLocation    = "~/.config/xata/key"
 	defaultControlPlaneDomain = "api.xata.io"
 	xataAPIKeyEnvVar          = "XATA_API_KEY"
-	xataWsIDEnvVar            = "XATA_WORKSPACE_ID" // TODO: not in use yet
+	xataWsIDEnvVar            = "XATA_WORKSPACE_ID"
 	dbURLFormat               = "https://{workspace_id}.{region}.xata.sh/db/{db_name}:{branch_name}"
 	defaultBranchName         = "main"
 	configFileName            = ".xatarc"
 	branchNameEnvVar          = "XATA_BRANCH"
 	defaultDataPlaneDomain    = "xata.sh"
 	defaultRegion             = "us-east-1"
+	regionEnvVar              = "XATA_REGION"
 )
 
 var errAPIKey = fmt.Errorf("no API key found. Searched in `%s` env, %s, and .env", xataAPIKeyEnvVar, personalAPIKeyLocation)
@@ -161,11 +162,11 @@ func loadConfig(fieName string) (config, error) {
 	return cfg, nil
 }
 
-// getBranchName retrieves the branch name.
-// If not found, falls back to defaultBranchName
-func getBranchName() string {
-	if branchName, found := os.LookupEnv(branchNameEnvVar); found {
-		return branchName
+// Get value from env var with fallback to godotenv
+// return default value if not found
+func getEnvVar(name string, defaultValue string) string {
+	if val, found := os.LookupEnv(name); found {
+		return val
 	}
 
 	var myEnv map[string]string
@@ -177,11 +178,22 @@ func getBranchName() string {
 		}
 	}
 
-	if branchName, found := myEnv[branchNameEnvVar]; found {
-		return branchName
+	if val, found := myEnv[name]; found {
+		return val
 	}
+	return defaultValue
+}
 
-	return defaultBranchName
+// getBranchName retrieves the branch name.
+// If not found, falls back to defaultBranchName
+func getBranchName() string {
+	return getEnvVar(branchNameEnvVar, defaultBranchName)
+}
+
+// Get the region if the corresponding env var `XATA_REGION` is set
+// otherwise return the default region: us-east-1
+func getRegion() string {
+	return getEnvVar(regionEnvVar, defaultRegion)
 }
 
 // loadDatabaseConfig will return config with defaults if the error is not nil.
@@ -191,6 +203,21 @@ func loadDatabaseConfig() (databaseConfig, error) {
 		branchName:      defaultBranchName,
 		domainWorkspace: defaultDataPlaneDomain,
 	}
+
+	// Setup with env var
+	// XATA_WORKSPACE_ID to set the workspace Id
+	wsID := getEnvVar(xataWsIDEnvVar, "")
+	if wsID != "" {
+		region := getRegion()
+		branch := getBranchName()
+		db := databaseConfig{
+			workspaceID: wsID,
+			region:      region,
+			branchName:  branch,
+		}
+		return db, nil
+	}
+
 	cfg, err := loadConfig(configFileName)
 	if err != nil {
 		return defaultDBConfig, err
