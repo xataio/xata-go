@@ -184,19 +184,11 @@ func Test_loadDatabaseConfig_with_envvars(t *testing.T) {
 	// test workspace id from env var
 	t.Run("load config from WORKSPACE_ID env var", func(t *testing.T) {
 		dbCfg, err := loadDatabaseConfig()
-		if err != nil {
-			t.Fatalf("Error loading config: %v", err)
-		}
-
-		if dbCfg.workspaceID != setWsId {
-			t.Fatalf("Expected Workspace ID: %s, got: %s", setWsId, dbCfg.workspaceID)
-		}
-		if dbCfg.branchName != defaultBranchName {
-			t.Fatalf("Expected branch name: %s, got: %s", defaultBranchName, dbCfg.branchName)
-		}
-		if dbCfg.region != defaultRegion {
-			t.Fatalf("Expected region: %s, got: %s", defaultRegion, dbCfg.region)
-		}
+		assert.NoError(t, err)
+		assert.Equal(t, setWsId, dbCfg.workspaceID)
+		assert.Equal(t, defaultBranchName, dbCfg.branchName)
+		assert.Equal(t, defaultRegion, dbCfg.region)
+		assert.Equal(t, defaultDataPlaneDomain, dbCfg.domainWorkspace)
 	})
 
 	setBranch := "branch123"

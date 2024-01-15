@@ -209,15 +209,14 @@ func loadDatabaseConfig() (databaseConfig, error) {
 	}
 
 	// Setup with env var
-	// XATA_WORKSPACE_ID to set the workspace Id
+	// XATA_WORKSPACE_ID to set the workspace ID
 	wsID := getEnvVar(EnvXataWorkspaceID, "")
 	if wsID != "" {
-		region := getRegion()
-		branch := getBranchName()
 		db := databaseConfig{
-			workspaceID: wsID,
-			region:      region,
-			branchName:  branch,
+			workspaceID:     wsID,
+			region:          getRegion(),
+			branchName:      getBranchName(),
+			domainWorkspace: defaultDataPlaneDomain,
 		}
 		return db, nil
 	}
