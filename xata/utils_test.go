@@ -56,7 +56,7 @@ func Test_getRegion(t *testing.T) {
 	})
 
 	setRegion := "eu-west-3"
-	err := os.Setenv("XATA_REGION", setRegion)
+	err := os.Setenv(regionEnvVar, setRegion)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -67,7 +67,7 @@ func Test_getRegion(t *testing.T) {
 		assert.Equal(t, gotRegion, setRegion)
 	})
 
-	t.Cleanup(func() { os.Unsetenv("XATA_REGION") })
+	t.Cleanup(func() { os.Unsetenv(regionEnvVar) })
 }
 
 func Test_parseDatabaseURL(t *testing.T) {
@@ -176,7 +176,7 @@ func Test_loadConfig(t *testing.T) {
 
 func Test_loadDatabaseConfig_with_envvars(t *testing.T) {
 	setWsId := "workspace-0lac00"
-	err := os.Setenv("XATA_WORKSPACE_ID", setWsId)
+	err := os.Setenv(xataWsIDEnvVar, setWsId)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -205,13 +205,13 @@ func Test_loadDatabaseConfig_with_envvars(t *testing.T) {
 		t.Fatal(err2)
 	}
 	setRegion := "ap-southeast-16"
-	err3 := os.Setenv("XATA_REGION", setRegion)
+	err3 := os.Setenv(regionEnvVar, setRegion)
 	if err3 != nil {
 		t.Fatal(err3)
 	}
 
 	// with branch and region env vars
-	t.Run("load config from XATA_WORKSPACE_ID, XATA_REGION and XATA_BRANCH env vars", func(t *testing.T) {
+	t.Run("load config from XATA_WORKSPACE_ID, regionEnvVar and XATA_BRANCH env vars", func(t *testing.T) {
 		dbCfg, err := loadDatabaseConfig()
 		if err != nil {
 			t.Fatalf("Error loading config: %v", err)
@@ -229,8 +229,8 @@ func Test_loadDatabaseConfig_with_envvars(t *testing.T) {
 	})
 
 	t.Cleanup(func() {
-		os.Unsetenv("XATA_WORKSPACE_ID")
-		os.Unsetenv("XATA_BRANCH")
-		os.Unsetenv("XATA_REGION")
+		os.Unsetenv(xataWsIDEnvVar)
+		os.Unsetenv(branchNameEnvVar)
+		os.Unsetenv(regionEnvVar)
 	})
 }

@@ -18,13 +18,14 @@ const (
 	personalAPIKeyLocation    = "~/.config/xata/key"
 	defaultControlPlaneDomain = "api.xata.io"
 	xataAPIKeyEnvVar          = "XATA_API_KEY"
-	xataWsIDEnvVar            = "XATA_WORKSPACE_ID" // TODO: not in use yet
+	xataWsIDEnvVar            = "XATA_WORKSPACE_ID"
 	dbURLFormat               = "https://{workspace_id}.{region}.xata.sh/db/{db_name}:{branch_name}"
 	defaultBranchName         = "main"
 	configFileName            = ".xatarc"
 	branchNameEnvVar          = "XATA_BRANCH"
 	defaultDataPlaneDomain    = "xata.sh"
 	defaultRegion             = "us-east-1"
+	regionEnvVar              = "XATA_REGION"
 )
 
 var errAPIKey = fmt.Errorf("no API key found. Searched in `%s` env, %s, and .env", xataAPIKeyEnvVar, personalAPIKeyLocation)
@@ -192,7 +193,7 @@ func getBranchName() string {
 // Get the region if the corresponding env var `XATA_REGION` is set
 // otherwise return the default region: us-east-1
 func getRegion() string {
-	return getEnvVar("XATA_REGION", defaultRegion)
+	return getEnvVar(regionEnvVar, defaultRegion)
 }
 
 // loadDatabaseConfig will return config with defaults if the error is not nil.
@@ -205,7 +206,7 @@ func loadDatabaseConfig() (databaseConfig, error) {
 
 	// Setup with env var
 	// XATA_WORKSPACE_ID to set the workspace Id
-	wsID := getEnvVar("XATA_WORKSPACE_ID", "")
+	wsID := getEnvVar(xataWsIDEnvVar, "")
 	if wsID != "" {
 		region := getRegion()
 		branch := getBranchName()
