@@ -13,10 +13,13 @@ type httpClient interface {
 }
 
 type ClientOptions struct {
-	BaseURL    string
-	HTTPClient httpClient
-	HTTPHeader http.Header
-	Bearer     string
+	BaseURL     string
+	HTTPClient  httpClient
+	HTTPHeader  http.Header
+	Bearer      string
+	WorkspaceID string
+	Region      string
+	Branch      string
 }
 
 func consolidateClientOptionsForCore(opts ...ClientOption) (*ClientOptions, error) {
@@ -56,7 +59,7 @@ func consolidateClientOptionsForWorkspace(opts ...ClientOption) (*ClientOptions,
 		cliOpts.HTTPClient = http.DefaultClient
 	}
 
-	dbCfg, err := loadDatabaseConfig()
+	dbCfg, err := loadDatabaseConfig(cliOpts)
 	if err != nil && cliOpts.BaseURL == "" {
 		return nil, nil, err
 	}
@@ -103,5 +106,23 @@ func WithHTTPClient(client httpClient) func(options *ClientOptions) {
 func WithBaseURL(baseURL string) func(options *ClientOptions) {
 	return func(options *ClientOptions) {
 		options.BaseURL = baseURL
+	}
+}
+
+func WithWorkspaceID(workspaceID string) func(options *ClientOptions) {
+	return func(options *ClientOptions) {
+		options.WorkspaceID = workspaceID
+	}
+}
+
+func WithRegion(region string) func(options *ClientOptions) {
+	return func(options *ClientOptions) {
+		options.Region = region
+	}
+}
+
+func WithBranch(branch string) func(options *ClientOptions) {
+	return func(options *ClientOptions) {
+		options.Branch = branch
 	}
 }

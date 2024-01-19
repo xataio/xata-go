@@ -10,22 +10,35 @@ import (
 	generatedwrapper "github.com/xataio/xata-go/xata"
 )
 
-func TestWithAPIToken(t *testing.T) {
-	t.Run("should use the provided API key in client options", func(t *testing.T) {
+func TestClientOptions(t *testing.T) {
+	t.Run("WithAPIKey", func(t *testing.T) {
 		c := &generatedwrapper.ClientOptions{}
 		apiToken := "my-token"
 		generatedwrapper.WithAPIKey("my-token")(c)
-
 		assert.Equal(t, apiToken, c.Bearer)
 	})
-}
-
-func TestWithHTTPClient(t *testing.T) {
-	t.Run("should use the provided HTTP client in client options", func(t *testing.T) {
+	t.Run("WithHTTPClient", func(t *testing.T) {
 		c := &generatedwrapper.ClientOptions{}
 		cli := &http.Client{}
 		generatedwrapper.WithHTTPClient(cli)(c)
-
 		assert.Equal(t, cli, c.HTTPClient)
+	})
+	t.Run("WithWorkspaceID", func(t *testing.T) {
+		c := &generatedwrapper.ClientOptions{}
+		workspaceID := "workspace-123"
+		generatedwrapper.WithWorkspaceID(workspaceID)(c)
+		assert.Equal(t, workspaceID, c.WorkspaceID)
+	})
+	t.Run("WithBranch", func(t *testing.T) {
+		c := &generatedwrapper.ClientOptions{}
+		branch := "branch-123"
+		generatedwrapper.WithBranch(branch)(c)
+		assert.Equal(t, branch, c.Branch)
+	})
+	t.Run("WithRegion", func(t *testing.T) {
+		c := &generatedwrapper.ClientOptions{}
+		region := "region-123"
+		generatedwrapper.WithRegion(region)(c)
+		assert.Equal(t, region, c.Region)
 	})
 }

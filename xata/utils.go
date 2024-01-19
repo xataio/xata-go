@@ -138,7 +138,7 @@ func parseDatabaseURL(rawURL string) (databaseConfig, error) {
 	}
 
 	if db.branchName == "" {
-		db.branchName = getBranchName()
+		db.branchName = getBranchName(nil)
 	}
 
 	return db, err
@@ -188,39 +188,58 @@ func getEnvVar(name string, defaultValue string) string {
 	return defaultValue
 }
 
-// getBranchName retrieves the branch name.
-// If not found, falls back to defaultBranchName
-func getBranchName() string {
+// getBranchName retrieves the branch name. If not found, falls back to defaultBranchName.
+func getBranchName(opts *ClientOptions) string {
+	if opts != nil && opts.Branch != "" {
+		return opts.Branch
+	}
 	return getEnvVar(EnvXataBranch, defaultBranchName)
 }
 
-// Get the region if the corresponding env var `XATA_REGION` is set
-// otherwise return the default region: us-east-1
-func getRegion() string {
+// getRegion gets the region if the corresponding env var `XATA_REGION` is set otherwise return
+// defaultRegion.
+func getRegion(opts *ClientOptions) string {
+	if opts != nil && opts.Region != "" {
+		return opts.Region
+	}
 	return getEnvVar(EnvXataRegion, defaultRegion)
 }
 
+// getWorkspaceID gets the workspace id from opts and if empty, gets it from the `XATA_WORKSPACE_ID`
+// environment variable
+func getWorkspaceID(opts *ClientOptions) string {
+	if opts != nil && opts.WorkspaceID != "" {
+		return opts.WorkspaceID
+	}
+	return getEnvVar(EnvXataWorkspaceID, "")
+}
+
 // loadDatabaseConfig will return config with defaults if the error is not nil.
-func loadDatabaseConfig() (databaseConfig, error) {
+func loadDatabaseConfig(cliOpts *ClientOptions) (databaseConfig, error) {
 	defaultDBConfig := databaseConfig{
 		region:          defaultRegion,
 		branchName:      defaultBranchName,
 		domainWorkspace: defaultDataPlaneDomain,
 	}
 
-	// Setup with env var
-	// XATA_WORKSPACE_ID to set the workspace ID
-	wsID := getEnvVar(EnvXataWorkspaceID, "")
+	// Config can come from three places with differing priorities. The order from highest to lowest
+	// priority is:
+	// 1. Code via ClientOptions
+	// 2. Environment variables
+	// 3. Config files
+
+	wsID := getWorkspaceID(cliOpts)
 	if wsID != "" {
 		db := databaseConfig{
 			workspaceID:     wsID,
-			region:          getRegion(),
-			branchName:      getBranchName(),
+			region:          getRegion(cliOpts),
+			branchName:      getBranchName(cliOpts),
 			domainWorkspace: defaultDataPlaneDomain,
 		}
 		return db, nil
 	}
 
+	// Config not found in code or environment variables, fall back to config files
 	cfg, err := loadConfig(configFileName)
 	if err != nil {
 		return defaultDBConfig, err

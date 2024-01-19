@@ -29,29 +29,31 @@ func TestClientOptions_getAPIKey(t *testing.T) {
 func Test_getBranchName(t *testing.T) {
 	// default state
 	t.Run("should be default branch name", func(t *testing.T) {
-		gotBranchName := getBranchName()
+		gotBranchName := getBranchName(nil)
 		assert.Equal(t, gotBranchName, defaultBranchName)
 	})
 
 	setBranchName := "feature-042"
-	err := os.Setenv(EnvXataBranch, setBranchName)
-	if err != nil {
-		t.Fatal(err)
-	}
+	setEnvForTests(t, EnvXataBranch, setBranchName)
 
 	// from env var
 	t.Run("should be branch name from env var", func(t *testing.T) {
-		gotBranchName := getBranchName()
-		assert.Equal(t, gotBranchName, setBranchName)
+		gotBranchName := getBranchName(nil)
+		assert.Equal(t, setBranchName, gotBranchName)
 	})
 
-	t.Cleanup(func() { os.Unsetenv(EnvXataBranch) })
+	// from ClientOptions
+	t.Run("from ClientOptions", func(t *testing.T) {
+		want := "branch-from-opts"
+		got := getBranchName(&ClientOptions{Branch: want})
+		assert.Equal(t, want, got)
+	})
 }
 
 func Test_getRegion(t *testing.T) {
 	// default state
 	t.Run("should be default region", func(t *testing.T) {
-		gotRegion := getRegion()
+		gotRegion := getRegion(nil)
 		assert.Equal(t, gotRegion, defaultRegion)
 	})
 
@@ -63,8 +65,14 @@ func Test_getRegion(t *testing.T) {
 
 	// from env var
 	t.Run("should be region from the env var", func(t *testing.T) {
-		gotRegion := getRegion()
-		assert.Equal(t, gotRegion, setRegion)
+		gotRegion := getRegion(nil)
+		assert.Equal(t, setRegion, gotRegion)
+	})
+
+	t.Run("should be region from ClientOptions", func(t *testing.T) {
+		wantRegion := "region-options"
+		gotRegion := getRegion(&ClientOptions{Region: wantRegion})
+		assert.Equal(t, wantRegion, gotRegion)
 	})
 
 	t.Cleanup(func() { os.Unsetenv(EnvXataRegion) })
@@ -176,14 +184,31 @@ func Test_loadConfig(t *testing.T) {
 
 func Test_loadDatabaseConfig_with_envvars(t *testing.T) {
 	setWsId := "workspace-0lac00"
-	err := os.Setenv(EnvXataWorkspaceID, setWsId)
-	if err != nil {
-		t.Fatal(err)
+
+	assertClientOptions := func(t *testing.T) {
+		wsID := "workspace-fco"
+		opts := &ClientOptions{
+			WorkspaceID: wsID,
+		}
+		dbCfg, err := loadDatabaseConfig(opts)
+		assert.NoError(t, err)
+		assert.Equal(t, wsID, dbCfg.workspaceID)
+		assert.Equal(t, defaultBranchName, dbCfg.branchName)
+		assert.Equal(t, defaultRegion, dbCfg.region)
+		assert.Equal(t, defaultDataPlaneDomain, dbCfg.domainWorkspace)
 	}
+
+	// test workspace is from ClientOptions
+	t.Run("load config from ClientOptions", assertClientOptions)
+
+	setEnvForTests(t, EnvXataWorkspaceID, setWsId)
+
+	// Check again after environment variable set
+	t.Run("config from ClientOptions takes precedence", assertClientOptions)
 
 	// test workspace id from env var
 	t.Run("load config from WORKSPACE_ID env var", func(t *testing.T) {
-		dbCfg, err := loadDatabaseConfig()
+		dbCfg, err := loadDatabaseConfig(nil)
 		assert.NoError(t, err)
 		assert.Equal(t, setWsId, dbCfg.workspaceID)
 		assert.Equal(t, defaultBranchName, dbCfg.branchName)
@@ -192,28 +217,25 @@ func Test_loadDatabaseConfig_with_envvars(t *testing.T) {
 	})
 
 	setBranch := "branch123"
-	err2 := os.Setenv(EnvXataBranch, setBranch)
-	if err2 != nil {
-		t.Fatal(err2)
-	}
+	setEnvForTests(t, EnvXataBranch, setBranch)
 	setRegion := "ap-southeast-16"
-	err3 := os.Setenv(EnvXataRegion, setRegion)
-	if err3 != nil {
-		t.Fatal(err3)
-	}
+	setEnvForTests(t, EnvXataRegion, setRegion)
 
 	// with branch and region env vars
 	t.Run("load config from XATA_WORKSPACE_ID, XATA_REGION and XATA_BRANCH env vars", func(t *testing.T) {
-		dbCfg, err := loadDatabaseConfig()
+		dbCfg, err := loadDatabaseConfig(nil)
 		assert.NoError(t, err)
 		assert.Equal(t, setWsId, dbCfg.workspaceID)
 		assert.Equal(t, setBranch, dbCfg.branchName)
 		assert.Equal(t, setRegion, dbCfg.region)
 	})
+}
 
+func setEnvForTests(t *testing.T, key, value string) {
+	t.Helper()
+	err := os.Setenv(key, value)
+	assert.NoError(t, err)
 	t.Cleanup(func() {
-		assert.NoError(t, os.Unsetenv(EnvXataWorkspaceID))
-		assert.NoError(t, os.Unsetenv(EnvXataBranch))
-		assert.NoError(t, os.Unsetenv(EnvXataRegion))
+		assert.NoError(t, os.Unsetenv(key))
 	})
 }
