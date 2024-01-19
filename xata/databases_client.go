@@ -143,7 +143,7 @@ func NewDatabasesClient(opts ...ClientOption) (DatabasesClient, error) {
 		return nil, err
 	}
 
-	dbCfg, err := loadDatabaseConfig()
+	dbCfg, err := loadDatabaseConfig(cliOpts)
 	if err != nil {
 		// No err, because the config values can be provided by the users.
 		log.Println(err)
