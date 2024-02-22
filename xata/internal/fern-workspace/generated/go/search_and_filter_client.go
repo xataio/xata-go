@@ -118,7 +118,7 @@ func (s *searchAndFilterClient) SearchBranch(ctx context.Context, dbBranchName D
 // store that is more appropiate for analytics, makes use of approximative algorithms
 // (e.g for cardinality), and is generally faster and can do more complex aggregations.
 //
-// For usage, see the [API Guide](https://xata.io/docs/api-guide/aggregate).
+// For usage, see the [API Guide](https://xata.io/docs/sdk/aggregate).
 //
 // The DBBranchName matches the pattern `{db_name}:{branch_name}`.
 //
